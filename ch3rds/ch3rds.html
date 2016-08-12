@@ -5,20 +5,42 @@
 		<link rel="stylesheet" type="text/css" href="ch3rds.css">
 	</head>
 	<body>
-	  <div class="harmonic">14th</div>
-	  <div class="harmonic">13th</div>
-	  <div class="harmonic">12th</div>
-	  <div class="harmonic">11th</div>
-	  <div class="harmonic">10th</div>
-	  <div class="harmonic">9th</div>
-	  <div class="harmonic">8th</div>
-	  <div class="harmonic">7th</div>
-	  <div class="harmonic">6th</div>
-	  <div class="harmonic">5th</div>
-	  <div class="harmonic">4th</div>
-	  <div class="harmonic">3th</div>
-	  <div class="harmonic">2th</div>
-	  <div class="harmonic">1st</div>
-	  <div class="play">A#m</div>
+	  <script>
+		function Harmonic(container, id, label){
+			this.container = container;
+			this.id = id;
+			this.label = label;
+			this.on = false;
+			this.div = document.createElement("DIV");
+			if (label == "root" || label == "3rd" || label == "5th"){
+				this.on = true;
+				this.div.className = "harmonic harmonic-on";
+			}
+			else{
+				this.div.className = "harmonic";
+			}
+			this.div.id = id;
+			this.div.appendChild(document.createTextNode(label));
+			container.appendChild(this.div);
+			var harmonic = this;
+			this.div.onclick = function(){
+				if (harmonic.on){
+					harmonic.on = false;
+					harmonic.div.className = "harmonic";
+				}
+				else{
+					harmonic.on = true;
+					harmonic.div.className = "harmonic harmonic-on";
+				}
+			};
+		}
+		var HARMONICS = ["root", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th", "14th"];
+		var harmonics = [];
+		var id = "play1";
+		for (var index = HARMONICS.length - 1; index >= 0; index--){
+			var harmonic = new Harmonic(document.body, id + "." + index, HARMONICS[index]);
+			harmonics.push(harmonic);
+		}
+	  </script>
 	</body>
 </html>
