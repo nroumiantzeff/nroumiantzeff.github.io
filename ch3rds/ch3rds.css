@@ -7,6 +7,10 @@
  height: 40px;
 }
 
+.harmonic-on{
+	background-color: green;
+}
+
 .play{
  border-style: solid;
  border-width: 1px;
