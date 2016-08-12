@@ -1,0 +1,15 @@
+.harmonic{
+ border-style: solid;
+ border-width: 1px;
+ border-color: blue;
+ width: 20px;
+ height: 20px;
+}
+
+.play{
+ border-style: solid;
+ border-width: 1px;
+ border-color: green;
+ width: 20px;
+ height: 20px;
+}
