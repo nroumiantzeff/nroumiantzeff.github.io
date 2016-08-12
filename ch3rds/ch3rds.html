@@ -34,13 +34,42 @@
 				}
 			};
 		}
-		var HARMONICS = ["root", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th", "14th"];
-		var harmonics = [];
-		var id = "play1";
-		for (var index = HARMONICS.length - 1; index >= 0; index--){
-			var harmonic = new Harmonic(document.body, id + "." + index, HARMONICS[index]);
-			harmonics.push(harmonic);
+		function Chord(container, id, label, type){
+			this.container = container;
+			this.id = id;
+			this.label = label;
+			this.type = type;
+			this.on = false;
+			var HARMONICS = ["root", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th", "14th"];
+			var harmonics = [];
+			for (var index = HARMONICS.length - 1; index >= 0; index--){
+				var harmonic = new Harmonic(this.container, this.id + "." + index, HARMONICS[index]);
+				harmonics.push(harmonic);
+			}
+			this.div = document.createElement("DIV");
+			this.div.className = "chord";
+			this.div.id = id;
+			this.div.appendChild(document.createTextNode(label));
+			container.appendChild(this.div);
+			var chord = this;
+			this.div.onmousedown = function(){
+				chord.on = true;
+				chord.div.className = "chord chord-on";
+			};
+			this.div.onmouseup = function(){
+				chord.on = false;
+				chord.div.className = "chord";
+			};
+			this.div.onmouseleave = function(){
+				if (chord.on){
+					chord.on = false;
+					chord.div.className = "chord";
+				}
+			};
 		}
+		var chords = [];
+		var chord = new Chord(document.body, "chord1", "F#m", "minor");
+		chords.push(chord);
 	  </script>
 	</body>
 </html>
