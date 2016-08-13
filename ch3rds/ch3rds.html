@@ -52,10 +52,15 @@
 			//debug this.div.appendChild(document.createTextNode(label));
 			container.appendChild(this.div);
 			var chord = this;
-			this.div.onmouseover = function(){
+			this.div.onmousedown = function(){
 				chord.on = true;
 				chord.div.className = "chord chord-on";
-alert("onmouseover"); //debug
+alert("onmousedown"); //debug
+			};
+			this.div.touchstart = function(){
+				chord.on = true;
+				chord.div.className = "chord chord-on";
+alert("ontouchstart"); //debug
 			};
 			this.div.onmouseleave = function(){
 				if (chord.on){
