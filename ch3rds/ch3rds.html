@@ -57,6 +57,18 @@
 				chord.div.className = "chord chord-on";
 alert("onmousedown"); //debug
 			};
+
+
+
+			this.div.addEventListener('touchstart', function (){
+				chord.on = true;
+				chord.div.className = "chord chord-on";
+			}, false);
+			this.div.addEventListener('touchend', function (){
+				chord.on = false;
+				chord.div.className = "chord";
+			}, false);
+ 
 			this.div.touchstart = function(){
 				chord.on = true;
 				chord.div.className = "chord chord-on";
