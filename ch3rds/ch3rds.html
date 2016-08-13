@@ -49,12 +49,13 @@
 			this.div = document.createElement("DIV");
 			this.div.className = "chord";
 			this.div.id = id;
-			this.div.appendChild(document.createTextNode(label));
+			//debug this.div.appendChild(document.createTextNode(label));
 			container.appendChild(this.div);
 			var chord = this;
 			this.div.onmouseover = function(){
 				chord.on = true;
 				chord.div.className = "chord chord-on";
+alert("onmouseover"); //debug
 			};
 			this.div.onmouseleave = function(){
 				if (chord.on){
