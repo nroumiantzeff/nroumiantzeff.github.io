@@ -54,25 +54,27 @@
 			var chord = this;
 			this.div.onmousedown = function(){
 				chord.on = true;
-				chord.div.className = "chord chord-on";
+				chord.div.className = "chord chord-on chord-mouse";
 			};
-			this.div.addEventListener('touchstart', function (){
+			this.div.onmouseup = function(){
+				chord.on = false;
+				chord.div.className = "chord chord-mouse";
+			};
+			this.div.addEventListener('touchstart', function (event){
+				event.preventDefault();
 				chord.on = true;
 				chord.div.className = "chord chord-on";
 			}, false);
-			this.div.addEventListener('touchend', function (){
+			this.div.addEventListener('touchend', function (event){
+				event.preventDefault();
 				chord.on = false;
 				chord.div.className = "chord";
 			}, false);
  
-			this.div.touchstart = function(){
-				chord.on = true;
-				chord.div.className = "chord chord-on";
-			};
 			this.div.onmouseleave = function(){
 				if (chord.on){
 					chord.on = false;
-					chord.div.className = "chord";
+					chord.div.className = "chord chord-mouse";
 				}
 			};
 		}
