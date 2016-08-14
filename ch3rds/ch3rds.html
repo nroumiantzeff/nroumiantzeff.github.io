@@ -23,7 +23,7 @@
 			this.div.appendChild(document.createTextNode(label));
 			container.appendChild(this.div);
 			var harmonic = this;
-			this.div.onclick = function(){
+			this.div.onmousedown = function(){
 				if (harmonic.on){
 					harmonic.on = false;
 					harmonic.div.className = "harmonic";
@@ -33,6 +33,17 @@
 					harmonic.div.className = "harmonic harmonic-on";
 				}
 			};
+			this.div.addEventListener('touchstart', function (event){
+				event.preventDefault();
+				if (harmonic.on){
+					harmonic.on = false;
+					harmonic.div.className = "harmonic";
+				}
+				else{
+					harmonic.on = true;
+					harmonic.div.className = "harmonic harmonic-on";
+				}
+			}, false);
 		}
 		function Chord(container, id, label, type){
 			this.container = container;
