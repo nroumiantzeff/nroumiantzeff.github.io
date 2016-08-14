@@ -8,11 +8,15 @@
 }
 
 .harmonic-on{
-	color: #00D000;
-	background-color: #0000FF;
+ color: #00D000;
+ background-color: #0000FF;
 }
 
 .chord{
+ float: right;
+}
+
+.chord-button{
  border-style: solid;
  border-width: 1px;
  border-color: green;
@@ -22,6 +26,6 @@
 }
 
 .chord-on{
-	color: #A0A0FF;
-	background-color: #00FF00;
+ color: #A0A0FF;
+ background-color: #00FF00;
 }
