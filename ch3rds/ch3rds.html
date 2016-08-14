@@ -49,16 +49,16 @@
 			this.div = document.createElement("DIV");
 			this.div.className = "chord";
 			this.div.id = id;
-			//debug this.div.appendChild(document.createTextNode(label));
+			this.div.appendChild(document.createTextNode(label));
 			container.appendChild(this.div);
 			var chord = this;
 			this.div.onmousedown = function(){
 				chord.on = true;
-				chord.div.className = "chord chord-on chord-mouse";
+				chord.div.className = "chord chord-on";
 			};
 			this.div.onmouseup = function(){
 				chord.on = false;
-				chord.div.className = "chord chord-mouse";
+				chord.div.className = "chord";
 			};
 			this.div.addEventListener('touchstart', function (event){
 				event.preventDefault();
@@ -70,14 +70,7 @@
 				chord.on = false;
 				chord.div.className = "chord";
 			}, false);
- 
-			this.div.onmouseleave = function(){
-				if (chord.on){
-					chord.on = false;
-					chord.div.className = "chord chord-mouse";
-				}
-			};
-		}
+ 		}
 		var chords = [];
 		var chord = new Chord(document.body, "chord1", "F#m", "minor");
 		chords.push(chord);
