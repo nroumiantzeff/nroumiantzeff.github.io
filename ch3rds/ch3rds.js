@@ -80,7 +80,7 @@ Harmonic.prototype.getLabel = function(type, order){
 	return label;
 }
 
-function Chord(audioContext, master, container, id, tone, type){
+function Chord(audioContext, master, container, before, id, tone, type){
 	this.audioContext = audioContext;
 	this.master = master;
 	this.gain = new Gain(audioContext, master);
@@ -92,7 +92,12 @@ function Chord(audioContext, master, container, id, tone, type){
 	this.on = false;
 	this.whole = document.createElement("DIV");
 	this.whole.className = "chord";
-	container.appendChild(this.whole);
+	if (before){
+		container.insertBefore(this.whole, before);
+	}
+	else{
+		container.appendChild(this.whole);
+	}
 	var HARMONICS = ["root", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th", "14th", "15th", "16th", "17th"];
 	var harmonics = [];
 	for (var order = 17; order > 0; order--){
@@ -137,6 +142,14 @@ Chord.prototype.getLabel = function(tone, type){
 	return label;
 }
 
+Chord.prototype.insertChord = function(tone, type){
+	return new Chord(this.audioContext, this.master, this.container, this.whole, this.id, tone, type);
+}
+
+Chord.prototype.appendChord = function(tone, type){
+	return new Chord(this.audioContext, this.master, this.container, this.whole.nextSibling, this.id, tone, type);
+}
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
 var master = new Gain(audioContext);
@@ -145,15 +158,13 @@ master.setGain(0.1);
 var chords = [];
 //debug chords.push(new Chord(audioContext, master, document.body, "chords", "C", "major"));
 //debug chords.push(new Chord(audioContext, master, document.body, "chord1", "A", "major"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-chords.push(new Chord(audioContext, master, document.body, "chord2", "A", "minor"));
-//chords.push(new Chord(audioContext, master, document.body, "chord2", "F#", "minor"));
-//debug chords.push(new Chord(audioContext, master, document.body, "chord3", "G", "major"));
-//debug chords.push(new Chord(audioContext, master, document.body, "chord4", "D", "minor"));
-//debug chords.push(new Chord(audioContext, master, document.body, "chord5", "B", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+chords.push(new Chord(audioContext, master, document.body, null, "chord2", "A", "minor"));
+//debug chords.push(chords[4].insertChord("C", "major"));
+chords.push(chords[2].insertChord("E", "major"));
