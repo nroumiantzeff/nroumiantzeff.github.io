@@ -109,7 +109,47 @@ function Chord(audioContext, master, container, before, id, tone, type){
 	this.div.id = id;
 	this.div.appendChild(document.createTextNode(this.label));
 	this.whole.appendChild(this.div);
+	var appendButton = document.createElement("DIV");
+	appendButton.className = "chord-append";
+	appendButton.appendChild(document.createTextNode("+"));
+	this.whole.appendChild(appendButton);
+	var deleteButton = document.createElement("DIV");
+	deleteButton.className = "chord-delete";
+	deleteButton.appendChild(document.createTextNode("-"));
+	this.whole.appendChild(deleteButton);
 	var chord = this;
+	appendButton.onmousedown = function(){
+		chord.newChord();
+	};
+	this.div.addEventListener('touchstart', function (event){
+		event.preventDefault();
+		chord.newChord();
+	}, false);
+	this.div.onmousedown = function(){
+		if (harmonic.on){
+			harmonic.oscillator.setGain(0);
+			harmonic.on = false;
+			harmonic.div.className = "harmonic";
+		}
+		else{
+			harmonic.oscillator.setGain(1);
+			harmonic.on = true;
+			harmonic.div.className = "harmonic harmonic-on";
+		}
+	};
+	this.div.addEventListener('touchstart', function (event){
+		event.preventDefault();
+		if (harmonic.on){
+			harmonic.oscillator.setGain(0);
+			harmonic.on = false;
+			harmonic.div.className = "harmonic";
+		}
+		else{
+			harmonic.oscillator.setGain(1);
+			harmonic.on = true;
+			harmonic.div.className = "harmonic harmonic-on";
+		}
+	}, false);
 	this.div.onmousedown = function(){
 		chord.gain.setGain(1);
 		chord.on = true;
@@ -148,6 +188,10 @@ Chord.prototype.insertChord = function(tone, type){
 
 Chord.prototype.appendChord = function(tone, type){
 	return new Chord(this.audioContext, this.master, this.container, this.whole.nextSibling, this.id, tone, type);
+}
+
+Chord.prototype.newChord = function(){
+	
 }
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
