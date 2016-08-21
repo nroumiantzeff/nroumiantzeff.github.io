@@ -104,6 +104,9 @@ function Chord(audioContext, master, container, before, id, tone, type){
 		var harmonic = new Harmonic(audioContext, this.gain, this.whole, this.id + "." + order, tone, type, order);
 		harmonics.push(harmonic);
 	}
+	var separator = document.createElement("DIV");
+	separator.className = "chord-delete";
+	this.whole.appendChild(separator);
 	this.div = document.createElement("DIV");
 	this.div.className = "chord-button";
 	this.div.id = id;
