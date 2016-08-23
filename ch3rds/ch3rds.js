@@ -257,12 +257,12 @@ var audioContext = new AudioContext();
 var master = new Gain(audioContext);
 master.setGain(0.1);
 
-new Chord(audioContext, master, document.body, null, "C", 1, "minor");
+new Chord(audioContext, master, document.body, null, "C", 0, "minor");
 new Chord(audioContext, master, document.body, null, "D", 0, "minor");
 new Chord(audioContext, master, document.body, null, "E", 0, "minor");
 new Chord(audioContext, master, document.body, null, "F", 0, "minor");
 new Chord(audioContext, master, document.body, null, "G", 0, "minor");
 new Chord(audioContext, master, document.body, null, "A", 0, "minor");
-new Chord(audioContext, master, document.body, null, "A", +1, "minor");
-new Chord(audioContext, master, document.body, null, "A", -1, "minor");
+new Chord(audioContext, master, document.body, null, "A", 0, "minor");
+new Chord(audioContext, master, document.body, null, "A", 0, "minor");
 new Chord(audioContext, master, document.body, null, "B", 0, "minor");
