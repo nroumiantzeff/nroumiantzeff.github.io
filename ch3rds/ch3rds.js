@@ -133,69 +133,13 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	}, false);
 	this.addSeparator();
 	this.addSeparator();
-	var toneDiv = document.createElement("DIV");
-	var toneSelector = document.createElement("SELECT");
-	toneSelector.className = "chord-tone-selector";
-	toneSelector.innerHTML = '<option>B</option><option>A#</option><option>A</option><option>G#</option><option>G</option><option>F#</option><option>F</option><option>E</option><option>D#</option><option>D</option><option>C#</option><option>C</option>';
-	for (var toneIndex = 0; toneIndex < toneSelector.options.length; toneIndex++){
-		if (toneSelector.options[toneIndex].value == this.tone){
-			toneSelector.selectedIndex = toneIndex;
-			break;
-		}
-	}
-	toneDiv.appendChild(toneSelector);
-	this.whole.appendChild(toneDiv);
-	toneSelector.onchange = function(){
-		chord.changeTone(toneSelector.value);
-	};
+	this.addSelector("tone", "changeTone", {"B":"B","A#":"A#","A":"A","G#":"G#","G":"G","F#":"F#","F":"F","E":"E","D#":"D#","D":"D","C#":"C#","C":"C"});
 	this.addSeparator();
-	var octaveDiv = document.createElement("DIV");
-	var octaveSelector = document.createElement("SELECT");
-	octaveSelector.className = "chord-octave-selector";
-	octaveSelector.innerHTML = '<option value="5">+5</option><option value="4">+4</option><option value="3">+3</option><option value="2">+2</option><option value="1">+1</option><option value="0">0</option><option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option><option value="-4">-4</option><option value="-5">-5</option>';
-	for (var octaveIndex = 0; octaveIndex < octaveSelector.options.length; octaveIndex++){
-		if (octaveSelector.options[octaveIndex].value == this.octave){
-			octaveSelector.selectedIndex = octaveIndex;
-			break;
-		}
-	}
-	octaveDiv.appendChild(octaveSelector);
-	this.whole.appendChild(octaveDiv);
-	octaveSelector.onchange = function(){
-		chord.changeOctave(parseInt(octaveSelector.value, 10));
-	};
+	this.addSelector("octave", "changeOctave", {"+5":5,"+4":4,"+3":3,"+2":2,"+1":1,"+0":0,"-1":-1,"-2":-2,"-3":-3,"-4":-4,"-5":-5});
 	this.addSeparator();
-	var typeDiv = document.createElement("DIV");
-	var typeSelector = document.createElement("SELECT");
-	typeSelector.className = "chord-type-selector";
-	typeSelector.innerHTML = '<option value="major"></option><option value="minor">m</option>';
-	for (var typeIndex = 0; typeIndex < typeSelector.options.length; typeIndex++){
-		if (typeSelector.options[typeIndex].value == this.type){
-			typeSelector.selectedIndex = typeIndex;
-			break;
-		}
-	}
-	typeDiv.appendChild(typeSelector);
-	this.whole.appendChild(typeDiv);
-	typeSelector.onchange = function(){
-		chord.changeType(typeSelector.value);
-	};
+	this.addSelector("type", "changeType", {"":"major", "m":"minor"});
 	this.addSeparator();
-	var muteDiv = document.createElement("DIV");
-	var muteSelector = document.createElement("SELECT");
-	muteSelector.className = "chord-mute-selector";
-	muteSelector.innerHTML = '<option value="0">*1</option><option value="0.1">*0.9</option><option value="0.2">*0.8</option><option value="0.3">*0.7</option><option value="0.4">*0.6</option><option value="0.5">*0.5</option><option value="0.6">*0.4</option><option value="0.7">*0.3</option><option value="0.8">*0.2</option><option value="0.9">*0.1</option><option value="1">*0</option>';
-	for (var muteIndex = 0; muteIndex < muteSelector.options.length; muteIndex++){
-		if (muteSelector.options[muteIndex].value == this.mute){
-			muteSelector.selectedIndex = muteIndex;
-			break;
-		}
-	}
-	muteDiv.appendChild(muteSelector);
-	this.whole.appendChild(muteDiv);
-	muteSelector.onchange = function(){
-		chord.changeMute(muteSelector.value);
-	};
+	this.addSelector("mute", "changeMute", {"*1":0,"*0.9":0.1,"*0.8":0.2,"*0.7":0.3,"*0.6":0.4,"*0.5":0.5,"*0.4":0.6,"*0.3":0.7,"*0.2":0.8,"*0.1":0.9,"*0":1});
 	this.addSeparator();
 	var appendButton = document.createElement("DIV");
 	appendButton.className = "chord-append";
@@ -270,7 +214,7 @@ Chord.prototype.changeTone = function(tone){
 }
 
 Chord.prototype.changeOctave = function(octave){
-	this.octave = octave;
+	this.octave = parseInt(octave, 10);
 	this.refresh();
 }
 
@@ -287,12 +231,33 @@ Chord.prototype.deleteChord = function(){
 	//todo release oscilator resources
 }
 
+Chord.prototype.addSelector = function(name, handler, options){
+	var div = document.createElement("DIV");
+	var selector = document.createElement("SELECT");
+	selector.className = "chord-selector";
+	for (var key in options){
+		var option = document.createElement("OPTION");
+		option.value = options[key];
+		if (option.value == this[name]){
+			option.selected = true;
+		}
+		option.appendChild(document.createTextNode(key));
+		selector.appendChild(option);
+	}
+	div.appendChild(selector);
+	this.whole.appendChild(div);
+	var chord = this;
+	selector.onchange = function(){
+		chord[handler](selector.value);
+	};
+}
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
 var master = new Gain(audioContext);
 master.setGain(0.1);
 
-new Chord(audioContext, master, document.body, null, "C", 0, "minor");
+new Chord(audioContext, master, document.body, null, "C", 1, "minor");
 new Chord(audioContext, master, document.body, null, "D", 0, "minor");
 new Chord(audioContext, master, document.body, null, "E", 0, "minor");
 new Chord(audioContext, master, document.body, null, "F", 0, "minor");
