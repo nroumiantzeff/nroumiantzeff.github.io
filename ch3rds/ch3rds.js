@@ -263,6 +263,4 @@ new Chord(audioContext, master, document.body, null, "E", 0, "minor");
 new Chord(audioContext, master, document.body, null, "F", 0, "minor");
 new Chord(audioContext, master, document.body, null, "G", 0, "minor");
 new Chord(audioContext, master, document.body, null, "A", 0, "minor");
-new Chord(audioContext, master, document.body, null, "A", 0, "minor");
-new Chord(audioContext, master, document.body, null, "A", 0, "minor");
 new Chord(audioContext, master, document.body, null, "B", 0, "minor");
