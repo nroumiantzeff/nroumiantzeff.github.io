@@ -32,16 +32,21 @@ body{
  width: 50px;
  height: 20px;
 }
+.chord-board{
+ margin: 5px;
+ width: 50px;
+ height: 100px;
+}
 .chord-button{
  border-style: solid;
  border-width: 1px;
  border-color: green;
- margin: 5px;
  width: 50px;
- height: 50px;
+ height: 100px;
 }
 .chord-sharp .chord-button{
  background-color: #C0C0C0;
+ height: 50px;
 }
 .chord-on{
  color: #A0A0FF;
@@ -253,10 +258,13 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 		this.harmonics.push(harmonic);
 	}
 	this.addSeparator();
+	var board = document.createElement("DIV");
+	board.className ="chord-board";
 	this.div = document.createElement("DIV");
 	this.div.className = "chord-button";
 	this.div.appendChild(document.createTextNode(this.label));
-	this.whole.appendChild(this.div);
+	board.appendChild(this.div);
+	this.whole.appendChild(board);
 	this.setLabel(tone, octave, type);
 	var chord = this;
 	this.div.onmousedown = function(){
