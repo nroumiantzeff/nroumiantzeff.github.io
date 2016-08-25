@@ -106,29 +106,47 @@ function Oscillator(audioContext, master){
 	this.audioContext = audioContext;
 	this.master = master;
 	this.oscillator = audioContext.createOscillator();
-	this.oscillator.type = "sine";
+	this.shape = "sine";
+	this.frequency = 440;
+	this.detune = 0;
 	this.gain = new Gain(audioContext, master);
-	this.gain.control(this.oscillator);
 }
-Oscillator.prototype.setType = function(value){
-	this.oscillator.type = value;
-};
 Oscillator.prototype.setDetune = function(value){
-	this.oscillator.detune.value = value;
+	this.detune = value;
+	if (this.oscillator){
+		this.oscillator.detune.value = this.detune;
+	}
 };
 Oscillator.prototype.setFrequency = function(value){
-	this.oscillator.frequency.value = value;
+	this.frequency = value;
+	if (this.oscillator){
+		this.oscillator.frequency.value = this.frequency;
+	}
 };
 Oscillator.prototype.setShape = function(value){
-	this.oscillator.type = value;
+	this.shape = value;
+	if (this.oscillator){
+		this.oscillator.type = this.shape;
+	}
 };
 Oscillator.prototype.setGain = function(value){
 	if (value === 0){
-		this.oscillator.stop(0);
+		if (this.oscillator){
+			this.oscillator.stop(0);
+			this.gain.disconnect(this.oscillator);
+			delete this.oscillator;
+		}
 	}
 	else{
 		this.gain.setGain(value);
-		this.oscillator.start(0);
+		if (!this.oscillator){
+			this.oscillator = audioContext.createOscillator();
+			this.oscillator.type = this.shape;
+			this.oscillator.frequency.value = this.frequency;
+			this.oscillator.detune.value = this.detune;
+			this.gain.control(this.oscillator);
+			this.oscillator.start(0);
+		}
 	}
 };
 		</script end="Oscillator">
