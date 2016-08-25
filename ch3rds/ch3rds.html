@@ -104,6 +104,9 @@ Oscillator.prototype.setDetune = function(value){
 Oscillator.prototype.setFrequency = function(value){
 	this.oscillator.frequency.value = value;
 };
+Oscillator.prototype.setShape = function(value){
+	this.oscillator.type = value;
+};
 Oscillator.prototype.setGain = function(value){
 	this.gain.setGain(value);
 };
@@ -121,6 +124,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 	this.setFrequency(tone, octave, type, order);
 	this.setDetune(tone, octave, type, order);
 	this.setLabel(type, order);
+	this.setShape("sine");
 	this.on = false;
 	if (order == 1 || order == 3 || order == 5){
 		this.on = true;
@@ -182,6 +186,10 @@ Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	this.detune = detune;
 	this.oscillator.setDetune(this.detune);
 }
+Harmonic.prototype.setShape = function(value){
+	this.shape = value;
+	this.oscillator.setShape(this.shape);
+}
 Harmonic.prototype.setLabel = function(type, order){
 	var label = (order === 1)? "1st": (order === 2)? "2nd": (order === 3)? "3rd": order + "th";
 	this.label = label;
@@ -193,6 +201,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.master = master;
 	this.gain = new Gain(audioContext, master);
 	this.mute = 0;
+	this.shape = "sine";
 	this.container = container;
 	this.tone = tone;
 	this.octave = octave;
@@ -210,6 +219,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.harmonics = [];
 	for (var order = 17; order > 0; order--){
 		var harmonic = new Harmonic(audioContext, this.gain, this.whole, tone, octave, type, order);
+		harmonic.setShape(this.shape);
 		this.harmonics.push(harmonic);
 	}
 	this.addSeparator();
@@ -247,6 +257,8 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.addSelector("octave", "changeOctave", {"+5":5,"+4":4,"+3":3,"+2":2,"+1":1,"+0":0,"-1":-1,"-2":-2,"-3":-3,"-4":-4,"-5":-5});
 	this.addSeparator();
 	this.addSelector("type", "changeType", {"":"major", "m":"minor"});
+	this.addSeparator();
+	this.addSelector("shape", "changeShape", {"/":"sawtooth", "-":"square", "^":"triangle", "~":"sine"});
 	this.addSeparator();
 	this.addSelector("mute", "changeMute", {"*1":0,"*0.9":0.1,"*0.8":0.2,"*0.7":0.3,"*0.6":0.4,"*0.5":0.5,"*0.4":0.6,"*0.3":0.7,"*0.2":0.8,"*0.1":0.9,"*0":1});
 	this.addSeparator();
@@ -307,22 +319,27 @@ Chord.prototype.refresh = function(){
 		var order = this.harmonics.length - index; 
 		harmonic.setFrequency(this.tone, this.octave, this.type, order);
 		harmonic.setDetune(this.tone, this.octave, this.type, order);
+		harmonic.setShape(this.shape);
 	}
 }
-Chord.prototype.changeTone = function(tone){
-	this.tone = tone;
+Chord.prototype.changeTone = function(value){
+	this.tone = value;
 	this.refresh();
 }
-Chord.prototype.changeOctave = function(octave){
-	this.octave = parseInt(octave, 10);
+Chord.prototype.changeOctave = function(value){
+	this.octave = parseInt(value, 10);
 	this.refresh();
 }
-Chord.prototype.changeType = function(type){
-	this.type = type;
+Chord.prototype.changeType = function(value){
+	this.type = value;
 	this.refresh();
 }
-Chord.prototype.changeMute = function(mute){
-	this.mute = mute;
+Chord.prototype.changeShape = function(value){
+	this.shape = value;
+	this.refresh();
+}
+Chord.prototype.changeMute = function(value){
+	this.mute = value;
 }
 Chord.prototype.deleteChord = function(){
 	//todo release oscilator resources
