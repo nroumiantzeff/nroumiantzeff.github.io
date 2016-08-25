@@ -36,7 +36,14 @@
  width: 50px;
  height: 50px;
 }
+.chord-sharp .chord-button{
+ background-color: #C0C0C0;
+}
 .chord-on{
+ color: #A0A0FF;
+ background-color: #00FF00;
+}
+.chord-sharp .chord-on{
  color: #A0A0FF;
  background-color: #00FF00;
 }
@@ -206,7 +213,6 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.tone = tone;
 	this.octave = octave;
 	this.type = type;
-	this.setLabel(tone, octave, type);
 	this.on = false;
 	this.whole = document.createElement("DIV");
 	this.whole.className = "chord";
@@ -216,6 +222,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	else{
 		container.appendChild(this.whole);
 	}
+	this.setStyle(tone, octave, type);
 	this.harmonics = [];
 	for (var order = 17; order > 0; order--){
 		var harmonic = new Harmonic(audioContext, this.gain, this.whole, tone, octave, type, order);
@@ -227,6 +234,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.div.className = "chord-button";
 	this.div.appendChild(document.createTextNode(this.label));
 	this.whole.appendChild(this.div);
+	this.setLabel(tone, octave, type);
 	var chord = this;
 	this.div.onmousedown = function(){
 		chord.gain.setGain(1-chord.mute);
@@ -296,6 +304,14 @@ Chord.prototype.setLabel = function(tone, octave, type){
 		label += "m";
 	}
 	this.label = label;
+	this.div.firstChild.nodeValue = this.label;
+}
+Chord.prototype.setStyle = function(tone, octave, type){
+	var style = "chord";
+	if ({"A#": true, "C#": true, "D#": true, "F#": true, "G#": true}[tone]){
+		style = "chord chord-sharp";
+	}
+	this.whole.className = style;
 }
 Chord.prototype.insertChord = function(tone, octave, type){
 	return new Chord(this.audioContext, this.master, this.container, this.whole, tone, octave, type);
@@ -313,7 +329,7 @@ Chord.prototype.changeChord = function(tone, octave, type){
 }
 Chord.prototype.refresh = function(){
 	this.setLabel(this.tone, this.octave, this.type);
-	this.div.firstChild.nodeValue = this.label;
+	this.setStyle(this.tone, this.octave, this.type);
 	for (var index = 0; index < this.harmonics.length; index++){
 		var harmonic = this.harmonics[index];
 		var order = this.harmonics.length - index; 
