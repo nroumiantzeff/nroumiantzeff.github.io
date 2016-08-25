@@ -422,8 +422,19 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
 var master = new Gain(audioContext);
 master.setGain(0.1);
-
-new Chord(audioContext, master, document.body, null, "C", 1, "minor");
+new Chord(audioContext, master, document.body, null, "C", -1, "minor");
+new Chord(audioContext, master, document.body, null, "C#", -1, "minor");
+new Chord(audioContext, master, document.body, null, "D", -1, "minor");
+new Chord(audioContext, master, document.body, null, "D#", -1, "minor");
+new Chord(audioContext, master, document.body, null, "E", -1, "minor");
+new Chord(audioContext, master, document.body, null, "F", -1, "minor");
+new Chord(audioContext, master, document.body, null, "F#", -1, "minor");
+new Chord(audioContext, master, document.body, null, "G", -1, "minor");
+new Chord(audioContext, master, document.body, null, "G#", -1, "minor");
+new Chord(audioContext, master, document.body, null, "A", -1, "minor");
+new Chord(audioContext, master, document.body, null, "A#", -1, "minor");
+new Chord(audioContext, master, document.body, null, "B", -1, "minor");
+new Chord(audioContext, master, document.body, null, "C", 0, "minor");
 		</script end="Main">
 	</body>
 </html>
