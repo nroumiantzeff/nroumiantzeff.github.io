@@ -128,10 +128,10 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 	this.type = type;
 	this.order = order;
 	this.oscillator = new Oscillator(audioContext, master);
+	this.setShape("sine");
 	this.setFrequency(tone, octave, type, order);
 	this.setDetune(tone, octave, type, order);
 	this.setLabel(type, order);
-	this.setShape("sine");
 	this.on = false;
 	if (order == 1 || order == 3 || order == 5){
 		this.on = true;
@@ -142,7 +142,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 	container.appendChild(this.div);
 	if (this.on){
 		this.div.className = "harmonic harmonic-on";
-		this.oscillator.setGain(1);
+		this.oscillator.setGain(1*this.equalizer);
 	}
 	var harmonic = this;
 	this.div.onmousedown = function(){
@@ -152,7 +152,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 			harmonic.div.className = "harmonic";
 		}
 		else{
-			harmonic.oscillator.setGain(1);
+			harmonic.oscillator.setGain(1*harmonic.equalizer);
 			harmonic.on = true;
 			harmonic.div.className = "harmonic harmonic-on";
 		}
@@ -165,7 +165,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 			harmonic.div.className = "harmonic";
 		}
 		else{
-			harmonic.oscillator.setGain(1);
+			harmonic.oscillator.setGain(harmonic.equalizer);
 			harmonic.on = true;
 			harmonic.div.className = "harmonic harmonic-on";
 		}
@@ -191,7 +191,20 @@ Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	}
 	detune += octave * 1200;
 	this.detune = detune;
+	this.setEqualizer(this.detune);
 	this.oscillator.setDetune(this.detune);
+}
+Harmonic.prototype.setEqualizer = function(detune){
+	var equalizer = 1;
+	var max = 1200 * 4;
+	var min = -1200 * 2;
+	if (detune > max){
+		equalizer = 0;
+	}
+	else if (detune > min){
+		equalizer = (max-detune)/(max - min);
+	}
+	this.equalizer = equalizer;
 }
 Harmonic.prototype.setShape = function(value){
 	this.shape = value;
