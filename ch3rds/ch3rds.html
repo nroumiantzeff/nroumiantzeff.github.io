@@ -102,7 +102,6 @@ function Oscillator(audioContext, master){
 	this.master = master;
 	this.oscillator = audioContext.createOscillator();
 	this.oscillator.type = "sine";
-	this.oscillator.start(0);
 	this.gain = new Gain(audioContext, master);
 	this.gain.control(this.oscillator);
 }
@@ -119,7 +118,13 @@ Oscillator.prototype.setShape = function(value){
 	this.oscillator.type = value;
 };
 Oscillator.prototype.setGain = function(value){
-	this.gain.setGain(value);
+	if (value === 0){
+		this.oscillator.stop(0);
+	}
+	else{
+		this.gain.setGain(value);
+		this.oscillator.start(0);
+	}
 };
 		</script end="Oscillator">
 		<script start="Harmonic">
