@@ -214,6 +214,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.octave = octave;
 	this.type = type;
 	this.on = false;
+	this.setEqualizer(this.tone, this.octave, this.type, this.shape);
 	this.whole = document.createElement("DIV");
 	this.whole.className = "chord";
 	if (before){
@@ -237,7 +238,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.setLabel(tone, octave, type);
 	var chord = this;
 	this.div.onmousedown = function(){
-		chord.gain.setGain(1-chord.mute);
+		chord.gain.setGain((1-chord.mute)*chord.equalizer);
 		chord.on = true;
 		chord.div.className = "chord-button chord-on";
 	};
@@ -248,7 +249,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	};
 	this.div.addEventListener('touchstart', function(event){
 		event.preventDefault();
-		chord.gain.setGain(1-chord.mute);
+		chord.gain.setGain((1-chord.mute)*chord.equalizer);
 		chord.on = true;
 		chord.div.className = "chord-button chord-on";
 	}, false);
@@ -313,6 +314,24 @@ Chord.prototype.setStyle = function(tone, octave, type){
 	}
 	this.whole.className = style;
 }
+Chord.prototype.setEqualizer = function(tone, octave, type, shape){
+	var equalizer = 1;
+	var TONES = { "C": -900, "C#": -800, "D": -700, "D#": -600, "E": -500, "F": -400, "F#": -300, "G": -200, "G#": -100, "A": 0, "A#": 100, "B": 200};
+	var detune = 0;
+	detune += TONES[tone];
+	detune += octave * 1200;
+	var max = 1200 * 2;
+	var min = -1200 * 2;
+	if (detune > max){
+		equalizer = 0;
+	}
+	else if (detune > min){
+		equalizer = (max-detune)/(max - min);
+	}
+	var SHAPES = { "sine": 1, "triangle": 0.5, "sawtooth": 0.25, "square": 0.25};
+	equalizer = equalizer * SHAPES[shape];
+	this.equalizer = equalizer;
+}
 Chord.prototype.insertChord = function(tone, octave, type){
 	return new Chord(this.audioContext, this.master, this.container, this.whole, tone, octave, type);
 }
@@ -322,14 +341,10 @@ Chord.prototype.appendChord = function(tone, octave, type){
 Chord.prototype.newChord = function(){
 	this.appendChord(this.tone, this.octave, this.type);
 }
-Chord.prototype.changeChord = function(tone, octave, type){
-	this.tone = tone;
-	this.type = type;
-	this.refresh();
-}
 Chord.prototype.refresh = function(){
 	this.setLabel(this.tone, this.octave, this.type);
 	this.setStyle(this.tone, this.octave, this.type);
+	this.setEqualizer(this.tone, this.octave, this.type, this.shape);
 	for (var index = 0; index < this.harmonics.length; index++){
 		var harmonic = this.harmonics[index];
 		var order = this.harmonics.length - index; 
@@ -337,6 +352,11 @@ Chord.prototype.refresh = function(){
 		harmonic.setDetune(this.tone, this.octave, this.type, order);
 		harmonic.setShape(this.shape);
 	}
+}
+Chord.prototype.changeChord = function(tone, octave, type){
+	this.tone = tone;
+	this.type = type;
+	this.refresh();
 }
 Chord.prototype.changeTone = function(value){
 	this.tone = value;
