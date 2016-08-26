@@ -390,7 +390,7 @@ Chord.prototype.setEqualizer = function(tone, octave, type, shape){
 	else if (detune > min){
 		equalizer = (max-detune)/(max - min);
 	}
-	var SHAPES = { "sine": 1, "triangle": 0.75, "sawtooth": 0.25, "square": 0.2};
+	var SHAPES = { "sine": 1, "triangle": 0.97, "sawtooth": 0.5, "square": 0.37};
 	equalizer = equalizer * SHAPES[shape];
 	this.equalizer = equalizer;
 }
