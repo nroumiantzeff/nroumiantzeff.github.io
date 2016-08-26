@@ -133,7 +133,6 @@ Oscillator.prototype.setGain = function(value){
 	if (value === 0){
 		if (this.oscillator){
 			this.oscillator.stop(0);
-			this.gain.disconnect(this.oscillator);
 			this.oscillator = null;
 		}
 	}
