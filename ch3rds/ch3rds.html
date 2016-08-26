@@ -467,7 +467,12 @@ Chord.prototype.addSelector = function(name, handler, options){
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
 var master = new Gain(audioContext);
-master.setGain(1);
+var gain = 0.5;
+if (document.location.hash){
+	var equalizer = parseFloat(document.location.hash.substr(1), 10);
+	gain *= equalizer;
+}
+master.setGain(gain);
 new Chord(audioContext, master, document.body, null, "C", 0, "minor");
 new Chord(audioContext, master, document.body, null, "C#", 0, "minor");
 new Chord(audioContext, master, document.body, null, "D", 0, "minor");
