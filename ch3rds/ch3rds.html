@@ -222,11 +222,10 @@ Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	}
 	detune += octave * 1200;
 	this.detune = detune;
-	//debug this.setEqualizer2(this.detune);
-	this.setEqualizer2(order); //debug
+	this.setEqualizer3(order, this.detune);
 	this.oscillator.setDetune(this.detune);
 }
-Harmonic.prototype.setEqualizer = function(detune){
+Harmonic.prototype.setEqualizer = function(order, detune){
 	var equalizer = 1;
 	var max = 1200 * 4;
 	var min = -1200 * 2;
@@ -248,6 +247,10 @@ Harmonic.prototype.setEqualizer2 = function(order){
 	else if (order > min){
 		equalizer = (max-order)/(max - min);
 	}
+	this.equalizer = equalizer;
+}
+Harmonic.prototype.setEqualizer3 = function(order){
+	var equalizer = Math.pow(0.5, order-1);
 	this.equalizer = equalizer;
 }
 Harmonic.prototype.setShape = function(value){
