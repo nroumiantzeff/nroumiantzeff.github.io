@@ -130,7 +130,6 @@ Oscillator.prototype.setShape = function(value){
 	}
 };
 Oscillator.prototype.setGain = function(value){
-alert("1 setGain: " + value);
 	if (value === 0){
 		if (this.oscillator){
 			this.oscillator.stop(0);
@@ -139,25 +138,14 @@ alert("1 setGain: " + value);
 		}
 	}
 	else{
-alert("2 setGain: " + value);
 		this.gain.setGain(value);
-alert("3 setGain: " + value);
-
 		if (!this.oscillator){
-alert("4 setGain: " + value);
-
 			this.oscillator = audioContext.createOscillator();
-alert("6 setGain: " + value);
 			this.oscillator.type = this.shape;
-alert("7 setGain: " + value);
 			this.oscillator.frequency.value = this.frequency;
-alert("8 setGain: " + value);
 			this.oscillator.detune.value = this.detune;
-alert("9 setGain: " + value);
 			this.gain.control(this.oscillator);
-alert("10 setGain: " + value);
 			this.oscillator.start(0);
-alert("11 setGain: " + value);
 		}
 	}
 };
