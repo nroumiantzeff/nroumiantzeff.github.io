@@ -105,7 +105,7 @@ Gain.prototype.setGain = function(value){
 function Oscillator(audioContext, master){
 	this.audioContext = audioContext;
 	this.master = master;
-	this.oscillator = audioContext.createOscillator();
+	this.oscillator = null;
 	this.shape = "sine";
 	this.frequency = 440;
 	this.detune = 0;
@@ -135,7 +135,7 @@ alert("1 setGain: " + value);
 		if (this.oscillator){
 			this.oscillator.stop(0);
 			this.gain.disconnect(this.oscillator);
-			delete this.oscillator;
+			this.oscillator = null;
 		}
 	}
 	else{
