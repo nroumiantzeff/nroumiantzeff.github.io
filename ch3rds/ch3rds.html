@@ -130,6 +130,7 @@ Oscillator.prototype.setShape = function(value){
 	}
 };
 Oscillator.prototype.setGain = function(value){
+alert("1 setGain: " + value);
 	if (value === 0){
 		if (this.oscillator){
 			this.oscillator.stop(0);
@@ -138,14 +139,25 @@ Oscillator.prototype.setGain = function(value){
 		}
 	}
 	else{
+alert("2 setGain: " + value);
 		this.gain.setGain(value);
+alert("3 setGain: " + value);
+
 		if (!this.oscillator){
+alert("4 setGain: " + value);
+
 			this.oscillator = audioContext.createOscillator();
+alert("6 setGain: " + value);
 			this.oscillator.type = this.shape;
+alert("7 setGain: " + value);
 			this.oscillator.frequency.value = this.frequency;
+alert("8 setGain: " + value);
 			this.oscillator.detune.value = this.detune;
+alert("9 setGain: " + value);
 			this.gain.control(this.oscillator);
+alert("10 setGain: " + value);
 			this.oscillator.start(0);
+alert("11 setGain: " + value);
 		}
 	}
 };
@@ -174,7 +186,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 	container.appendChild(this.div);
 	if (this.on){
 		this.div.className = "harmonic harmonic-on";
-		this.oscillator.setGain(1*this.equalizer);
+		this.oscillator.setGain(this.equalizer);
 	}
 	var harmonic = this;
 	this.div.onmousedown = function(){
@@ -184,7 +196,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 			harmonic.div.className = "harmonic";
 		}
 		else{
-			harmonic.oscillator.setGain(1*harmonic.equalizer);
+			harmonic.oscillator.setGain(harmonic.equalizer);
 			harmonic.on = true;
 			harmonic.div.className = "harmonic harmonic-on";
 		}
@@ -270,7 +282,8 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	}
 	this.setStyle(tone, octave, type);
 	this.harmonics = [];
-	for (var order = 17; order > 0; order--){
+	//debug for (var order = 17; order > 0; order--){ //debug
+	for (var order = 1; order > 0; order--){ //debug
 		var harmonic = new Harmonic(audioContext, this.gain, this.whole, tone, octave, type, order);
 		harmonic.setShape(this.shape);
 		this.harmonics.push(harmonic);
@@ -454,6 +467,7 @@ var audioContext = new AudioContext();
 var master = new Gain(audioContext);
 master.setGain(0.1);
 new Chord(audioContext, master, document.body, null, "C", 0, "minor");
+/* //debug
 new Chord(audioContext, master, document.body, null, "C#", 0, "minor");
 new Chord(audioContext, master, document.body, null, "D", 0, "minor");
 new Chord(audioContext, master, document.body, null, "D#", 0, "minor");
@@ -466,6 +480,7 @@ new Chord(audioContext, master, document.body, null, "A", 0, "minor");
 new Chord(audioContext, master, document.body, null, "A#", 0, "minor");
 new Chord(audioContext, master, document.body, null, "B", 0, "minor");
 new Chord(audioContext, master, document.body, null, "C", 1, "minor");
+*/ //debug
 		</script end="Main">
 	</body>
 </html>
