@@ -269,8 +269,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	}
 	this.setStyle(tone, octave, type);
 	this.harmonics = [];
-	//debug for (var order = 17; order > 0; order--){ //debug
-	for (var order = 1; order > 0; order--){ //debug
+	for (var order = 17; order > 0; order--){
 		var harmonic = new Harmonic(audioContext, this.gain, this.whole, tone, octave, type, order);
 		harmonic.setShape(this.shape);
 		this.harmonics.push(harmonic);
@@ -454,7 +453,6 @@ var audioContext = new AudioContext();
 var master = new Gain(audioContext);
 master.setGain(0.1);
 new Chord(audioContext, master, document.body, null, "C", 0, "minor");
-/* //debug
 new Chord(audioContext, master, document.body, null, "C#", 0, "minor");
 new Chord(audioContext, master, document.body, null, "D", 0, "minor");
 new Chord(audioContext, master, document.body, null, "D#", 0, "minor");
@@ -467,7 +465,6 @@ new Chord(audioContext, master, document.body, null, "A", 0, "minor");
 new Chord(audioContext, master, document.body, null, "A#", 0, "minor");
 new Chord(audioContext, master, document.body, null, "B", 0, "minor");
 new Chord(audioContext, master, document.body, null, "C", 1, "minor");
-*/ //debug
 		</script end="Main">
 	</body>
 </html>
