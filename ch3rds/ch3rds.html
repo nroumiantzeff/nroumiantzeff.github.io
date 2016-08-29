@@ -89,7 +89,20 @@ body{
 		<script start="Mixer">
 function Mixer(audioContext, master){
 	this.audioContext = audioContext;
-	this.destination = master? master.gain: audioContext.destination;
+	this.master = master;
+	if (master){
+		this.destination = master.gain;
+		master.connections++;
+	}
+	else{
+		this.destination = audioContext.destination;
+	}
+	this.on = 0;
+	this.power = 1;
+	this.mixer = 1;
+	this.equalizer = 1;
+	this.value = 0;
+	this.connections = 0;
 	this.gain = audioContext.createGain();
 	this.gain.gain.value = 0;
 	this.gain.connect(this.destination);
@@ -97,8 +110,38 @@ function Mixer(audioContext, master){
 Mixer.prototype.control = function(node){
 	node.connect(this.gain);
 };
-Mixer.prototype.setGain = function(value){
+Mixer.prototype.getPlay = function(){
+	return this.on;
+};
+Mixer.prototype.play = function(on){
+	this.on = on? 1: 0;
+	this.refresh();
+};
+Mixer.prototype.getPower = function(){
+	return this.power;
+};
+Mixer.prototype.changePower = function(value){
+	this.power = value;
+	this.refresh();
+};
+Mixer.prototype.setEqualizer = function(value){
+	this.equalizer = value;
+	this.refresh();
+};
+Mixer.prototype.getValue = function(value){
+	return this.equalizer * this.mixer * this.power * this.on;
+};
+Mixer.prototype.refresh = function(){
+	var value = this.getValue();
+	if (this.master && value != this.value){
+		this.master.remix(value, this.value);
+	}
+	this.value = value;
 	this.gain.gain.value = value;
+};
+Mixer.prototype.remix = function(value1, value2){
+	this.mixer = 1; //todo
+	this.refresh();
 };
 		</script end="Mixer">
 		<script start="Oscillators">
@@ -109,7 +152,7 @@ function Oscillator(audioContext, master){
 	this.shape = "sine";
 	this.frequency = 440;
 	this.detune = 0;
-	this.gain = new Mixer(audioContext, master);
+	this.mixer = new Mixer(audioContext, master);
 }
 Oscillator.prototype.setDetune = function(value){
 	this.detune = value;
@@ -129,24 +172,31 @@ Oscillator.prototype.setShape = function(value){
 		this.oscillator.type = this.shape;
 	}
 };
-Oscillator.prototype.setGain = function(value){
-	if (value === 0){
-		if (this.oscillator){
-			this.oscillator.stop(0);
-			this.oscillator = null;
-		}
-	}
-	else{
-		this.gain.setGain(value);
+Oscillator.prototype.getPlay = function(){
+	return this.mixer.getPlay();
+};
+Oscillator.prototype.play = function(on){
+	if (on){
 		if (!this.oscillator){
 			this.oscillator = audioContext.createOscillator();
 			this.oscillator.type = this.shape;
 			this.oscillator.frequency.value = this.frequency;
 			this.oscillator.detune.value = this.detune;
-			this.gain.control(this.oscillator);
+			this.mixer.control(this.oscillator);
 			this.oscillator.start(0);
 		}
+		this.mixer.play(on);
 	}
+	else{
+		this.mixer.play(on);
+		if (this.oscillator){
+			this.oscillator.stop(0);
+			this.oscillator = null;
+		}
+	}
+};
+Oscillator.prototype.setEqualizer = function(value){
+	this.mixer.setEqualizer(value);
 };
 		</script end="Oscillator">
 		<script start="Harmonic">
@@ -163,41 +213,33 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 	this.setFrequency(tone, octave, type, order);
 	this.setDetune(tone, octave, type, order);
 	this.setLabel(type, order);
-	this.on = false;
-	if (order == 1 || order == 3 || order == 5){
-		this.on = true;
-	}
 	this.div = document.createElement("DIV");
 	this.div.className = "harmonic";
 	this.div.appendChild(document.createTextNode(this.label));
 	container.appendChild(this.div);
-	if (this.on){
+	if (order == 1 || order == 3 || order == 5){
+		this.oscillator.play(true);
 		this.div.className = "harmonic harmonic-on";
-		this.oscillator.setGain(this.equalizer);
 	}
 	var harmonic = this;
 	this.div.onmousedown = function(){
-		if (harmonic.on){
-			harmonic.oscillator.setGain(0);
-			harmonic.on = false;
+		if (harmonic.oscillator.getPlay()){
+			harmonic.oscillator.play(false);
 			harmonic.div.className = "harmonic";
 		}
 		else{
-			harmonic.oscillator.setGain(harmonic.equalizer);
-			harmonic.on = true;
+			harmonic.oscillator.play(true);
 			harmonic.div.className = "harmonic harmonic-on";
 		}
 	};
 	this.div.addEventListener('touchstart', function (event){
 		event.preventDefault();
-		if (harmonic.on){
-			harmonic.oscillator.setGain(0);
-			harmonic.on = false;
+		if (harmonic.oscillator.getPlay()){
+			harmonic.oscillator.play(false);
 			harmonic.div.className = "harmonic";
 		}
 		else{
-			harmonic.oscillator.setGain(harmonic.equalizer);
-			harmonic.on = true;
+			harmonic.oscillator.play(true);
 			harmonic.div.className = "harmonic harmonic-on";
 		}
 	}, false);
@@ -222,36 +264,12 @@ Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	}
 	detune += octave * 1200;
 	this.detune = detune;
-	this.setEqualizer3(order, this.detune);
+	this.setEqualizer(order, this.detune);
 	this.oscillator.setDetune(this.detune);
 }
-Harmonic.prototype.setEqualizer = function(order, detune){
-	var equalizer = 1;
-	var max = 1200 * 4;
-	var min = -1200 * 2;
-	if (detune > max){
-		equalizer = 0;
-	}
-	else if (detune > min){
-		equalizer = (max-detune)/(max - min);
-	}
-	this.equalizer = equalizer;
-}
-Harmonic.prototype.setEqualizer2 = function(order){
-	var equalizer = 1;
-	var max = 8 * 3;
-	var min = 1;
-	if (order > max){
-		equalizer = 0;
-	}
-	else if (order > min){
-		equalizer = (max-order)/(max - min);
-	}
-	this.equalizer = equalizer;
-}
-Harmonic.prototype.setEqualizer3 = function(order){
+Harmonic.prototype.setEqualizer = function(order){
 	var equalizer = Math.pow(0.9, order-1);
-	this.equalizer = equalizer;
+	this.oscillator.setEqualizer(equalizer);
 }
 Harmonic.prototype.setShape = function(value){
 	this.shape = value;
@@ -266,14 +284,12 @@ Harmonic.prototype.setLabel = function(type, order){
 function Chord(audioContext, master, container, before, tone, octave, type){
 	this.audioContext = audioContext;
 	this.master = master;
-	this.gain = new Mixer(audioContext, master);
-	this.mute = 0;
+	this.mixer = new Mixer(audioContext, master);
 	this.shape = "sine";
 	this.container = container;
 	this.tone = tone;
 	this.octave = octave;
 	this.type = type;
-	this.on = false;
 	this.setEqualizer(this.tone, this.octave, this.type, this.shape);
 	this.whole = document.createElement("DIV");
 	this.whole.className = "chord";
@@ -286,7 +302,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.setStyle(tone, octave, type);
 	this.harmonics = [];
 	for (var order = 17; order > 0; order--){
-		var harmonic = new Harmonic(audioContext, this.gain, this.whole, tone, octave, type, order);
+		var harmonic = new Harmonic(audioContext, this.mixer, this.whole, tone, octave, type, order);
 		harmonic.setShape(this.shape);
 		this.harmonics.push(harmonic);
 	}
@@ -301,25 +317,21 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.setLabel(tone, octave, type);
 	var chord = this;
 	this.div.onmousedown = function(){
-		chord.gain.setGain((1-chord.mute)*chord.equalizer);
-		chord.on = true;
+		chord.mixer.play(true);
 		chord.div.className = "chord-button chord-on";
 	};
 	this.div.onmouseup = function(){
-		chord.gain.setGain(0);
-		chord.on = false;
+		chord.mixer.play(false);
 		chord.div.className = "chord-button";
 	};
 	this.div.addEventListener('touchstart', function(event){
 		event.preventDefault();
-		chord.gain.setGain((1-chord.mute)*chord.equalizer);
-		chord.on = true;
+		chord.mixer.play(true);
 		chord.div.className = "chord-button chord-on";
 	}, false);
 	this.div.addEventListener('touchend', function(event){
 		event.preventDefault();
-		chord.gain.setGain(0);
-		chord.on = false;
+		chord.mixer.play(false);
 		chord.div.className = "chord-button";
 	}, false);
 	this.addSeparator();
@@ -331,7 +343,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.addSeparator();
 	this.addSelector(this, this.getShape, this.changeShape, {"-":"square", "/":"sawtooth", "^":"triangle", "~":"sine"});
 	this.addSeparator();
-	this.addSelector(this, this.getMute, this.changeMute, {"*1":0,"*0.9":0.1,"*0.8":0.2,"*0.7":0.3,"*0.6":0.4,"*0.5":0.5,"*0.4":0.6,"*0.3":0.7,"*0.2":0.8,"*0.1":0.9,"*0":1});
+	this.addSelector(this.mixer, this.mixer.getPower, this.mixer.changePower, {"*1":1,"*0.9":0.9,"*0.8":0.8,"*0.7":0.7,"*0.6":0.6,"*0.5":0.5,"*0.4":0.4,"*0.3":0.3,"*0.2":0.2,"*0.1":0.1,"*0":0});
 	this.addSeparator();
 	var appendButton = document.createElement("DIV");
 	appendButton.className = "chord-append";
@@ -392,7 +404,7 @@ Chord.prototype.setEqualizer = function(tone, octave, type, shape){
 	}
 	var SHAPES = { "sine": 1, "triangle": 0.97, "sawtooth": 0.5, "square": 0.37};
 	equalizer = equalizer * SHAPES[shape];
-	this.equalizer = equalizer;
+	this.mixer.setEqualizer(equalizer)
 }
 Chord.prototype.insertChord = function(tone, octave, type){
 	return new Chord(this.audioContext, this.master, this.container, this.whole, tone, octave, type);
@@ -448,12 +460,6 @@ Chord.prototype.changeShape = function(value){
 	this.shape = value;
 	this.refresh();
 }
-Chord.prototype.getMute = function(){
-	return this.mute;
-}
-Chord.prototype.changeMute = function(value){
-	this.mute = value;
-}
 Chord.prototype.deleteChord = function(){
 	//todo release oscilator resources
 }
@@ -483,12 +489,12 @@ Chord.prototype.addSelector = function(object, getter, setter, options){
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
 var master = new Mixer(audioContext);
-var gain = 0.5;
+master.setEqualizer(0.5);
 if (document.location.hash){
-	var equalizer = parseFloat(document.location.hash.substr(1), 10);
-	gain *= equalizer;
+	var power = parseFloat(document.location.hash.substr(1), 10);
+	master.changePower(power);
 }
-master.setGain(gain);
+master.play(true);
 new Chord(audioContext, master, document.body, null, "C", 0, "minor");
 new Chord(audioContext, master, document.body, null, "C#", 0, "minor");
 new Chord(audioContext, master, document.body, null, "D", 0, "minor");
