@@ -323,15 +323,15 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 		chord.div.className = "chord-button";
 	}, false);
 	this.addSeparator();
-	this.addSelector("tone", "changeTone", {"B":"B","A#":"A#","A":"A","G#":"G#","G":"G","F#":"F#","F":"F","E":"E","D#":"D#","D":"D","C#":"C#","C":"C"});
+	this.addSelector(this, this.getTone, this.changeTone, {"B":"B","A#":"A#","A":"A","G#":"G#","G":"G","F#":"F#","F":"F","E":"E","D#":"D#","D":"D","C#":"C#","C":"C"});
 	this.addSeparator();
-	this.addSelector("octave", "changeOctave", {"+5":5,"+4":4,"+3":3,"+2":2,"+1":1,"+0":0,"-1":-1,"-2":-2,"-3":-3,"-4":-4,"-5":-5});
+	this.addSelector(this, this.getOctave, this.changeOctave, {"+5":5,"+4":4,"+3":3,"+2":2,"+1":1,"+0":0,"-1":-1,"-2":-2,"-3":-3,"-4":-4,"-5":-5});
 	this.addSeparator();
-	this.addSelector("type", "changeType", {"":"major", "m":"minor"});
+	this.addSelector(this, this.getType, this.changeType, {"":"major", "m":"minor"});
 	this.addSeparator();
-	this.addSelector("shape", "changeShape", {"-":"square", "/":"sawtooth", "^":"triangle", "~":"sine"});
+	this.addSelector(this, this.getShape, this.changeShape, {"-":"square", "/":"sawtooth", "^":"triangle", "~":"sine"});
 	this.addSeparator();
-	this.addSelector("mute", "changeMute", {"*1":0,"*0.9":0.1,"*0.8":0.2,"*0.7":0.3,"*0.6":0.4,"*0.5":0.5,"*0.4":0.6,"*0.3":0.7,"*0.2":0.8,"*0.1":0.9,"*0":1});
+	this.addSelector(this, this.getMute, this.changeMute, {"*1":0,"*0.9":0.1,"*0.8":0.2,"*0.7":0.3,"*0.6":0.4,"*0.5":0.5,"*0.4":0.6,"*0.3":0.7,"*0.2":0.8,"*0.1":0.9,"*0":1});
 	this.addSeparator();
 	var appendButton = document.createElement("DIV");
 	appendButton.className = "chord-append";
@@ -420,21 +420,36 @@ Chord.prototype.changeChord = function(tone, octave, type){
 	this.type = type;
 	this.refresh();
 }
+Chord.prototype.getTone = function(){
+	return this.tone;
+}
 Chord.prototype.changeTone = function(value){
 	this.tone = value;
 	this.refresh();
+}
+Chord.prototype.getOctave = function(){
+	return this.octave;
 }
 Chord.prototype.changeOctave = function(value){
 	this.octave = parseInt(value, 10);
 	this.refresh();
 }
+Chord.prototype.getType = function(){
+	return this.type;
+}
 Chord.prototype.changeType = function(value){
 	this.type = value;
 	this.refresh();
 }
+Chord.prototype.getShape = function(){
+	return this.shape;
+}
 Chord.prototype.changeShape = function(value){
 	this.shape = value;
 	this.refresh();
+}
+Chord.prototype.getMute = function(){
+	return this.mute;
 }
 Chord.prototype.changeMute = function(value){
 	this.mute = value;
@@ -442,14 +457,15 @@ Chord.prototype.changeMute = function(value){
 Chord.prototype.deleteChord = function(){
 	//todo release oscilator resources
 }
-Chord.prototype.addSelector = function(name, handler, options){
+Chord.prototype.addSelector = function(object, getter, setter, options){
 	var div = document.createElement("DIV");
 	var selector = document.createElement("SELECT");
 	selector.className = "chord-selector";
+	var value = getter.call(object);
 	for (var key in options){
 		var option = document.createElement("OPTION");
 		option.value = options[key];
-		if (option.value == this[name]){
+		if (option.value == value){
 			option.selected = true;
 		}
 		option.appendChild(document.createTextNode(key));
@@ -459,7 +475,7 @@ Chord.prototype.addSelector = function(name, handler, options){
 	this.whole.appendChild(div);
 	var chord = this;
 	selector.onchange = function(){
-		chord[handler](selector.value);
+		setter.call(object, selector.value);
 	};
 }
 		</script end="Chord">
