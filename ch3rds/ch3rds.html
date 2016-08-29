@@ -86,21 +86,21 @@ body{
 		</style end="chord">
 	</head>
 	<body>
-		<script start="Gain">
-function Gain(audioContext, master){
+		<script start="Mixer">
+function Mixer(audioContext, master){
 	this.audioContext = audioContext;
 	this.destination = master? master.gain: audioContext.destination;
 	this.gain = audioContext.createGain();
 	this.gain.gain.value = 0;
 	this.gain.connect(this.destination);
 }
-Gain.prototype.control = function(node){
+Mixer.prototype.control = function(node){
 	node.connect(this.gain);
 };
-Gain.prototype.setGain = function(value){
+Mixer.prototype.setGain = function(value){
 	this.gain.gain.value = value;
 };
-		</script end="Gain">
+		</script end="Mixer">
 		<script start="Oscillators">
 function Oscillator(audioContext, master){
 	this.audioContext = audioContext;
@@ -109,7 +109,7 @@ function Oscillator(audioContext, master){
 	this.shape = "sine";
 	this.frequency = 440;
 	this.detune = 0;
-	this.gain = new Gain(audioContext, master);
+	this.gain = new Mixer(audioContext, master);
 }
 Oscillator.prototype.setDetune = function(value){
 	this.detune = value;
@@ -266,7 +266,7 @@ Harmonic.prototype.setLabel = function(type, order){
 function Chord(audioContext, master, container, before, tone, octave, type){
 	this.audioContext = audioContext;
 	this.master = master;
-	this.gain = new Gain(audioContext, master);
+	this.gain = new Mixer(audioContext, master);
 	this.mute = 0;
 	this.shape = "sine";
 	this.container = container;
@@ -482,7 +482,7 @@ Chord.prototype.addSelector = function(object, getter, setter, options){
 		<script start="Main">
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
-var master = new Gain(audioContext);
+var master = new Mixer(audioContext);
 var gain = 0.5;
 if (document.location.hash){
 	var equalizer = parseFloat(document.location.hash.substr(1), 10);
