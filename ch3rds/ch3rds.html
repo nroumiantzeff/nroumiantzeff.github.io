@@ -92,7 +92,6 @@ function Mixer(audioContext, master){
 	this.master = master;
 	if (master){
 		this.destination = master.gain;
-		master.connections++;
 	}
 	else{
 		this.destination = audioContext.destination;
@@ -102,7 +101,7 @@ function Mixer(audioContext, master){
 	this.mixer = 1;
 	this.equalizer = 1;
 	this.value = 0;
-	this.connections = 0;
+	this.mix = 0;
 	this.gain = audioContext.createGain();
 	this.gain.gain.value = 0;
 	this.gain.connect(this.destination);
@@ -134,13 +133,21 @@ Mixer.prototype.getValue = function(value){
 Mixer.prototype.refresh = function(){
 	var value = this.getValue();
 	if (this.master && value != this.value){
-		this.master.remix(value, this.value);
+		this.master.remix(this.value, value);
 	}
 	this.value = value;
 	this.gain.gain.value = value;
 };
 Mixer.prototype.remix = function(value1, value2){
-	this.mixer = 1; //todo
+	var blender = 2;
+	this.mix -= Math.pow(value1, blender);
+	this.mix += Math.pow(value2, blender);
+	if (this.mix <= 1){
+		this.mixer = 1;
+	}
+	else{
+		this.mixer = 1 / Math.pow(this.mix, 1 / blender);
+	}
 	this.refresh();
 };
 		</script end="Mixer">
@@ -489,7 +496,7 @@ Chord.prototype.addSelector = function(object, getter, setter, options){
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
 var master = new Mixer(audioContext);
-master.setEqualizer(0.5);
+master.changePower(0.5);
 if (document.location.hash){
 	var power = parseFloat(document.location.hash.substr(1), 10);
 	master.changePower(power);
