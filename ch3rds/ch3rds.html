@@ -86,6 +86,65 @@ body{
 		</style end="chord">
 	</head>
 	<body>
+		<script start="Settings">
+function Settings(){
+	if (!Settings.settings){
+		Settings.settings = {
+			power: 0.5,
+			chord:{
+				orders: 17,
+				shapes:{
+				"sine": 1,
+				"triangle": 0.97,
+				"sawtooth": 0.5,
+				"square": 0.37
+				},
+				equalizer:{
+					max: 2,
+					min: -2
+				}
+			},
+			harmonic:{
+				equalizer: 0.9,
+				orders:{
+					1: 1,
+					3: 1,
+					5: 1
+				}
+			},
+			mixer:{
+				equalizer: 2
+			}
+		};
+		var hashes = document.location.hash.split("#");
+		for (var hash = 0; hash < hashes.length; hash++){
+			if (hashes[hash]){
+				var value = hashes[hash].replace(/^[^=]*=/, "");
+				var keys = hashes[hash].replace(/=.*$/, "").split(".");
+				var settings = Settings();
+				for (var index = 0; index < keys.length; index++){
+					if (keys[index]){
+						if (settings && typeof(settings) === "object"){
+							if (index == keys.length - 1){
+								settings[keys[index]] = parseFloat(value);
+								break;
+							}
+							else{
+								settings = settings[keys[index]];
+							}
+						}
+						else{
+							// error
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	return Settings.settings;
+}
+		</script end="Settings">
 		<script start="Mixer">
 function Mixer(audioContext, master){
 	this.audioContext = audioContext;
@@ -139,7 +198,7 @@ Mixer.prototype.refresh = function(){
 	this.gain.gain.value = value;
 };
 Mixer.prototype.remix = function(value1, value2){
-	var blender = 2;
+	var blender = Settings().mixer.equalizer;
 	this.mix -= Math.pow(value1, blender);
 	this.mix += Math.pow(value2, blender);
 	if (this.mix <= 1){
@@ -224,7 +283,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 	this.div.className = "harmonic";
 	this.div.appendChild(document.createTextNode(this.label));
 	container.appendChild(this.div);
-	if (order == 1 || order == 3 || order == 5){
+	if (Settings().harmonic.orders[order]){
 		this.oscillator.play(true);
 		this.div.className = "harmonic harmonic-on";
 	}
@@ -275,7 +334,7 @@ Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	this.oscillator.setDetune(this.detune);
 }
 Harmonic.prototype.setEqualizer = function(order){
-	var equalizer = Math.pow(0.9, order-1);
+	var equalizer = Math.pow(Settings().harmonic.equalizer, order-1);
 	this.oscillator.setEqualizer(equalizer);
 }
 Harmonic.prototype.setShape = function(value){
@@ -308,7 +367,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	}
 	this.setStyle(tone, octave, type);
 	this.harmonics = [];
-	for (var order = 17; order > 0; order--){
+	for (var order = Settings().chord.orders; order > 0; order--){
 		var harmonic = new Harmonic(audioContext, this.mixer, this.whole, tone, octave, type, order);
 		harmonic.setShape(this.shape);
 		this.harmonics.push(harmonic);
@@ -401,16 +460,15 @@ Chord.prototype.setEqualizer = function(tone, octave, type, shape){
 	var detune = 0;
 	detune += TONES[tone];
 	detune += octave * 1200;
-	var max = 1200 * 2;
-	var min = -1200 * 2;
+	var max = 1200 * Settings().chord.equalizer.max;
+	var min = 1200 * Settings().chord.equalizer.min;
 	if (detune > max){
 		equalizer = 0;
 	}
 	else if (detune > min){
 		equalizer = (max-detune)/(max - min);
 	}
-	var SHAPES = { "sine": 1, "triangle": 0.97, "sawtooth": 0.5, "square": 0.37};
-	equalizer = equalizer * SHAPES[shape];
+	equalizer = equalizer * Settings().chord.shapes[shape];
 	this.mixer.setEqualizer(equalizer)
 }
 Chord.prototype.insertChord = function(tone, octave, type){
@@ -496,11 +554,7 @@ Chord.prototype.addSelector = function(object, getter, setter, options){
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
 var master = new Mixer(audioContext);
-master.changePower(0.5);
-if (document.location.hash){
-	var power = parseFloat(document.location.hash.substr(1), 10);
-	master.changePower(power);
-}
+master.changePower(Settings().power);
 master.play(true);
 new Chord(audioContext, master, document.body, null, "C", 0, "minor");
 new Chord(audioContext, master, document.body, null, "C#", 0, "minor");
