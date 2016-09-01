@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CH3RDS</title>
+		<style start="selector">
+.selector{
+ border-style: solid;
+ border-width: 1px;
+ border-color: blue;
+ margin: 5px;
+ width: 500px;
+ height: 500px;
+}
+		</style end="selector">
+	</head>
+	<body>
+		<script start="Selector">
+function Select(event){
+	var radius = 100;
+	var valueMin = parseFloat(document.getElementById("selector-min").value);
+	var valueMax = parseFloat(document.getElementById("selector-max").value);
+	var value0 = parseFloat(document.getElementById("selector-value0").value);
+	var x0 = event.clientX;
+	var y0 = event.clientY;
+	document.getElementById("selector-x0").value = x0;
+	document.getElementById("selector-y0").value = y0;
+	var angle = 0;
+	document.getElementById("selector-angle").value = angle;
+	var x1 = null;
+	var y1 = null;
+	document.body.addEventListener('mousemove', function (event){
+		var x = event.clientX;
+		var y = event.clientY;
+		document.getElementById("selector-x").value = x;
+		document.getElementById("selector-y").value = y;
+		if ((x-x0)*(x-x0)+(y-y0)*(y-y0) > radius*radius){
+			if (x1 === null && y1 === null){
+					x1 = x;
+					y1 = y;
+					document.getElementById("selector-x1").value = x1;
+					document.getElementById("selector-y1").value = y1;
+					document.body.addEventListener('mouseup', function (event){
+					}, false);
+				}
+			else{
+				var ux = x1 - x0;
+				var uy = y1 - y0;
+				var vx = x - x0;
+				var vy = y - y0;
+				var product = ux*vy-uy*vx;
+				document.getElementById("selector-product").value = product;
+				var scalar = ux*vx+uy*vy;
+				document.getElementById("selector-scalar").value = scalar;
+				if (scalar <= 0){
+					if (product > 0){
+						angle = 90;
+					}
+					else if (product < 0){
+						angle = -90;
+					}
+					else{
+						angle = 0;
+					}
+				}
+				else{
+					var u2 = (x1-x0)*(x1-x0)+(y1-y0)*(y1-y0);
+					var v2 = (x-x0)*(x-x0)+(y-y0)*(y-y0);
+					var un = Math.sqrt(u2);
+					var vn = Math.sqrt(v2);
+					var sin = product / (un * vn);
+					var asin = Math.asin(sin); 
+					angle = asin*180/Math.PI;
+				}
+				document.getElementById("selector-angle").value = angle;
+				value = value0+(valueMax-valueMin)*(angle)/90;
+				if (value > valueMax){
+					value = valueMax;
+				}
+				else if (value < valueMin){
+					value = valueMin;
+				}
+				document.getElementById("selector-value").value = value;
+			}
+		}
+		else{
+			if (x1 !== null || y1 !== null){
+				value = value0;
+				angle = 0;
+				document.getElementById("selector-angle").value = angle;
+				document.getElementById("selector-value").value = value;
+			}
+		}
+	}, false);
+	function ComputeValue(){
+	}
+}
+		</script end="Selector">
+		<input id=selector-x0 type=text/>
+		<input id=selector-y0 type=text/>
+		<input id=selector-x1 type=text/>
+		<input id=selector-y1 type=text/>
+		<input id=selector-x type=text/>
+		<input id=selector-y type=text/>
+		<input id=selector-product type=text/>
+		<input id=selector-scalar type=text/>
+		<input id=selector-angle type=text/>
+		<input id=selector-min type=text value=0/>
+		<input id=selector-value0 type=text value=25/>
+		<input id=selector-max type=text value=100/>
+		<input id=selector-value type=text/>
+		<div id=selector class=selector onmousedown="Select(event)"/>
+	</body>
+</html>
