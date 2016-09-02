@@ -2,6 +2,23 @@
 <html>
 	<head>
 		<title>CH3RDS</title>
+		<style start="winch">
+.winch{
+ border-style: solid;
+ border-width: 1px;
+ border-color: blue;
+ margin: 0em;
+ line-height: 2em;
+ width: 2em;
+ height: 2em;
+ border-radius: 1em;
+ background-color: blue;
+ color: white;
+ text-align: center;
+ vertical-align: middle;
+ cursor: pointer;
+}
+		</style end="winch">
 		<style start="harmonic">
 .harmonic{
  border-style: solid;
@@ -145,6 +162,96 @@ function Settings(){
 	return Settings.settings;
 }
 		</script end="Settings">
+		<script start="Winch">
+function Winch(container, className, object, getter, setter, min, max, precision){
+	var value = getter.call(object);
+	var winch = document.createElement("DIV");
+	winch.className = "winch " + className;
+	winch.appendChild(document.createTextNode(value));
+	container.appendChild(winch);
+	function getValue(){
+		return parseFloat(winch.firstChild.nodeValue);
+	}
+	function setValue(value){
+		winch.firstChild.nodeValue = value;
+	}
+	function activateWinch(event){
+		event.preventDefault();
+		var radius = winch.clientWidth * 1.5;
+		var value = getValue();
+		var value0 = value;
+		var x0 = event.clientX;
+		var y0 = event.clientY;
+		var angle = 0;
+		var x1 = null;
+		var y1 = null;
+		var changeValue = function(event){
+			event.preventDefault();
+			var x = event.clientX;
+			var y = event.clientY;
+			if ((x-x0)*(x-x0)+(y-y0)*(y-y0) > radius*radius){
+				if (x1 === null && y1 === null){
+						x1 = x;
+						y1 = y;
+					}
+				else{
+					var ux = x1 - x0;
+					var uy = y1 - y0;
+					var vx = x - x0;
+					var vy = y - y0;
+					var product = ux*vy-uy*vx;
+					var scalar = ux*vx+uy*vy;
+					if (scalar <= 0){
+						if (product > 0){
+							angle = 90;
+						}
+						else if (product < 0){
+							angle = -90;
+						}
+						else{
+							angle = 0;
+						}
+					}
+					else{
+						var u2 = (x1-x0)*(x1-x0)+(y1-y0)*(y1-y0);
+						var v2 = (x-x0)*(x-x0)+(y-y0)*(y-y0);
+						var un = Math.sqrt(u2);
+						var vn = Math.sqrt(v2);
+						var sin = product / (un * vn);
+						var asin = Math.asin(sin); 
+						angle = asin*180/Math.PI;
+					}
+					value = +(value0+(max-min)*(angle)/90).toFixed(precision);
+					if (value > max){
+						value = max;
+					}
+					else if (value < min){
+						value = min;
+					}
+					setValue(value);
+				}
+			}
+			else{
+				if (x1 !== null || y1 !== null){
+					value = value0;
+					angle = 0;
+					setValue(value);
+				}
+			}
+		};
+		var finish = function(event){
+			event.preventDefault();
+			setter.call(object, value);
+			document.removeEventListener('mousemove', changeValue);
+			document.removeEventListener('mouseup', finish);
+		};
+		document.addEventListener('mouseup', finish, false);
+		document.addEventListener('mousemove', changeValue, false);
+	};
+	winch.addEventListener('mousedown', activateWinch, false);
+	winch.addEventListener('touchstart', activateWinch, false);
+}
+		</script end="Winch">
 		<script start="Mixer">
 function Mixer(audioContext, master){
 	this.audioContext = audioContext;
@@ -399,7 +506,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.addSeparator();
 	this.addSelector(this, this.getShape, this.changeShape, {"-":"square", "/":"sawtooth", "^":"triangle", "~":"sine"});
 	this.addSeparator();
-	this.addSelector(this.mixer, this.mixer.getPower, this.mixer.changePower, {"*1":1,"*0.9":0.9,"*0.8":0.8,"*0.7":0.7,"*0.6":0.6,"*0.5":0.5,"*0.4":0.4,"*0.3":0.3,"*0.2":0.2,"*0.1":0.1,"*0":0});
+	new Winch(this.whole, "chord-power", this.mixer, this.mixer.getPower, this.mixer.changePower, 0, 1, 2);
 	this.addSeparator();
 	var appendButton = document.createElement("DIV");
 	appendButton.className = "chord-append";
