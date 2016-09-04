@@ -177,19 +177,21 @@ function Winch(container, className, object, getter, setter, min, max, precision
 	}
 	function activateWinch(event){
 		event.preventDefault();
+		winch.style = "background-color:yellow;color:red";
 		var radius = winch.clientWidth * 1.5;
 		var value = getValue();
 		var value0 = value;
-		var x0 = event.clientX;
-		var y0 = event.clientY;
+		var x0 = event.targetTouches?event.targetTouches[0].screenX:event.screenX;
+		var y0 = event.targetTouches?event.targetTouches[0].screenY:event.screenY;
 		var angle = 0;
 		var x1 = null;
 		var y1 = null;
 		var changeValue = function(event){
 			event.preventDefault();
-			var x = event.clientX;
-			var y = event.clientY;
+			var x = event.targetTouches?event.targetTouches[0].screenX:event.screenX;
+			var y = event.targetTouches?event.targetTouches[0].screenY:event.sceenY;
 			if ((x-x0)*(x-x0)+(y-y0)*(y-y0) > radius*radius){
+				winch.style = "";
 				if (x1 === null && y1 === null){
 						x1 = x;
 						y1 = y;
@@ -232,6 +234,7 @@ function Winch(container, className, object, getter, setter, min, max, precision
 				}
 			}
 			else{
+				winch.style = "background-color:yellow;color:red";
 				if (x1 !== null || y1 !== null){
 					value = value0;
 					angle = 0;
@@ -241,11 +244,16 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		};
 		var finish = function(event){
 			event.preventDefault();
+			winch.style = "";
 			setter.call(object, value);
+			document.removeEventListener('touchmove', changeValue);
 			document.removeEventListener('mousemove', changeValue);
+			document.removeEventListener('touchend', finish);
 			document.removeEventListener('mouseup', finish);
 		};
+		document.addEventListener('touchend', finish, false);
 		document.addEventListener('mouseup', finish, false);
+		document.addEventListener('touchmove', changeValue, false);
 		document.addEventListener('mousemove', changeValue, false);
 	};
 	winch.addEventListener('mousedown', activateWinch, false);
@@ -412,7 +420,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 Harmonic.prototype.setFrequency = function(tone, octave, type, order){
 	this.frequency = 440;
 	this.oscillator.setFrequency(this.frequency);
-}
+};
 Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	var detune = 0;
 	var TONES = { "C": -900, "C#": -800, "D": -700, "D#": -600, "E": -500, "F": -400, "F#": -300, "G": -200, "G#": -100, "A": 0, "A#": 100, "B": 200};
@@ -431,19 +439,19 @@ Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	this.detune = detune;
 	this.setEqualizer(order, this.detune);
 	this.oscillator.setDetune(this.detune);
-}
+};
 Harmonic.prototype.setEqualizer = function(order){
 	var equalizer = Math.pow(Settings().harmonic.equalizer, order-1);
 	this.oscillator.setEqualizer(equalizer);
-}
+};
 Harmonic.prototype.setShape = function(value){
 	this.shape = value;
 	this.oscillator.setShape(this.shape);
-}
+};
 Harmonic.prototype.setLabel = function(type, order){
 	var label = (order === 1)? "1st": (order === 2)? "2nd": (order === 3)? "3rd": order + "th";
 	this.label = label;
-}
+};
 		</script end="Harmonic">
 		<script start="Chord">
 function Chord(audioContext, master, container, before, tone, octave, type){
@@ -533,7 +541,7 @@ Chord.prototype.addSeparator = function(){
 	var separator = document.createElement("DIV");
 	separator.className = "chord-separator";
 	this.whole.appendChild(separator);
-}
+};
 Chord.prototype.setLabel = function(tone, octave, type){
 	var label = tone;
 	if (type === "minor"){
@@ -541,14 +549,14 @@ Chord.prototype.setLabel = function(tone, octave, type){
 	}
 	this.label = label;
 	this.div.firstChild.nodeValue = this.label;
-}
+};
 Chord.prototype.setStyle = function(tone, octave, type){
 	var style = "chord";
 	if ({"A#": true, "C#": true, "D#": true, "F#": true, "G#": true}[tone]){
 		style = "chord chord-sharp";
 	}
 	this.whole.className = style;
-}
+};
 Chord.prototype.setEqualizer = function(tone, octave, type, shape){
 	var equalizer = 1;
 	var TONES = { "C": -900, "C#": -800, "D": -700, "D#": -600, "E": -500, "F": -400, "F#": -300, "G": -200, "G#": -100, "A": 0, "A#": 100, "B": 200};
@@ -564,17 +572,17 @@ Chord.prototype.setEqualizer = function(tone, octave, type, shape){
 		equalizer = (max-detune)/(max - min);
 	}
 	equalizer = equalizer * Settings().chord.shapes[shape];
-	this.mixer.setEqualizer(equalizer)
-}
+	this.mixer.setEqualizer(equalizer);
+};
 Chord.prototype.insertChord = function(tone, octave, type){
 	return new Chord(this.audioContext, this.master, this.container, this.whole, tone, octave, type);
-}
+};
 Chord.prototype.appendChord = function(tone, octave, type){
 	return new Chord(this.audioContext, this.master, this.container, this.whole.nextSibling, tone, octave, type);
-}
+};
 Chord.prototype.newChord = function(){
 	this.appendChord(this.tone, this.octave, this.type);
-}
+};
 Chord.prototype.refresh = function(){
 	this.setLabel(this.tone, this.octave, this.type);
 	this.setStyle(this.tone, this.octave, this.type);
@@ -585,44 +593,44 @@ Chord.prototype.refresh = function(){
 		harmonic.setFrequency(this.tone, this.octave, this.type, order);
 		harmonic.setDetune(this.tone, this.octave, this.type, order);
 		harmonic.setShape(this.shape);
-	}
-}
+	};
+};
 Chord.prototype.changeChord = function(tone, octave, type){
 	this.tone = tone;
 	this.type = type;
 	this.refresh();
-}
+};
 Chord.prototype.getTone = function(){
 	return this.tone;
-}
+};
 Chord.prototype.changeTone = function(value){
 	this.tone = value;
 	this.refresh();
-}
+};
 Chord.prototype.getOctave = function(){
 	return this.octave;
-}
+};
 Chord.prototype.changeOctave = function(value){
 	this.octave = parseInt(value, 10);
 	this.refresh();
-}
+};
 Chord.prototype.getType = function(){
 	return this.type;
-}
+};
 Chord.prototype.changeType = function(value){
 	this.type = value;
 	this.refresh();
-}
+};
 Chord.prototype.getShape = function(){
 	return this.shape;
-}
+};
 Chord.prototype.changeShape = function(value){
 	this.shape = value;
 	this.refresh();
-}
+};
 Chord.prototype.deleteChord = function(){
 	//todo release oscilator resources
-}
+};
 Chord.prototype.addSelector = function(object, getter, setter, options){
 	var div = document.createElement("DIV");
 	var selector = document.createElement("SELECT");
@@ -643,7 +651,7 @@ Chord.prototype.addSelector = function(object, getter, setter, options){
 	selector.onchange = function(){
 		setter.call(object, selector.value);
 	};
-}
+};
 		</script end="Chord">
 		<script start="Main">
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
