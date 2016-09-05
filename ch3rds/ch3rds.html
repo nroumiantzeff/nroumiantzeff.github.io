@@ -175,6 +175,19 @@ function Winch(container, className, object, getter, setter, min, max, precision
 	winch.className = "winch " + className;
 	winch.appendChild(document.createTextNode(value));
 	container.appendChild(winch);
+	var style = "";
+	var currentStyle = document.defaultView.getComputedStyle(winch, null);
+	if (currentStyle != null){
+		var color = "black";
+		var backgroundColor = "white";
+		if (currentStyle.color != null && currentStyle.color != ""){
+			color = currentStyle.color;
+		}
+		if (currentStyle.backgroundColor != null && currentStyle.backgroundColor != ""){
+			backgroundColor = currentStyle.backgroundColor;
+		}
+		style = "color:" + this.RGB2Style(backgroundColor) + ";background-color:" + this.RGB2Style(color) + ";";
+	}
 	function getValue(){
 		return parseFloat(winch.firstChild.nodeValue);
 	}
@@ -183,7 +196,7 @@ function Winch(container, className, object, getter, setter, min, max, precision
 	}
 	function activateWinch(event){
 		event.preventDefault();
-		winch.style = "background-color:yellow;color:red";
+		winch.style = style;
 		var radius = winch.clientWidth * 1.5;
 		var value = getValue();
 		var value0 = value;
@@ -240,7 +253,7 @@ function Winch(container, className, object, getter, setter, min, max, precision
 				}
 			}
 			else{
-				winch.style = "background-color:yellow;color:red";
+				winch.style = style;
 				if (x1 !== null || y1 !== null){
 					value = value0;
 					angle = 0;
@@ -265,6 +278,18 @@ function Winch(container, className, object, getter, setter, min, max, precision
 	winch.addEventListener('mousedown', activateWinch, false);
 	winch.addEventListener('touchstart', activateWinch, false);
 }
+Winch.prototype.RGB2Style = function(rgb){
+	var style = "#";
+	var colors = rgb.split(",");
+	for (var index = 0; index < colors.length; index++){
+		var color = parseInt(colors[index].replace(/[^0-9]*/g, ""), 10).toString(16);
+		if (color.length < 2){
+			color = "0" + color;
+		}
+		style += color;
+	}
+	return style;
+};
 		</script end="Winch">
 		<script start="Mixer">
 function Mixer(audioContext, master){
