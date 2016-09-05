@@ -203,7 +203,6 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		var value0 = value;
 		var x0 = event.targetTouches?event.targetTouches[0].screenX:event.screenX;
 		var y0 = event.targetTouches?event.targetTouches[0].screenY:event.screenY;
-		var angle = 0;
 		var x1 = null;
 		var y1 = null;
 		var changeValue = function(event){
@@ -225,13 +224,10 @@ function Winch(container, className, object, getter, setter, min, max, precision
 					var scalar = ux*vx+uy*vy;
 					if (scalar <= 0){
 						if (product > 0){
-							angle = 90;
+							value = max;
 						}
 						else if (product < 0){
-							angle = -90;
-						}
-						else{
-							angle = 0;
+							value = min;
 						}
 					}
 					else{
@@ -241,9 +237,9 @@ function Winch(container, className, object, getter, setter, min, max, precision
 						var vn = Math.sqrt(v2);
 						var sin = product / (un * vn);
 						var asin = Math.asin(sin); 
-						angle = asin*180/Math.PI;
+						var angle = asin*180/Math.PI;
+						value = +(value0+(max-min)*(angle)/90).toFixed(precision);
 					}
-					value = +(value0+(max-min)*(angle)/90).toFixed(precision);
 					if (value > max){
 						value = max;
 					}
@@ -257,7 +253,6 @@ function Winch(container, className, object, getter, setter, min, max, precision
 				winch.style = style;
 				if (x1 !== null || y1 !== null){
 					value = value0;
-					angle = 0;
 					setValue(value);
 				}
 			}
