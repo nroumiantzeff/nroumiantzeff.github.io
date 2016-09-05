@@ -186,7 +186,7 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		if (currentStyle.backgroundColor != null && currentStyle.backgroundColor != ""){
 			backgroundColor = currentStyle.backgroundColor;
 		}
-		style = "color:" + this.RGB2Style(backgroundColor) + ";background-color:" + this.RGB2Style(color) + ";";
+		style = "color:" + backgroundColor + ";background-color:" + color + ";";
 	}
 	function getValue(){
 		return parseFloat(winch.firstChild.nodeValue);
@@ -278,18 +278,6 @@ function Winch(container, className, object, getter, setter, min, max, precision
 	winch.addEventListener('mousedown', activateWinch, false);
 	winch.addEventListener('touchstart', activateWinch, false);
 }
-Winch.prototype.RGB2Style = function(rgb){
-	var style = "#";
-	var colors = rgb.split(",");
-	for (var index = 0; index < colors.length; index++){
-		var color = parseInt(colors[index].replace(/[^0-9]*/g, ""), 10).toString(16);
-		if (color.length < 2){
-			color = "0" + color;
-		}
-		style += color;
-	}
-	return style;
-};
 		</script end="Winch">
 		<script start="Mixer">
 function Mixer(audioContext, master){
