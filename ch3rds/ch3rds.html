@@ -193,6 +193,7 @@ function Winch(container, className, object, getter, setter, min, max, precision
 	}
 	function setValue(value){
 		winch.firstChild.nodeValue = value;
+		setter.call(object, value);
 	}
 	function activateWinch(event){
 		event.preventDefault();
@@ -264,7 +265,6 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		var finish = function(event){
 			event.preventDefault();
 			winch.style = "";
-			setter.call(object, value);
 			document.removeEventListener('touchmove', changeValue);
 			document.removeEventListener('mousemove', changeValue);
 			document.removeEventListener('touchend', finish);
