@@ -106,6 +106,10 @@ body{
  background-color: #00FF00;
  border-color: #A0A0FF;
 }
+.chord-type{
+ color: #00D000;
+ background-color: #0000FF;
+}
 		</style end="chord">
 	</head>
 	<body>
@@ -169,12 +173,32 @@ function Settings(){
 }
 		</script end="Settings">
 		<script start="Winch">
-function Winch(container, className, object, getter, setter, min, max, precision){
+function Winch(container, className, object, getter, setter /*, min, max, precision*/){
+	var values = null;
+	var min = 0;
+	var max = 100;
+	var precision = 0;
+	if (typeof(arguments[5]) === "object"){
+		values = arguments[5];
+		max = values.length - 1;
+	}
+	else {
+		if (typeof(arguments[5]) === "number"){
+			min = arguments[5];
+		}
+		if (typeof(arguments[6]) === "number"){
+			max = arguments[6];
+		}
+		if (typeof(arguments[7]) === "number"){
+			precision = arguments[7];
+		}
+	}
 	var value = getter.call(object);
 	var winch = document.createElement("DIV");
 	winch.className = "winch " + className;
 	winch.appendChild(document.createTextNode(value));
 	container.appendChild(winch);
+	value = getValue(value);
 	var style = "";
 	var currentStyle = document.defaultView.getComputedStyle(winch, null);
 	if (currentStyle != null){
@@ -188,10 +212,21 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		}
 		style = "color:" + backgroundColor + ";background-color:" + color + ";";
 	}
-	function getValue(){
-		return parseFloat(winch.firstChild.nodeValue);
+	function getValue(value){
+		if (values){
+			for (var index = 0; index < values.length; index++){
+				if (value === values[index]){
+					value = index;
+					break;
+				} 
+			}
+		}
+		return value;
 	}
 	function setValue(value){
+		if (values){
+			value = values[value];
+		}
 		winch.firstChild.nodeValue = value;
 		setter.call(object, value);
 	}
@@ -199,7 +234,6 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		event.preventDefault();
 		winch.style = style;
 		var radius = winch.clientWidth * 1.5;
-		var value = getValue();
 		var value0 = value;
 		var x0 = event.targetTouches?event.targetTouches[0].screenX:event.screenX;
 		var y0 = event.targetTouches?event.targetTouches[0].screenY:event.screenY;
@@ -259,6 +293,7 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		};
 		var finish = function(event){
 			event.preventDefault();
+			setValue(value); //debug
 			winch.style = "";
 			document.removeEventListener('touchmove', changeValue);
 			document.removeEventListener('mousemove', changeValue);
@@ -441,7 +476,7 @@ Harmonic.prototype.setDetune = function(tone, octave, type, order){
 	detune += TONES[tone];
 	var pitch = (order - 1) % 7;
 	octave += (order - 1 - pitch) / 7;
-	if (type === "minor"){
+	if (type === "m"){
 		var MINOR = [0, 200, 300, 500, 700, 800, 1000];
 		detune += MINOR[pitch];
 	}
@@ -524,7 +559,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.addSeparator();
 	this.addSelector(this, this.getOctave, this.changeOctave, {"+5":5,"+4":4,"+3":3,"+2":2,"+1":1,"+0":0,"-1":-1,"-2":-2,"-3":-3,"-4":-4,"-5":-5});
 	this.addSeparator();
-	this.addSelector(this, this.getType, this.changeType, {"":"major", "m":"minor"});
+	new Winch(this.whole, "chord-type", this, this.getType, this.changeType, ["", "m"]);
 	this.addSeparator();
 	this.addSelector(this, this.getShape, this.changeShape, {"-":"square", "/":"sawtooth", "^":"triangle", "~":"sine"});
 	this.addSeparator();
@@ -558,9 +593,7 @@ Chord.prototype.addSeparator = function(){
 };
 Chord.prototype.setLabel = function(tone, octave, type){
 	var label = tone;
-	if (type === "minor"){
-		label += "m";
-	}
+	label += type;
 	this.label = label;
 	this.div.firstChild.nodeValue = this.label;
 };
@@ -673,19 +706,19 @@ var audioContext = new AudioContext();
 var master = new Mixer(audioContext);
 master.changePower(Settings().power);
 master.play(true);
-new Chord(audioContext, master, document.body, null, "C", 0, "minor");
-new Chord(audioContext, master, document.body, null, "C#", 0, "minor");
-new Chord(audioContext, master, document.body, null, "D", 0, "minor");
-new Chord(audioContext, master, document.body, null, "D#", 0, "minor");
-new Chord(audioContext, master, document.body, null, "E", 0, "minor");
-new Chord(audioContext, master, document.body, null, "F", 0, "minor");
-new Chord(audioContext, master, document.body, null, "F#", 0, "minor");
-new Chord(audioContext, master, document.body, null, "G", 0, "minor");
-new Chord(audioContext, master, document.body, null, "G#", 0, "minor");
-new Chord(audioContext, master, document.body, null, "A", 0, "minor");
-new Chord(audioContext, master, document.body, null, "A#", 0, "minor");
-new Chord(audioContext, master, document.body, null, "B", 0, "minor");
-new Chord(audioContext, master, document.body, null, "C", 1, "minor");
+new Chord(audioContext, master, document.body, null, "C", 0, "m");
+new Chord(audioContext, master, document.body, null, "C#", 0, "m");
+new Chord(audioContext, master, document.body, null, "D", 0, "m");
+new Chord(audioContext, master, document.body, null, "D#", 0, "m");
+new Chord(audioContext, master, document.body, null, "E", 0, "m");
+new Chord(audioContext, master, document.body, null, "F", 0, "m");
+new Chord(audioContext, master, document.body, null, "F#", 0, "m");
+new Chord(audioContext, master, document.body, null, "G", 0, "m");
+new Chord(audioContext, master, document.body, null, "G#", 0, "m");
+new Chord(audioContext, master, document.body, null, "A", 0, "m");
+new Chord(audioContext, master, document.body, null, "A#", 0, "m");
+new Chord(audioContext, master, document.body, null, "B", 0, "m");
+new Chord(audioContext, master, document.body, null, "C", 1, "m");
 		</script end="Main">
 	</body>
 </html>
