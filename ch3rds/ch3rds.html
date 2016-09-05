@@ -192,7 +192,7 @@ function Winch(container, className, object, getter, setter, min, max, precision
 		var changeValue = function(event){
 			event.preventDefault();
 			var x = event.targetTouches?event.targetTouches[0].screenX:event.screenX;
-			var y = event.targetTouches?event.targetTouches[0].screenY:event.sceenY;
+			var y = event.targetTouches?event.targetTouches[0].screenY:event.screenY;
 			if ((x-x0)*(x-x0)+(y-y0)*(y-y0) > radius*radius){
 				winch.style = "";
 				if (x1 === null && y1 === null){
