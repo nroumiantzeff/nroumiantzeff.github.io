@@ -103,12 +103,18 @@ body{
 }
 .chord-power{
  color: #A0A0FF;
- background-color: #00FF00;
  border-color: #A0A0FF;
+ background-color: #00FF00;
 }
 .chord-type{
  color: #00D000;
+ boder-color: #00D000;
  background-color: #0000FF;
+}
+.chord-shape{
+ color: #EFEFEF;
+ border-color: #FFFFFF;
+ background-color: #808080;
 }
 		</style end="chord">
 	</head>
@@ -174,13 +180,24 @@ function Settings(){
 		</script end="Settings">
 		<script start="Winch">
 function Winch(container, className, object, getter, setter /*, min, max, precision*/){
+	var keys = null;
 	var values = null;
 	var min = 0;
 	var max = 100;
 	var precision = 0;
 	if (typeof(arguments[5]) === "object"){
-		values = arguments[5];
-		max = values.length - 1;
+		if (arguments[5].constructor === [].constructor){
+			keys = arguments[5];
+			max = keys.length - 1;
+		}
+		else{
+			values = arguments[5];
+			keys = [];
+			for (var key in values){
+				keys.push(key);
+			}
+			max = keys.length - 1;
+		}
 	}
 	else {
 		if (typeof(arguments[5]) === "number"){
@@ -194,11 +211,12 @@ function Winch(container, className, object, getter, setter /*, min, max, precis
 		}
 	}
 	var value = getter.call(object);
+	var label = getLabel(value);
 	var winch = document.createElement("DIV");
 	winch.className = "winch " + className;
-	winch.appendChild(document.createTextNode(value));
+	winch.appendChild(document.createTextNode(label));
 	container.appendChild(winch);
-	value = getValue(value);
+	value = getValue(label);
 	var style = "";
 	var currentStyle = document.defaultView.getComputedStyle(winch, null);
 	if (currentStyle != null){
@@ -212,10 +230,22 @@ function Winch(container, className, object, getter, setter /*, min, max, precis
 		}
 		style = "color:" + backgroundColor + ";background-color:" + color + ";";
 	}
-	function getValue(value){
+	function getLabel(value){
+		var label = value;
 		if (values){
-			for (var index = 0; index < values.length; index++){
-				if (value === values[index]){
+			for (var key in values){
+				if (value === values[key]){
+					label = key;
+					break;
+				}
+			}
+		}
+		return label;
+	}
+	function getValue(value){
+		if (keys){
+			for (var index = 0; index < keys.length; index++){
+				if (value === keys[index]){
 					value = index;
 					break;
 				} 
@@ -224,10 +254,13 @@ function Winch(container, className, object, getter, setter /*, min, max, precis
 		return value;
 	}
 	function setValue(value){
+		if (keys){
+			value = keys[value];
+		}
+		winch.firstChild.nodeValue = value;
 		if (values){
 			value = values[value];
 		}
-		winch.firstChild.nodeValue = value;
 		setter.call(object, value);
 	}
 	function activateWinch(event){
@@ -561,7 +594,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.addSeparator();
 	new Winch(this.whole, "chord-type", this, this.getType, this.changeType, ["", "m"]);
 	this.addSeparator();
-	this.addSelector(this, this.getShape, this.changeShape, {"-":"square", "/":"sawtooth", "^":"triangle", "~":"sine"});
+	new Winch(this.whole, "chord-shape", this, this.getShape, this.changeShape, {"~":"sine", "^":"triangle", "/":"sawtooth", "-":"square"});
 	this.addSeparator();
 	new Winch(this.whole, "chord-power", this.mixer, this.mixer.getPower, this.mixer.changePower, 0, 1, 2);
 	this.addSeparator();
