@@ -128,6 +128,7 @@ function Settings(){
 	if (!Settings.settings){
 		Settings.settings = {
 			power: 0.5,
+			octave: 0,
 			chord:{
 				orders: 17,
 				shapes:{
@@ -733,19 +734,19 @@ var audioContext = new AudioContext();
 var master = new Mixer(audioContext);
 master.changePower(Settings().power);
 master.play(true);
-new Chord(audioContext, master, document.body, null, "C", 0, "m");
-new Chord(audioContext, master, document.body, null, "C#", 0, "m");
-new Chord(audioContext, master, document.body, null, "D", 0, "m");
-new Chord(audioContext, master, document.body, null, "D#", 0, "m");
-new Chord(audioContext, master, document.body, null, "E", 0, "m");
-new Chord(audioContext, master, document.body, null, "F", 0, "m");
-new Chord(audioContext, master, document.body, null, "F#", 0, "m");
-new Chord(audioContext, master, document.body, null, "G", 0, "m");
-new Chord(audioContext, master, document.body, null, "G#", 0, "m");
-new Chord(audioContext, master, document.body, null, "A", 0, "m");
-new Chord(audioContext, master, document.body, null, "A#", 0, "m");
-new Chord(audioContext, master, document.body, null, "B", 0, "m");
-new Chord(audioContext, master, document.body, null, "C", 1, "m");
+new Chord(audioContext, master, document.body, null, "C", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "C#", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "D", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "D#", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "E", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "F", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "F#", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "G", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "G#", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "A", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "A#", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "B", Settings().octave, "m");
+new Chord(audioContext, master, document.body, null, "C", Settings().octave + 1, "m");
 		</script end="Main">
 	</body>
 </html>
