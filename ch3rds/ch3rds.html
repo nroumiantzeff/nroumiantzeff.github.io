@@ -754,15 +754,31 @@ master.changePower(Settings().power);
 master.play(true);
 var key = Settings().key;
 if (key){
-	var chord1 = new Chord(audioContext, master, document.body, null, key, Settings().octave, "");
-	var chord2 = new Chord(audioContext, master, document.body, null, chord1.nextKey(2).tone, chord1.nextKey(2).octave, "m");
-	var chord3 = new Chord(audioContext, master, document.body, null, chord2.nextKey(2).tone, chord2.nextKey(2).octave, "m");
-	var chord4 = new Chord(audioContext, master, document.body, null, chord3.nextKey(1).tone, chord3.nextKey(1).octave, "");
-	var chord5 = new Chord(audioContext, master, document.body, null, chord4.nextKey(2).tone, chord4.nextKey(2).octave, "");
-	var chord6 = new Chord(audioContext, master, document.body, null, chord5.nextKey(2).tone, chord5.nextKey(2).octave, "m");
-	var chord7 = new Chord(audioContext, master, document.body, null, chord6.nextKey(2).tone, chord6.nextKey(2).octave, "");
+	key = key.replace(/\+/, "#");
+	if (key.indexOf("m") >= 0){
+		// minor scale
+		key = key.replace(/m/, "");
+		var chord1 = new Chord(audioContext, master, document.body, null, key, Settings().octave, "m");
+		var chord2 = new Chord(audioContext, master, document.body, null, chord1.nextKey(2).tone, chord1.nextKey(2).octave, "m");
+		var chord3 = new Chord(audioContext, master, document.body, null, chord2.nextKey(1).tone, chord2.nextKey(1).octave, "");
+		var chord4 = new Chord(audioContext, master, document.body, null, chord3.nextKey(2).tone, chord3.nextKey(2).octave, "m");
+		var chord5 = new Chord(audioContext, master, document.body, null, chord4.nextKey(2).tone, chord4.nextKey(2).octave, "m");
+		var chord6 = new Chord(audioContext, master, document.body, null, chord5.nextKey(1).tone, chord5.nextKey(1).octave, "");
+		var chord7 = new Chord(audioContext, master, document.body, null, chord6.nextKey(2).tone, chord6.nextKey(2).octave, "");
+	}
+	else{
+		// major scale
+		var chord1 = new Chord(audioContext, master, document.body, null, key, Settings().octave, "");
+		var chord2 = new Chord(audioContext, master, document.body, null, chord1.nextKey(2).tone, chord1.nextKey(2).octave, "m");
+		var chord3 = new Chord(audioContext, master, document.body, null, chord2.nextKey(2).tone, chord2.nextKey(2).octave, "m");
+		var chord4 = new Chord(audioContext, master, document.body, null, chord3.nextKey(1).tone, chord3.nextKey(1).octave, "");
+		var chord5 = new Chord(audioContext, master, document.body, null, chord4.nextKey(2).tone, chord4.nextKey(2).octave, "");
+		var chord6 = new Chord(audioContext, master, document.body, null, chord5.nextKey(2).tone, chord5.nextKey(2).octave, "m");
+		var chord7 = new Chord(audioContext, master, document.body, null, chord6.nextKey(2).tone, chord6.nextKey(2).octave, "m");
+	}
 }
 else{
+	// all-semi-tones scale
 	new Chord(audioContext, master, document.body, null, "C", Settings().octave, "m");
 	new Chord(audioContext, master, document.body, null, "C#", Settings().octave, "m");
 	new Chord(audioContext, master, document.body, null, "D", Settings().octave, "m");
