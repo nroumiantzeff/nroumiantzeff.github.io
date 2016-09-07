@@ -145,6 +145,7 @@ function Settings(){
 			},
 			harmonic:{
 				equalizer: 0.9,
+				frequency: 440,
 				orders:{
 					1: 1,
 					3: 1,
@@ -503,7 +504,7 @@ function Harmonic(audioContext, master, container, tone, octave, type, order){
 	this.div.addEventListener('touchstart', toggle, false);
 }
 Harmonic.prototype.setFrequency = function(tone, octave, type, order){
-	this.frequency = 440;
+	this.frequency = Settings().harmonic.frequency;
 	this.oscillator.setFrequency(this.frequency);
 };
 Harmonic.prototype.setDetune = function(tone, octave, type, order){
