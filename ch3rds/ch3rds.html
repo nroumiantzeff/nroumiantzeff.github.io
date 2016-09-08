@@ -549,6 +549,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	this.tone = tone;
 	this.octave = octave;
 	this.type = type;
+	this.sustain = 0;
 	this.setEqualizer(this.tone, this.octave, this.type, this.shape);
 	this.whole = document.createElement("DIV");
 	this.whole.className = "chord";
@@ -577,17 +578,29 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	var chord = this;
 	var play = function(event){
 		event.preventDefault();
-		chord.mixer.play(true);
-		chord.div.className = "chord-button chord-on";
-		var stop = function(){
-			event.preventDefault();
-			chord.mixer.play(false);
-			chord.div.className = "chord-button";
-			document.removeEventListener('mouseup', stop);
-			document.removeEventListener('touchend', stop);
-		};
-		document.addEventListener('mouseup', stop, false);
-		document.addEventListener('touchend', stop, false);
+		if (chord.sustain){
+			if (chord.mixer.getPlay()){
+				chord.mixer.play(false);
+				chord.div.className = "chord-button";
+			}
+			else{
+				chord.mixer.play(true);
+				chord.div.className = "chord-button chord-on";
+			}
+		}
+		else{
+			chord.mixer.play(true);
+			chord.div.className = "chord-button chord-on";
+			var stop = function(){
+				event.preventDefault();
+				chord.mixer.play(false);
+				chord.div.className = "chord-button";
+				document.removeEventListener('mouseup', stop);
+				document.removeEventListener('touchend', stop);
+			};
+			document.addEventListener('mouseup', stop, false);
+			document.addEventListener('touchend', stop, false);
+		}
 	};
 	this.div.addEventListener('mousedown', play, false);
 	this.div.addEventListener('touchstart', play, false);
@@ -596,6 +609,7 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	new Winch(this.whole, "chord-octave", this, this.getOctave, this.changeOctave, {"-5":-5,"-4":-4,"-3":-3,"-2":-2,"-1":-1,"+0":0,"+1":1,"+2":2,"+3":3,"+4":4,"+5":5});
 	new Winch(this.whole, "chord-type", this, this.getType, this.changeType, ["","m"]);
 	new Winch(this.whole, "chord-shape", this, this.getShape, this.changeShape, {"~":"sine","^":"triangle","/":"sawtooth","-":"square"});
+	new Winch(this.whole, "chord-sustain", this, this.getSustain, this.changeSustain, {"[]":0,"[]...":1});
 	new Winch(this.whole, "chord-power", this.mixer, this.mixer.getPower, this.mixer.changePower, 0, 1, 2);
 	this.addSeparator();
 	var appendButton = document.createElement("DIV");
@@ -707,6 +721,12 @@ Chord.prototype.getShape = function(){
 Chord.prototype.changeShape = function(value){
 	this.shape = value;
 	this.refresh();
+};
+Chord.prototype.getSustain = function(){
+	return this.sustain;
+};
+Chord.prototype.changeSustain = function(value){
+	this.sustain = value;
 };
 Chord.prototype.deleteChord = function(){
 	//todo release oscilator resources
