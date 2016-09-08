@@ -13,11 +13,11 @@ body{
  color: #808080;
  border-color: #808080;;
  background-color: #EFEFEF;
+ border-radius: 1em;
  margin: 0.75em;
- line-height: 2em;
  width: 2em;
  height: 2em;
- border-radius: 1em;
+ line-height: 2em;
  text-align: center;
  vertical-align: middle;
  cursor: pointer;
@@ -28,7 +28,7 @@ body{
 .harmonic{
  border-style: solid;
  border-width: 1px;
- border-color: blue;
+ border-color: #0000FF;
  margin: 5px;
  width: 50px;
  height: 30px;
@@ -81,26 +81,29 @@ body{
 .chord-append{
  border-style: solid;
  border-width: 1px;
- border-color: black;
+ border-color: #0000FF;
+ color: #0000FF;
+ background-color: #D0D0FF;
  margin: 5px;
  width: 50px;
  height: 50px;
-}
-.chord-change{
- border-style: solid;
- border-width: 1px;
- border-color: black;
- margin: 5px;
- width: 50px;
  height: 50px;
+ line-height: 50px;
+ text-align: center;
+ vertical-align: middle;
 }
 .chord-delete{
  border-style: solid;
  border-width: 1px;
- border-color: black;
+ border-color: #FF0000;
+ color: #FF0000;
+ background-color: #FFD0D0;
  margin: 5px;
  width: 50px;
  height: 50px;
+ line-height: 50px;
+ text-align: center;
+ vertical-align: middle;
 }
 .chord-select-hidden{
  display: none;
@@ -410,6 +413,9 @@ Mixer.prototype.remix = function(value1, value2){
 	}
 	this.refresh();
 };
+Mixer.prototype.dispose = function(){
+	this.gain.disconnect(this.destination);
+};
 		</script end="Mixer">
 		<script start="Oscillators">
 function Oscillator(audioContext, master){
@@ -464,6 +470,10 @@ Oscillator.prototype.play = function(on){
 };
 Oscillator.prototype.setEqualizer = function(value){
 	this.mixer.setEqualizer(value);
+};
+Oscillator.prototype.dispose = function(){
+	this.play(false);
+	this.mixer.dispose();
 };
 		</script end="Oscillator">
 		<script start="Harmonic">
@@ -537,6 +547,10 @@ Harmonic.prototype.setShape = function(value){
 Harmonic.prototype.setLabel = function(type, order){
 	var label = (order === 1)? "1st": (order === 2)? "2nd": (order === 3)? "3rd": order + "th";
 	this.label = label;
+};
+Harmonic.prototype.dispose = function(){
+	this.oscillator.dispose();
+	this.div.parentNode.removeChild(this.div);
 };
 		</script end="Harmonic">
 		<script start="Chord">
@@ -626,12 +640,12 @@ function Chord(audioContext, master, container, before, tone, octave, type){
 	deleteButton.className = "chord-delete";
 	deleteButton.appendChild(document.createTextNode("-"));
 	this.whole.appendChild(deleteButton);
-	var deleteChord = function(event){
+	var dispose = function(event){
 		event.preventDefault();
-		chord.deleteChord();
+		chord.dispose();
 	};
-	deleteButton.addEventListener('mousedown', deleteChord, false);
-	deleteButton.addEventListener('touchstart', deleteChord, false);
+	deleteButton.addEventListener('mousedown', dispose, false);
+	deleteButton.addEventListener('touchstart', dispose, false);
 }
 Chord.prototype.addSeparator = function(){
 	var separator = document.createElement("DIV");
@@ -728,8 +742,12 @@ Chord.prototype.getSustain = function(){
 Chord.prototype.changeSustain = function(value){
 	this.sustain = value;
 };
-Chord.prototype.deleteChord = function(){
-	//todo release oscilator resources
+Chord.prototype.dispose = function(){
+	for (var index = this.harmonics.length - 1; index >= 0; index--){
+		this.harmonics[index].dispose();
+	}
+	this.mixer.dispose();
+	this.whole.parentNode.removeChild(this.whole);
 };
 Chord.prototype.addSelector = function(object, getter, setter, options){
 	var div = document.createElement("DIV");
