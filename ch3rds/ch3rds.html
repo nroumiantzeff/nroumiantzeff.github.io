@@ -749,27 +749,6 @@ Chord.prototype.dispose = function(){
 	this.mixer.dispose();
 	this.whole.parentNode.removeChild(this.whole);
 };
-Chord.prototype.addSelector = function(object, getter, setter, options){
-	var div = document.createElement("DIV");
-	var selector = document.createElement("SELECT");
-	selector.className = "chord-selector";
-	var value = getter.call(object);
-	for (var key in options){
-		var option = document.createElement("OPTION");
-		option.value = options[key];
-		if (option.value == value){
-			option.selected = true;
-		}
-		option.appendChild(document.createTextNode(key));
-		selector.appendChild(option);
-	}
-	div.appendChild(selector);
-	this.whole.appendChild(div);
-	var chord = this;
-	selector.onchange = function(){
-		setter.call(object, selector.value);
-	};
-};
 Chord.prototype.nextKey = function(steps){
 	var key = {"tone":this.tone,"octave":this.octave};
 	if (steps == null){
