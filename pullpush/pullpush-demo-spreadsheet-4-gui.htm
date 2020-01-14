@@ -85,7 +85,7 @@ function spreadsheet(sink){
 			return counter + pullpush(sink, click(id));
 		}, 0);
 		let displayed = (counter % 2) === 1; //todo use "toggle"?
-		pullpush(sink, style("spreadsheet-formula"), displayed, delay);
+		pullpush(sink, disabled("spreadsheet-formula"), displayed, delay);
 		cells.reduce(function(unused, id){
 			let focused = pullpush(sink, trigger(click(id)));
 			let enabled = pullpush(sink, switcher(click(id), 500)); // delay allowing double-clicking a value without focussing the corresponding formula while the formulas are already displayed
