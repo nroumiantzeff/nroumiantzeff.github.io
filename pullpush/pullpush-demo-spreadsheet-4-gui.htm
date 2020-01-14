@@ -98,7 +98,7 @@ function spreadsheet(sink){
 	function formulaTest(sink){
 		let test = pullpush(sink, input("A9"));
 		let passes = (test === "TEST: PASSES");
-		return pullpush(sink, style("spreadsheet-test-fails"), passes, 0);
+		return pullpush(sink, disabled("spreadsheet-test-fails"), passes, 0);
 	}
 	return pullpush(sink, formulaTest) && false ||
 		pullpush(sink, formulaSelection) && false ||
