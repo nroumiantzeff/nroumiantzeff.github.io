@@ -1,0 +1,134 @@
+pullpush.js:
+Pull Push Functional Reactive Programing engine
+
+Main contribution:
+You write an application using the usual procedural or functional programming (the pull phase) and the pullpush.js engine takes care of the reactive part automatically (the push pahse).
+
+What is pullpush.js and what it is not:
+- pullpush.js is not a language, it is ment to be used by JavaScript applications
+- pullpush.js is not a transpiler, every thing is plain JavaScript and the engine does its things at runtime (note that you may use any JavaScript transpiler if you whish)
+- pullpush.js is not a framwork but it comes with the "minimo" demo framework and other frameworks may be developed (framworks interact with the DOM)
+- pullpush.js is not a JavaScript library but it comes with the "minimo" demo library and other libraries may be developed (libraries do not interact with the DOM)
+- pullpush.js is not an architecture (such as the two-way-binding architecture or the Elm architecture), it is a new way of programming (such as structured programming or object-oriented programming)
+- pullpush.js is not an API, it exposes a single function, "pullpush" for writing applications (and a dozen other functions to develop libraries and frameworks)
+- pullpush.js is not about new concepts, it is based on two existing simple concepts, "source" and "sink" (and a third concept for libraries and frameworks, "observers")
+- pullpush.js is not a pure functional programming enforcement but is compatible with functional programming and intends to promote it
+- pullpush.js is not about category theory but libraries build on top of pullpush.js also provide higher-order functions which combine functions (sources) in a "point-less" way independent on function arguments (notably the sink) and function returned value (source value)
+- pullpush.js is not a type system but comments with source argument and value types are recommanded has they help reasoning when combining sources and other functions  (note that you may use any JavaScript type checker if you whish)
+- pullpush.js is not about streams, you typically use a single value, the current value
+- pullpush.js is not about immutability, values mutate but you cannot access the modified value (within the same JavaScript event queue iteration)
+- pullpush.js is not about pull vs push tradeoff, pullpush.js implements both pull and push in a efficient synergy
+- pullpush.js is not about behaviours (continuous) vs events (discrete), it deals with both with a unified implementation
+
+function pullpush(sink, source, ...args): connects a source to a sink
+- sink: a sink typically provided by the framework or by the source caller
+	it is a function that you may call with an id as single argument to explicitely generate a sub-sink (note that most of the time pullpush automatically generates sub-sinks)
+- source: implements a source typically provided by the framework or implemented as part of the application
+	it is a function taking a sink as first argument and the spread args as other arguments
+
+Example:
+	function functionalReactiveFibonacci(sink){
+		// note: input is provided by the minimo framework, it generates a source from a DOM input element
+		// note: click is provided by the minimo framework, it generates a source from a DOM button element
+		// note: trigger is provided by the minimo library, it generates a source from a source with a value true when the original source value changes
+		if(pullpush(sink, trigger(click("next")))){
+			let v3 = pullpush(sink, input("v3"));
+			let v2 = pullpush(sink, input("v2"), v3);
+			let v1 = pullpush(sink, input("v1"), v2);
+			return v1 + v2;
+		}
+		let v1 = pullpush(sink, input("v1")) || 0); // first Fibonacci number
+		let v2 = pullpush(sink, input("v2")) || 1); // second Fibonacci number
+		pullpush(sink, input("v3"), v1 + v2);
+	}
+	// the above reactive, pure function corresponds to the following non-reactive function below: 
+ 	function nonReactiveFibonacci(){
+		let v1 = document.getElementById("v1").value || 0; // first Fibonacci number
+		let v2 = document.getElementById("v2").value || 1; // second Fibonacci number
+		document.getElementById("v3").value = v1 + v2;
+	}
+	// ...and to the following non-functional function below: 
+ 	function nonFunctionalFibonacci(){
+		document.getElementById("v1").onchange = document.getElementById("v2").onchange = function(){
+			let v1 = document.getElementById("v1").value || 0; // first Fibonacci number
+			let v2 = document.getElementById("v2").value || 1; // second Fibonacci number
+			document.getElementById("v3").value = v1 + v2;
+		};
+		document.getElementById("next").onclick = function(){
+			let v2 = document.getElementById("v2").value || 1;
+			document.getElementById("v1").value = v2;
+			let v3 = document.getElementById("v3").value || 1;
+			document.getElementById("v2").value = v3;
+			document.getElementById("v3").value = v2 + v3;
+		}
+	}
+
+List of functions available from pullpush.js to build libraries and frameworks:
+- pullpush.sink(): the top level sink
+- pullpush.forcast(sink, value, delay, source, ...args): specifies the sink value at a future time (the nearest future corresponds to the next JavaScript event queue iteration). note: either value or source is specified (theother one must be equal to undefined)
+- pullpush.register(sink, observers, register, unregister): declare a sink as observer, optionaly specifying register and unregister handlers  
+- pullpush.registered(sink, observers): checks whether a sink has been registered using pullpush.register
+- pullpush.event(event, observers): updates the observers declared using pullpush.register after occurence of a DOM event
+- pullpush.value(sink, defaultValue): the sink current value or defaultValue in case the value is undefined (typically when the sink has just been generated)
+- pullpush.time(sink): the sink time (relative to the sink generation)
+- pullpush.id(sink): the sink id
+- pullpush.sequence(sink1, sink2): compares the instant when the sinks got their values
+- pullpush.stack(sink, hierachy, debug): dump of the source call stack (if hierachy is true) for debug purpose  
+- pullpush.onwarning(handler): specifies a handler to deal with warnings for debug purpose
+
+List of functions currently provided by the minimo library:
+- stepper: a source which value increments automatically with the specified delay
+- series: a source which value is the sum of n previous values
+- timer: a source which value is the (relative) time
+- counter: a source which counts
+- trigger: a source which value is true when the specified source value changes and false afterwards
+- switcher: a source which value is true when the specified source value changes and false after a specified delay
+- next: a source which value is the previously specified value
+- latest: a source which value is the the latest value among the specified sources
+- all: a source whitch value changes once all the specified sources value have changed
+- curry: a source with the last argument value fixed
+- id: a source which value is the first argument
+- unit: defines a source with a constant value // unit :: a -> source a
+- mapl: maps a source to a function // mapl :: (a -> b) -> source b c -> source a c
+- mapr: maps a function to a source // mapr :: source a b -> (b -> c) -> source a c
+- apl: applies a source to a function // apl :: source a (b -> c) -> source c d -> source b d
+- apr: applies a function to a source // apr :: source a b -> source c (b -> d) -> source b d
+
+List of functions currently provided by the minimo framework:
+- input(id): defines a source from an input DOM element (which triggers "change" events)
+- click(id): defines a source from a button DOM element (which triggers "click" events)
+- dblclick(id): defines a source from a button DOM element (which triggers "dblclick" events)
+- focus(id): defines a source from a DOM element (which triggers "focus" and "blur" events)
+- select(id): defines a source from a DOM element (which triggers "select" events)
+- disabled(id): defines a source from a DOM element with a "disabled" attribute (notably style elements)
+- title(id): defines a source from a title of a DOM element (tooltip)
+- source(type, getValue, setValue, register, unregister, dispatch, handler): specifies new type of sources
+- warning: source which values correspond to pullpush warnings
+- sink: the framework top level sink
+
+Distribution files:
+pullpush.js: the Functional Reactive Programming pullpush engine
+pullpush-minimo-library.js: the pullpush mini demo library (no interaction with the DOM)
+pullpush-minimo-framework.js: the pullpush mini demo framework (interacts with the DOM)
+pullpush-demo-spreadsheet.js: the pullpush demo spreadsheet
+pullpush-demo-spreadsheet-0.js: the pullpush demo spreadsheet specification
+pullpush-demo-spreadsheet-1.js: the pullpush demo spreadsheet TDD (recursive computation of PI)
+pullpush-demo-spreadsheet-2.js: the pullpush demo spreadsheet MMF (cell computation)
+pullpush-demo-spreadsheet-3.js: the pullpush demo spreadsheet reliability enhancements (deal with formula errors and recursive formulas)
+pullpush-demo-spreadsheet-4.js: the pullpush demo spreadsheet usability enhancements (show-hide formulas, tooltips, focus, selection)
+pullpush-test.js: tests and examples
+
+Compatibility:
+ES6
+
+Current limitations:
+//todo (static DOM, missing source for some DOM events, event handlers declared for individual DOM elements, global names...)
+
+Licence:
+	MIT License (https://opensource.org/licenses/MIT)
+
+Copyright:
+	Copyright 2020 Nicolas Roumiantzeff (nicolas.roumiantzeff@gmail.com)
+	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+	The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -1,0 +1,527 @@
+<html>
+<head>
+<title>pullpush (Pull Push Functional Reactive Programming) tests</title>
+<script src="pullpush.js"></script>
+<script src="pullpush-minimo-library.js"></script>
+<script src="pullpush-minimo-framework.js"></script>
+<style id="style13">#sink39 { background-color: blue; color: white; }</style> 
+</head>
+<body>
+<input id="input1" value="1"/> input1<br/>
+<input id="input2" value="2"/> input2<br/>
+<input id="input3" value="3"/> input3<br/>
+<input id="input4" value="4"/> input4<br/>
+<input id="input5" value="5"/> input5<br/>
+<input id="input6" value="table"/> input6<br/>
+<input id="input7" value="filter"/> input7<br/>
+<input id="input8" value="800"/> input8<br/>
+<input id="input9" value="9"/> input9<br/>
+<input id="input10" value="10"/> input10<br/>
+<input id="input11" value="11"/> input11<br/>
+<input id="input16" value="16"/> input11<br/>
+<br/>
+<input id="sink1" readonly/> input1 with "-test1-" prefix<br/>
+<input id="sink2" readonly/> input1 with "-test2-" prefix<br/>
+<input id="sink3" readonly/> input2 + input3<br/>
+<input id="sink4" readonly/> input3? input4: input5<br/>
+<input id="sink5" readonly/> input2? input4: input5<br/>
+<input id="sink6" readonly/> input1 with "-test1-" prefix + input1 with "-test2-" prefix<br/>
+<input id="sink7" readonly/> count of records queried on upper-case input6 table with input7 filter<br/>
+<input id="sink8" readonly/> sin with input8 frequence sampled every 10 milliseconds<br/>
+<input id="sink9" readonly/> sin with input8 frequence sampled every 100 milliseconds<br/>
+<input id="sink10" readonly/> input9 divided by 2 recursively<br/>
+<input id="sink11" readonly/> increment counter every second from 90 to 100<br/>
+<input id="sink12" readonly/> increment counter every other second<br/>
+<input id="sink13" readonly/> time every second<br/>
+<input id="sink14" readonly/> time every other second<br/>
+<input id="sink15" readonly/> time every other second starting at 10000000 up to 10009999<br/>
+<input id="sink16" readonly/> input10 or input11<br/>
+<input id="sink17" readonly/> input10 and input11 (composition)<br/>
+<input id="sink18" readonly/> input10 and input11 (shared composition)<br/>
+<input id="sink19" readonly/> implicit sink id<br/>
+<input id="sink20" readonly/> warning 1<br/>
+<input id="sink21" readonly/> immutable sink argument<br/>
+<input id="sink22" readonly/> map double on timer<br/>
+<input id="sink23" readonly/> id of input11<br/>
+<input id="sink24" readonly/> input11 unit<br/>
+<input id="sink25" readonly/> apl double on timer<br/>
+<input id="sink26" readonly/> apr double on timer<br/>
+<input id="sink27" readonly/> step every second<br/>
+<input id="sink28" readonly/> step time every second<br/>
+<input id="sink29" readonly/> step double time every other second<br/>
+<input id="sink30" readonly/> step double time every other second unless input1 is empty<br/>
+<input id="sink31" readonly/> fibonacci series<br/>
+<input id="sink32" readonly/> fibonacci series unless input1 is empty (reset when input1 is empty)<br/>
+<input id="sink33" readonly/> fibonacci series every input1 seconds (on-hold when input1 is empty)<br/>
+<input id="sink34" readonly/> locality<br/>
+<input id="sink35" readonly/> button12 clicks <input id="button12" value="button12" type="button"/><br/>
+<input id="sink36" readonly/> button12 clicked (immediate reset)<br/>
+<input id="sink37" readonly/> button12 clicked (50 milli-second delay reset)<br/>
+<input id="sink38" readonly/> button12 clicked (500 milli-second delay reset)<br/>
+<input id="sink39" readonly/> style12 disabled by button12 click (toggle)<br/>
+<input id="sink40" readonly/> style12 enabled<br/>
+<input id="sink41" readonly/> focused on button13 click <input id="focus14" value="focus14"/><input id="button15" value="button15" type="button"/><br/>
+<input id="sink42" readonly/> length of title (input1 and input2)<br/>
+<input id="sink43" readonly/> title of previous field<br/>
+<input id="sink44" readonly/> input1 * input16 (ignore input16 when input1 is 0 or NaN)<br/>
+<input id="sink45" readonly/> next fibonacci number on button15 click<br/>
+<script>
+function sink1(sink){
+	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
+}
+function sink2(sink){
+	document.getElementById("sink2").value = pullpush(sink, insert, "-test2-"); 
+}
+function sink3(sink){
+	document.getElementById("sink3").value = pullpush(sink, sum); 
+}
+function sink4(sink){
+	document.getElementById("sink4").value = pullpush(sink, fork, pullpush(sink("input3"), input("input3"))? true: false);
+}
+function sink5(sink){
+	document.getElementById("sink5").value = pullpush(sink, fork, pullpush(sink("input2"), input("input2"))? true: false);
+}
+function sink6(sink){
+	document.getElementById("sink6").value = pullpush(sink, merge); 
+}
+function sink7(sink){
+	document.getElementById("sink7").value = pullpush(sink, query7); 
+}
+function sink8(sink){
+	document.getElementById("sink8").value = pullpush(sink, sin8, 10);
+}
+function sink9(sink){
+	document.getElementById("sink9").value = pullpush(sink, sin8, 100);
+}
+function sink10(sink){
+	document.getElementById("sink10").value = pullpush(sink, divide); 
+}
+function sink11(sink){
+	document.getElementById("sink11").value = pullpush(sink, counter, 1000, 90, 100);
+}
+function sink12(sink){
+	document.getElementById("sink12").value = pullpush(sink, counter, 2000);
+}
+function sink13(sink){
+	document.getElementById("sink13").value = pullpush(sink, timer, 1000); 
+}
+function sink14(sink){
+	document.getElementById("sink14").value = pullpush(sink, timer, 2000);
+}
+function sink15(sink){
+	document.getElementById("sink15").value = pullpush(sink, timer, 2000, 10000000, 10009999); 
+}
+function sink16(sink){
+	document.getElementById("sink16").value = pullpush(sink, latest16);
+}
+function sink17(sink){
+	document.getElementById("sink17").value = pullpush(sink, all17);
+}
+function sink18(sink){
+	document.getElementById("sink18").value = pullpush(sink, all18);
+}
+function sink19(sink){
+	document.getElementById("sink19").value = pullpush(sink, implicit19);
+}
+function sink20(sink){
+	document.getElementById("sink20").value = pullpush(sink, warning20);
+}
+function sink21(sink){
+	document.getElementById("sink21").value = pullpush(sink, immutability21);
+}
+function sink22(sink){
+	document.getElementById("sink22").value = pullpush(sink, mapl22, 1000); 
+}
+function sink23(sink){
+	document.getElementById("sink23").value = pullpush(sink, id, pullpush(sink, input("input11"))); 
+}
+function sink24(sink){
+	document.getElementById("sink24").value = pullpush(sink, unit(pullpush(sink, input("input11")))); 
+}
+function sink25(sink){
+	document.getElementById("sink25").value = pullpush(sink, apl25, 1000); 
+}
+function sink26(sink){
+	document.getElementById("sink26").value = pullpush(sink, apr26, 1000);
+}
+function sink26(sink){
+	document.getElementById("sink26").value = pullpush(sink, apr26, 1000);
+}
+function sink27(sink){
+	document.getElementById("sink27").value = pullpush(sink, stepper, 1000);
+}
+function sink28(sink){
+	document.getElementById("sink28").value = pullpush(sink, steptime28, 1000);
+}
+function sink29(sink){
+	document.getElementById("sink29").value = pullpush(sink, steptime29, 2000);
+}
+function sink30(sink){
+	document.getElementById("sink30").value = pullpush(sink, steptime30, 2000);
+}
+function sink31(sink){
+	document.getElementById("sink31").value = pullpush(sink, series31, 1000);
+}
+function sink32(sink){
+	document.getElementById("sink32").value = pullpush(sink, series32, 1000);
+}
+function sink33(sink){
+	document.getElementById("sink33").value = pullpush(sink, series33, 1000);
+}
+function sink34(sink){
+	document.getElementById("sink34").value = pullpush(sink, warning34);
+}
+function sink35(sink){
+	document.getElementById("sink35").value = pullpush(sink, clicks35);
+}
+function sink36(sink){
+	document.getElementById("sink36").value = pullpush(sink, clicks36);
+}
+function sink37(sink){
+	document.getElementById("sink37").value = pullpush(sink, clicks37);
+}
+function sink38(sink){
+	document.getElementById("sink38").value = pullpush(sink, clicks38);
+}
+function sink39(sink){
+	document.getElementById("sink39").value = pullpush(sink, style39);
+}
+function sink40(sink){
+	document.getElementById("sink40").value = pullpush(sink, style40);
+}
+function sink41(sink){
+	document.getElementById("sink41").value = pullpush(sink, focus41);
+}
+function sink42(sink){
+	document.getElementById("sink42").value = pullpush(sink, title42);
+}
+function sink43(sink){
+	document.getElementById("sink43").value = pullpush(sink, title43);
+}
+function sink44(sink){
+	document.getElementById("sink44").value = pullpush(sink, unregister44);
+}
+function sink45(sink){
+	document.getElementById("sink45").value = pullpush(sink, fibonacci45);
+}
+function insert(sink, prefix){
+	return prefix + pullpush(sink("input1"), input("input1"));
+}
+function sum(sink){
+	return Number(pullpush(sink("input2"), input("input2"))) + Number(pullpush(sink, input("input3")));
+}
+function fork(sink, condition){
+	return condition? pullpush(sink("input4"), input("input4")): pullpush(sink, input("input5"));
+}
+function merge(sink, condition){
+	return pullpush(sink("test1"), insert, "-test1-") + pullpush(sink, insert, "-test2-");
+}
+function query(sink, table, filter){
+	// simulate an asynchronous query //todo test using websockets (on the local page with webworkers)
+	return (pullpush.forcast(sink, 1000, function(){
+		return filter.length === 0? "azerty\nquerty\n": filter.length < 10? "azerty\n": "";
+	}))();
+}
+function query7(sink){
+	let table = pullpush(sink, input("input6"));
+	let filter = pullpush(sink, input("input7"));
+	let result = pullpush(sink, query, table.toUpperCase(), filter);
+	let count = (result === undefined)? "": result.split("\n").length - 1;
+	return count;
+}
+function sin8(sink, delay){
+	let a = pullpush(sink, timer, delay);
+	let b = pullpush(sink, input("input8"));
+	let c =  a / b;
+	let d =  Math.sin(c);
+	let e = (d + 1) * 20 ;
+	let value = "";
+	for(let index = 0; index < e; index++)
+	{
+		value += " ";
+	}
+	value += "o";
+	return value;
+}
+function divide(sink){
+	let value = Number(pullpush(sink("input9a"), input("input9")));
+	if(value >= 2){
+		value = value / 2;
+		value = pullpush(sink, input("input9"), value, 2000);
+	}
+	return value;
+}
+let latest1011 = latest([input("input10"), input("input11")]);
+function latest16(sink){
+	return pullpush(sink, latest1011);
+}
+let allValues17 = all([input("input10"), input("input11")]);
+function all17(sink){
+	let values = pullpush(sink, allValues17);
+	return Number(values[0]) + Number(values[1]);
+}
+function all18(sink){
+	let values = pullpush(sink, allValues17);
+	return Number(values[0]) + Number(values[1]);
+}
+function implicit19(sink){
+	let value = pullpush.id(sink);
+	return value;
+}
+let warnings20 = {};
+function warning20(sink){
+	if(warnings20[1]){
+		return "success: " + warnings20[1];
+	}
+	let message = pullpush(sink, warning);
+	try{
+		// throws an exception because pullpush cannot be called with the same sink
+		Number(pullpush(sink, allValues17)[0]) + Number(pullpush(sink, allValues17)[1]);
+	}
+	catch(exception){
+	}
+	if(parseInt(message) === 1){
+		warnings20[1] = message;
+	}
+	return "error: an exception should have occured because pullpush cannot be called with the same sink";
+}
+function sink21immutability(sink){
+	let value = pullpush.value(sink);
+	if(value === sink){
+		return "unexpected reference equality";
+	}
+	return sink;
+}
+function immutability21(sink){
+	let error1 = pullpush(sink, sink21immutability);
+	if(typeof error1 === "string"){
+		return "error: sink is not immutable";
+	}
+	pullpush(sink, counter, 1000, 0, 10);
+	return "success: sink is immutable"
+}
+let mapl22 = mapl(x => 2 * x, timer);
+let double = function double(x){
+	return 2 * x;
+}
+let double25 = function(sink){
+	return double;
+}
+let apl25 = apl(double25, timer);
+let double26 = function(sink){
+	return double;
+}
+let apl26 = apl(double26, timer);
+let apr26 = apr(timer, double26);
+function steptime28(sink, delay){
+	let time = pullpush.time(sink);
+	pullpush(sink, stepper, delay);
+	return time;
+}
+function steptime29(sink, delay){
+	let time = pullpush.time(sink);
+	pullpush(sink, stepper, delay);
+	return time * 2;
+}
+function steptime30(sink, delay){
+	let value = pullpush(sink, input("input1"));
+	if(!value){
+		return "";
+	}
+	let time = pullpush.time(sink);
+	pullpush(sink, stepper, delay);
+	return time * 2;
+}
+function fibonacci(index, values, value0, value1){
+	if(index === 0){
+		return [value1, value0 + value1];
+	}
+	return [values.value[1], values.value[0] + values.value[1]];
+}
+function series31(sink, delay){
+	return pullpush(sink, series, pullpush(sink, stepper, delay), fibonacci, 0, 1);
+}
+function series32(sink, delay){
+	let value = pullpush(sink, input("input1"));
+	if(!value){
+		return "";
+	}
+	return pullpush(sink, series, pullpush(sink, stepper, delay), fibonacci, 0, 1);
+}
+function series33(sink, delay){
+	let period = pullpush(sink, input("input1"));
+	return pullpush(sink, series, pullpush(sink, stepper, parseInt(period) * 1000), fibonacci, 0, 1);
+}
+let warnings34 = {};
+function warning34(sink){
+	if(!warnings34.id){
+		let idMessage = pullpush(sink("idMessage"), warning);
+		try{
+			pullpush(sink("id"), function id(sink, parent){
+				return pullpush.id(parent);
+			}, sink);
+		}
+		catch(exception){
+		}
+		if(idMessage && idMessage.indexOf("pullpush.id") >= 0){
+			warnings34.id = true;
+		}
+		else{
+			return "error: pullpush.id locality not abided";
+		}
+	}
+	if(!warnings34.sequence){
+		let sequenceMessage = pullpush(sink("sequenceMessage"), warning);
+		try{
+			pullpush(sink("sequence"), function sequence(sink, parent){
+				return pullpush.sequence(parent);
+			}, sink);
+		}
+		catch(exception){
+		}
+		if(sequenceMessage && sequenceMessage.indexOf("pullpush.sequence") >= 0){
+			warnings34.sequence = true;
+		}
+		else{
+			return "error: pullpush.sequence locality not abided";
+		}
+	}
+	if(!warnings34.time){
+		let timeMessage = pullpush(sink("timeMessage"), warning);
+		try{
+			pullpush(sink("time"), function time(sink, parent){
+				return pullpush.time(parent);
+			}, sink);
+		}
+		catch(exception){
+		}
+		if(timeMessage && timeMessage .indexOf("pullpush.time") >= 0){
+			warnings34.time = true;
+		}
+		else{
+			return "error: pullpush.time locality not abided";
+		}
+	}
+	if(!warnings34.value){
+		let valueMessage = pullpush(sink("valueMessage"), warning);
+		try{
+			pullpush(sink("value"), function value(sink, parent){
+				return pullpush.value(parent, "default");
+			}, sink);
+		}
+		catch(exception){
+		}
+		if(valueMessage && valueMessage.indexOf("pullpush.value") >= 0){
+			warnings34.value = true;
+		}
+		else{
+			return "error: pullpush.value locality not abided";
+		}
+	}
+	return "success: locality abided";
+}
+function clicks35(sink){
+	return pullpush(sink, click("button12"));
+}
+function clicks36(sink){
+	return pullpush(sink, switcher(click("button12"), 0));
+}
+function clicks37(sink){
+	return pullpush(sink, switcher(click("button12"), 50));
+}
+function clicks38(sink){
+	return pullpush(sink, switcher(click("button12"), 500));
+}
+function style39(sink){
+	let clicks = pullpush(sink, click("button12"));
+	let disable = clicks % 2 === 1;
+	return pullpush(sink, disabled("style13"), disable, 0);
+}
+function style40(sink){
+	return !pullpush(sink, disabled("style13"));
+}
+function focus41(sink){
+	let triggered = pullpush(sink, trigger(click("button15")));
+	if(triggered){
+		return pullpush(sink, focus("focus14"), true, 0);
+	}
+	return pullpush(sink, focus("focus14"));
+}
+function title42(sink){
+	let text1 = pullpush(sink, input("input1"));
+	let text2 = pullpush(sink, input("input2"));
+	let text = text1 + text2;
+	pullpush(sink, title("sink42"), text, 0);
+	return text.length;
+}
+function title43(sink){
+	return pullpush(sink, title("sink42"));
+}
+function unregister44(sink){
+	let value1 = Number(pullpush(sink, input("input1")));
+	if(value1 > 0){
+		let value16 = Number(pullpush(sink, input("input16")));
+		return value1 * value16;
+	}
+	return value1;
+}
+function fibonacci45(sink){
+	let triggered = pullpush(sink, trigger(click("button15")));
+	if(triggered){
+		let value2a = pullpush(sink(2), next, 1);
+		let value1a = pullpush(sink(1), next, 1, value2a);
+		let value0a = pullpush(sink(0), next, 0, value1a);
+		return value0a + value1a;
+	}
+	let value1b = pullpush(sink(1), next, 1);
+	let value0b = pullpush(sink(0), next, 0);
+	return pullpush(sink(2), next, 1, value0b + value1b);
+}
+pullpush(pullpush.sink(), sink1);
+pullpush(pullpush.sink(), sink2);
+pullpush(pullpush.sink(), sink3);
+pullpush(pullpush.sink(), sink4);
+pullpush(pullpush.sink(), sink5);
+pullpush(pullpush.sink(), sink6);
+pullpush(pullpush.sink(), sink7);
+pullpush(pullpush.sink(), sink8);
+pullpush(pullpush.sink(), sink9);
+pullpush(pullpush.sink(), sink10);
+pullpush(pullpush.sink(), sink11);
+pullpush(pullpush.sink(), sink12);
+pullpush(pullpush.sink(), sink13);
+pullpush(pullpush.sink(), sink14);
+pullpush(pullpush.sink(), sink15);
+pullpush(pullpush.sink(), sink16);
+pullpush(pullpush.sink(), sink17);
+pullpush(pullpush.sink(), sink18);
+pullpush(pullpush.sink(), sink19);
+pullpush(pullpush.sink(), sink20);
+pullpush(pullpush.sink(), sink21);
+pullpush(pullpush.sink(), sink22);
+pullpush(pullpush.sink(), sink23);
+pullpush(pullpush.sink(), sink24);
+pullpush(pullpush.sink(), sink25);
+pullpush(pullpush.sink(), sink26);
+pullpush(pullpush.sink(), sink27);
+pullpush(pullpush.sink(), sink28);
+pullpush(pullpush.sink(), sink29);
+pullpush(pullpush.sink(), sink30);
+pullpush(pullpush.sink(), sink31);
+pullpush(pullpush.sink(), sink32);
+pullpush(pullpush.sink(), sink33);
+pullpush(pullpush.sink(), sink34);
+pullpush(pullpush.sink(), sink35);
+pullpush(pullpush.sink(), sink36);
+pullpush(pullpush.sink(), sink37);
+pullpush(pullpush.sink(), sink38);
+pullpush(pullpush.sink(), sink39);
+pullpush(pullpush.sink(), sink40);
+pullpush(pullpush.sink(), sink41);
+pullpush(pullpush.sink(), sink42);
+pullpush(pullpush.sink(), sink43);
+pullpush(pullpush.sink(), sink44);
+pullpush(pullpush.sink(), sink45);
+</script>
+</body>
+</html>
