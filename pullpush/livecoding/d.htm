@@ -1,0 +1,8 @@
+<div style="white-space: pre">
+	function formulaReplacement(match, id){
+		return '(Number(document.getElementById("' + id + '").value))';
+	}
+	function formulaSubstitution(formula){
+		let substitution = formula.replace(/\$(..)/, formulaReplacement);
+	}
+</div>

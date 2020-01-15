@@ -1,0 +1,12 @@
+<div style="white-space: pre">
+	function formulaReplacement(match, id){
+		return '(Number(document.getElementById("' + id + '").value))';
+	}
+	function formulaSubstitution(formula){
+		let substitution = formula.replace(/\$(..)/, formulaReplacement); // <span style="color: white; background-color: green">
+		if(substitution.length === formula.length){
+			return substitution;
+		}
+		return formulaSubstitution(substitution); // </span>
+	}
+</div>

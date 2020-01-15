@@ -1,0 +1,8 @@
+<div style="white-space: pre">
+	function formulaEvaluation(id){
+		let formula = document.getElementById("$" + id).value;
+		let substitution = formulaSubstitution(formula);
+		let evaluation = substitution === ""? "": eval(substitution);
+		document.getElementById(id).value = evaluation;
+	}
+</div>

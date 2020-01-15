@@ -1,0 +1,11 @@
+<div style="white-space: pre">
+	function formulaCopy(id){
+		let formula = document.getElementById("$" + id).value;
+		document.getElementById(id).value = formula;
+	}
+	function formulaValues(id){
+		return cells.reduce(function(unused, id){
+			return formulaCopy(id);
+		}, undefined);
+	}
+</div>

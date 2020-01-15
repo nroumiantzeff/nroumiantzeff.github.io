@@ -1,0 +1,11 @@
+<div style="white-space: pre">
+	function formulaReplacement(match, id){
+		return '(Number(<span style="color: white; background-color: blue">pullpush(sink("' + id + '"), input("' + id + '"))</span>))';
+	}
+	function formulaEvaluation(<span style="color: white; background-color: blue">sink</span>, id){
+		let formula = <span style="color: white; background-color: blue">pullpush(sink, input("$" + id))</span>;
+		let substitution = formulaSubstitution(formula);
+		let evaluation = substitution === ""? "": eval(substitution);
+		return <span style="color: white; background-color: blue">pullpush(sink, input(id), evaluation)</span>;
+	}
+</div>
