@@ -20,7 +20,7 @@ What is pullpush.js and what it is not:
 - pullpush.js is not about pull vs push tradeoff, pullpush.js implements both pull and push in a efficient synergy
 - pullpush.js is not about behaviours (continuous) vs events (discrete), it deals with both with a unified implementation
 - pullpush.js is not about async vs callbacks, you program as sources where synchronous although they are typically asynchronous
-- pullpush.js is not radioactive.js, although the approach is the closest you can find on the net when searching for Functional Reactive Programming, the implementation and formalism are quite different (big up to @aldonline for radioactive.js diserves high popularity)
+- pullpush.js is not radioactive.js, although the approach is the closest you can find on the net when searching for Functional Reactive Programming, the implementation and formalism are quite different (big up to @aldonline for radioactive.js deserves high popularity)
 
 function pullpush(sink, source, ...args): connects a source to a sink
 - sink: a sink typically provided by the framework or by the source caller
