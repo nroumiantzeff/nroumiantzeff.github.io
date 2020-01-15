@@ -1,0 +1,82 @@
+<div style="white-space: pre">
+function spreadsheet(sink){
+	let rows = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	let columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+	let cells = [].concat(...columns.map(column => rows.map(row => column + row))); // "A1", "A2"..., "B1", "B2"...
+	<span style="color: white; background-color: blue">function formulaRecursion(id, formula){
+		return formula.indexOf("$" + id) >= 0;
+	}</span>
+	function formulaReplacement(match, p1, offset){
+		return '(Number(pullpush(sink("' + p1 + ":" + offset + '"), input("' + p1 + '"))))';
+	}
+	function formulaSubstitution(formula){
+		let substitution = formula.replace(/\$(..)/, formulaReplacement);
+		if(substitution.length === formula.length){
+			return substitution;
+		}
+		return formulaSubstitution(substitution);
+	}
+	function formulaEvaluation(sink, id){
+		let formula = pullpush(sink, input("$" + id));
+		<span style="color: white; background-color: blue">let delay = formulaRecursion(id, formula)? 10: 0; // slowdown recursive formulas (to let other cells update)</span>
+		let substitution = formulaSubstitution(formula);
+		<span style="color: white; background-color: blue">try</span>{
+			let evaluation = substitution === ""? "": eval(substitution);
+			return pullpush(sink, input(id), evaluation, delay);
+		}
+		<span style="color: white; background-color: blue">catch(exception){
+			console.log("spreadsheet error in $" + id + ": " + formula);
+		}
+		return pullpush(sink, formulaError, id, formula);</span>
+	}
+	<span style="color: white; background-color: blue">function formulaError(sink, id, formula){
+		return pullpush(sink, input(id), "formula error: " + formula, 0);
+	}</span>
+	function formulaValues(sink, id){
+		return cells.reduce(function(unused, id){
+			return pullpush(sink(id), formulaEvaluation, id);
+		}, undefined);
+	}
+	<span style="color: white; background-color: blue">function formulaTooltips(sink, id){
+		cells.reduce(function(unused, id){
+			let tooltip = id + ": " +  pullpush(sink, input("$" + id));
+			return pullpush(sink, title(id), tooltip, 0);
+		}, undefined);
+	}</span>
+	<span style="color: white; background-color: blue">function formulaSelection(sink, id){
+		cells.reduce(function(unused, id){
+			let selected = pullpush(sink, trigger(dblclick(id)));
+			if(selected){
+				return pullpush(sink, select(id), selected, 0);
+			}
+		}, undefined);
+	}</span>
+	<span style="color: white; background-color: blue">function formulaDisplay(sink){
+		let delay = 300; // enough delay to perform dblclicks
+		let counter = cells.reduce(function(counter, id){
+			return counter + pullpush(sink, click(id));
+		}, 0);
+		let displayed = (counter % 2) === 1; //todo use "toggle"?
+		pullpush(sink, disabled("spreadsheet-formula"), displayed, delay);
+		cells.reduce(function(unused, id){
+			let focused = pullpush(sink, trigger(click(id)));
+			let enabled = pullpush(sink, switcher(click(id), 500)); // delay allowing double-clicking a value without focussing the corresponding formula while the formulas are already displayed
+			if(focused && displayed && enabled){
+				return pullpush(sink, focus("$" + id), true, delay);
+			}
+		}, undefined);
+		return displayed;
+	}</span>
+	function formulaTest(sink){
+		let test = pullpush(sink, input("A9"));
+		let passes = (test === "TEST: PASSES");
+		return pullpush(sink, disabled("spreadsheet-test-fails"), passes, 0);
+	}
+	return pullpush(sink, formulaTest) && false ||
+		<span style="color: white; background-color: blue">pullpush(sink, formulaSelection) && false ||
+		pullpush(sink, formulaDisplay) && false ||
+		pullpush(sink, formulaTooltips) && false ||</span>
+		pullpush(sink, formulaValues);
+}
+pullpush(sink("demo"), spreadsheet);
+</div>
