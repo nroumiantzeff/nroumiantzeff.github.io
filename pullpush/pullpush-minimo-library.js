@@ -95,9 +95,29 @@ function local(sink, initial, value){
 	if(value === undefined){
 		return pullpush.value(sink, initial);
 	}
-	return (pullpush.forcast(sink, 0, id, value))
+	return (pullpush.forcast(sink, 0, identity, value))
 		(pullpush.value(sink, initial));
 }
+let global = (function(){
+	let cache = {};
+	return function global(id){
+		let cached = cache[id];
+			if(cached){
+				return cached;
+		}
+		let name = global.name + "_" + id;
+		let named = {
+			[name]: function global(sink, value){
+				if(value === undefined){
+					return pullpush.value(sink);
+				}
+				return (pullpush.forcast(sink, 0, identity, value))
+					(pullpush.value(sink));
+			},
+		};
+		return cache[id] = named[name];
+	};
+})();
 function latest(sources){
 	function latest(sink){
 		if(sources.length > 0){
@@ -143,7 +163,7 @@ function curry(source, arg){
 		return source(sink, ...args, arg);
 	};
 }
-function id(sink, arg){
+function identity(sink, arg){
 	return arg;
 }
 function unit(value){

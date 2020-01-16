@@ -42,7 +42,7 @@
 <input id="sink20" readonly/> warning 1<br/>
 <input id="sink21" readonly/> immutable sink argument<br/>
 <input id="sink22" readonly/> map double on timer<br/>
-<input id="sink23" readonly/> id of input11<br/>
+<input id="sink23" readonly/> input11 identity<br/>
 <input id="sink24" readonly/> input11 unit<br/>
 <input id="sink25" readonly/> apl double on timer<br/>
 <input id="sink26" readonly/> apr double on timer<br/>
@@ -64,7 +64,8 @@
 <input id="sink42" readonly/> length of title (input1 and input2)<br/>
 <input id="sink43" readonly/> title of previous field<br/>
 <input id="sink44" readonly/> input1 * input16 (ignore input16 when input1 is 0 or NaN)<br/>
-<input id="sink45" readonly/> next fibonacci number on button15 click<br/>
+<input id="sink45" readonly/> next fibonacci number on button15 click (using local sources)<br/>
+<input id="sink46" readonly/> next fibonacci number on button15 click (using global sources)<br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -133,7 +134,7 @@ function sink22(sink){
 	document.getElementById("sink22").value = pullpush(sink, mapl22, 1000); 
 }
 function sink23(sink){
-	document.getElementById("sink23").value = pullpush(sink, id, pullpush(sink, input("input11"))); 
+	document.getElementById("sink23").value = pullpush(sink, identity, pullpush(sink, input("input11"))); 
 }
 function sink24(sink){
 	document.getElementById("sink24").value = pullpush(sink, unit(pullpush(sink, input("input11")))); 
@@ -203,6 +204,9 @@ function sink44(sink){
 }
 function sink45(sink){
 	document.getElementById("sink45").value = pullpush(sink, fibonacci45);
+}
+function sink46(sink){
+	document.getElementById("sink46").value = pullpush(sink, fibonacci46);
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -477,6 +481,18 @@ function fibonacci45(sink){
 	let value0b = pullpush(sink(0), local, 0);
 	return pullpush(sink(2), local, 1, value0b + value1b);
 }
+function fibonacci46(sink){
+	let triggered = pullpush(sink, trigger(click("button15")));
+	if(triggered){
+		let value2a = pullpush(sink(2), global("fibonacci46:2")) || 1;
+		let value1a = pullpush(sink(1), global("fibonacci46:1"), value2a) || 1;
+		let value0a = pullpush(sink(0), global("fibonacci46:0"), value1a) || 0;
+		return value0a + value1a;
+	}
+	let value0b = pullpush(sink(0), global("fibonacci46:0")) || 0;
+	let value1b = pullpush(sink(1), global("fibonacci46:1")) || 1;
+	return pullpush(sink(2), global("fibonacci46:2"), value0b + value1b) || 1;
+}
 pullpush(pullpush.sink(), sink1);
 pullpush(pullpush.sink(), sink2);
 pullpush(pullpush.sink(), sink3);
@@ -522,6 +538,7 @@ pullpush(pullpush.sink(), sink42);
 pullpush(pullpush.sink(), sink43);
 pullpush(pullpush.sink(), sink44);
 pullpush(pullpush.sink(), sink45);
+pullpush(pullpush.sink(), sink46);
 </script>
 </body>
 </html>
