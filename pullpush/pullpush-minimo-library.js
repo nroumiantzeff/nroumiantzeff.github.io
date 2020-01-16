@@ -91,7 +91,7 @@ let switcher = (function(){
 		return named[name];
 	};
 })();
-function next(sink, initial, value){
+function local(sink, initial, value){
 	if(value === undefined){
 		return pullpush.value(sink, initial);
 	}

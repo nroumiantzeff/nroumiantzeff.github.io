@@ -468,14 +468,14 @@ function unregister44(sink){
 function fibonacci45(sink){
 	let triggered = pullpush(sink, trigger(click("button15")));
 	if(triggered){
-		let value2a = pullpush(sink(2), next, 1);
-		let value1a = pullpush(sink(1), next, 1, value2a);
-		let value0a = pullpush(sink(0), next, 0, value1a);
+		let value2a = pullpush(sink(2), local, 1);
+		let value1a = pullpush(sink(1), local, 1, value2a);
+		let value0a = pullpush(sink(0), local, 0, value1a);
 		return value0a + value1a;
 	}
-	let value1b = pullpush(sink(1), next, 1);
-	let value0b = pullpush(sink(0), next, 0);
-	return pullpush(sink(2), next, 1, value0b + value1b);
+	let value1b = pullpush(sink(1), local, 1);
+	let value0b = pullpush(sink(0), local, 0);
+	return pullpush(sink(2), local, 1, value0b + value1b);
 }
 pullpush(pullpush.sink(), sink1);
 pullpush(pullpush.sink(), sink2);

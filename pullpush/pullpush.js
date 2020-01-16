@@ -146,7 +146,7 @@ let pullpush = (function(){
 					}
 					$parent = $parent.sink;
 				}
-			}			
+			}
 		}
 		return sourcesCounts;
 	}
