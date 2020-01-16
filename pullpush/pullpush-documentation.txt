@@ -16,7 +16,8 @@ What is pullpush.js and what it is not:
 - pullpush.js is not about category theory but libraries build on top of pullpush.js also provide higher-order functions which combine functions (sources) in a "point-less" way independent on function arguments (notably the sink) and function returned value (source value)
 - pullpush.js is not a type system but comments with source argument and value types are recommanded has they help reasoning when combining sources and other functions  (note that you may use any JavaScript type checker if you whish)
 - pullpush.js is not about streams, you typically use a single value, the current value
-- pullpush.js is not about immutability, values mutate but you cannot access the modified value (within the same JavaScript event queue iteration)
+- pullpush.js is not an immutability library, but you might consider using one when dealing with complex structured data since pullpush.js detects changes based on stric reference equality
+- pullpush.js is not strictly side-effectless, values mutate but you cannot access the modified value (within the same JavaScript event queue iteration)
 - pullpush.js is not about pull vs push tradeoff, pullpush.js implements both pull and push in a efficient synergy
 - pullpush.js is not about behaviours (continuous) vs events (discrete), it deals with both with a unified implementation
 - pullpush.js is not about async vs callbacks, you program as sources where synchronous although they are typically asynchronous
