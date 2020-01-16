@@ -31,9 +31,9 @@ function spreadsheet(sink){
 	let rows = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 	let columns = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
 	let cells = [].concat(...columns.map(column => rows.map(row => column + row))); // "A1", "A2"..., "B1", "B2"...
-	<span style="color: white; background-color: blue">function formulaRecursion(id, formula){
+	function formulaRecursion(id, formula){
 		return formula.indexOf("$" + id) >= 0;
-	}</span>
+	}
 	function formulaReplacement(match, p1, offset){
 		return '(Number(pullpush(sink("' + p1 + ":" + offset + '"), input("' + p1 + '"))))';
 	}
@@ -46,20 +46,20 @@ function spreadsheet(sink){
 	}
 	function formulaEvaluation(sink, id){
 		let formula = pullpush(sink, input("$" + id));
-		<span style="color: white; background-color: blue">let delay = formulaRecursion(id, formula)? 10: 0; // slowdown recursive formulas (to let other cells update)</span>
+		let delay = formulaRecursion(id, formula)? 10: 0; // slowdown recursive formulas (to let other cells update)
 		let substitution = formulaSubstitution(formula);
-		<span style="color: white; background-color: blue">try</span>{
+		try{
 			let evaluation = substitution === ""? "": eval(substitution);
-			return pullpush(sink, input(id), evaluation, <span style="color: white; background-color: blue">delay</span>);
+			return pullpush(sink, input(id), evaluation, delay);
 		}
-		<span style="color: white; background-color: blue">catch(exception){
+		catch(exception){
 			console.log("spreadsheet error in $" + id + ": " + formula);
 		}
-		return pullpush(sink, formulaError, id, formula);</span>
+		return pullpush(sink, formulaError, id, formula);
 	}
-	<span style="color: white; background-color: blue">function formulaError(sink, id, formula){
+	function formulaError(sink, id, formula){
 		return pullpush(sink, input(id), "formula error: " + formula, 0);
-	}</span>
+	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
 			return pullpush(sink(id), formulaEvaluation, id);
