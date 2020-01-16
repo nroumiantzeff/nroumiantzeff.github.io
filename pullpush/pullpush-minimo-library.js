@@ -91,28 +91,36 @@ let switcher = (function(){
 		return named[name];
 	};
 })();
-function local(sink, initial, value){
+function local(sink, initial, value, delay){
 	if(value === undefined){
 		return pullpush.value(sink, initial);
 	}
-	return (pullpush.forcast(sink, 0, identity, value))
+	return (pullpush.forcast(sink, delay || 0, identity, value))
 		(pullpush.value(sink, initial));
 }
 let global = (function(){
 	let cache = {};
 	return function global(id){
+		let current;
+		let observers = {};
+		function update(sink, value){
+			current = value;
+			return pullpush.event(undefined, observers, value);
+		}
 		let cached = cache[id];
 			if(cached){
 				return cached;
-		}
+			};
 		let name = global.name + "_" + id;
 		let named = {
-			[name]: function global(sink, value){
+			[name]: function(sink, value, delay){
 				if(value === undefined){
-					return pullpush.value(sink);
+					return (pullpush.register(sink, observers))
+					(current);
 				}
-				return (pullpush.forcast(sink, 0, identity, value))
-					(pullpush.value(sink));
+				return (pullpush.forcast(sink, delay || 0, update, value))
+					(pullpush.register(sink, observers))
+					(current);
 			},
 		};
 		return cache[id] = named[name];
