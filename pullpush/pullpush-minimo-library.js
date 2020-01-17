@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
-// pullpush minimo library
+// pullpush minimo library (no interaction with the DOM)
 
 let stepper = (function(){
 	let observers = {};
@@ -17,7 +17,7 @@ let stepper = (function(){
 			return steps;
 		}
 		return (pullpush.register(sink, observers))
-			(pullpush.forcast(sink, delay, callback, delay, begining, end))
+			(pullpush.forcast(sink, undefined, delay, callback, delay, begining, end))
 			(steps);
 	};
 })();
@@ -50,6 +50,28 @@ function counter(sink, delay, begining, end){
 	pullpush(sink, stepper, delay);
 	return count + 1;
 }
+let toggle = (function(){
+	function toggle(sink, source, ...args){
+		let value = pullpush(sink, source, ...args);
+		let current = pullpush.value(sink);
+		if(current === undefined){
+			return { toggle: false, value };
+		}
+		if(value === current.value){
+			return current;
+		}
+		return { toggle: !current.toggle, value };
+	}
+	return function(source, ...args){
+		let name = toggle.name + "_" + source.name;
+		let named = {
+			[name]: function(sink, ...args){
+				return pullpush(sink, toggle, source, ...args).toggle;
+			},
+		};
+		return named[name];
+	};
+})();
 let trigger = (function(){ //todo implement "limiter" which allows specifying a limite on the number of triggers
 	function trigger(sink, source, ...args){
 		let value = pullpush(sink, source, ...args);
@@ -57,7 +79,7 @@ let trigger = (function(){ //todo implement "limiter" which allows specifying a 
 		if(current === undefined || value === current.value){
 			return { trigger: false, value };
 		}
-		return (pullpush.forcast(sink, 0))
+		return (pullpush.forcast(sink, undefined, 0, trigger, source, ...args))
 			({ trigger: true, value });
 	}
 	return function(source, ...args){
@@ -70,7 +92,6 @@ let trigger = (function(){ //todo implement "limiter" which allows specifying a 
 		return named[name];
 	};
 })();
-//todo toggle (like trigger)
 let switcher = (function(){
 	function switcher(sink, delay, source, ...args){
 		let value = pullpush(sink, source, ...args);
@@ -78,7 +99,7 @@ let switcher = (function(){
 		if(current === undefined || value === current.value){
 			return { switcher: false, value };
 		}
-		return (pullpush.forcast(sink, delay))
+		return (pullpush.forcast(sink, undefined, delay, switcher, delay, source, ...args))
 			({ switcher: true, value });
 	}
 	return function(source, delay, ...args){
@@ -95,22 +116,22 @@ function local(sink, initial, value, delay){
 	if(value === undefined){
 		return pullpush.value(sink, initial);
 	}
-	return (pullpush.forcast(sink, delay || 0, identity, value))
+	return (pullpush.forcast(sink, value, delay))
 		(pullpush.value(sink, initial));
 }
 let global = (function(){
 	let cache = {};
 	return function global(id){
-		let current;
+		let cached = cache[id];
+		if(cached){
+			return cached;
+		}
 		let observers = {};
-		function update(sink, value){
+		let current;
+		let update = function update(sink, value){
 			current = value;
 			return pullpush.event(undefined, observers, value);
-		}
-		let cached = cache[id];
-			if(cached){
-				return cached;
-			};
+		};
 		let name = global.name + "_" + id;
 		let named = {
 			[name]: function(sink, value, delay){
@@ -118,7 +139,7 @@ let global = (function(){
 					return (pullpush.register(sink, observers))
 					(current);
 				}
-				return (pullpush.forcast(sink, delay || 0, update, value))
+				return (pullpush.forcast(sink, undefined, delay, update, value))
 					(pullpush.register(sink, observers))
 					(current);
 			},

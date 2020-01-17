@@ -2,14 +2,6 @@
 // pullpush minimo framework
 
 let source = (function(){
-	function onchange(id, observers){
-		return function onchange(event){
-			if(handler){
-				state = handler(id, state, event);
-			}
-			return pullpush.event(event, observers, getValue(id, state));
-		};
-	}
 	return function source(type, getValue, setValue, register, unregister, dispatch, handler){
 		let cache = {};
 		return function source(id, value){
@@ -19,6 +11,14 @@ let source = (function(){
 			}
 			let state = value;
 			let observers = {};
+			let onchange = function onchange(id, observers){
+				return function onchange(event){
+					if(handler){
+						state = handler(id, state, event);
+					}
+					return pullpush.event(event, observers, getValue(id, state));
+				};
+			};
 			let $onchange = onchange(id, observers);
 			let $register = register && function onregister(){
 				register(id, $onchange);
@@ -26,18 +26,10 @@ let source = (function(){
 			let $unregister = unregister && function onunregister(){
 				unregister(id, $onchange);
 			};
-			function onchange(id, observers){
-				return function onchange(event){
-					if(handler){
-						state = handler(id, state, event);
-					}
-					return pullpush.event(event, observers, getValue(id, state));
-				};
-			}
-			function updateState(value){
+			let updateState = function updateState(value){
 				state = value;
-			}
-			function change(sink, id, value){
+			};
+			let change = function change(sink, id, value){
 				let current = getValue(id, state);
 				state = setValue(id, value, state);
 				let next = getValue(id, state);
@@ -50,7 +42,7 @@ let source = (function(){
 					}
 				}
 				return next;
-			}
+			};
 			let name = type + "_" + id;
 			let namedFunctions = {
 				[name]: function(sink, value, delay){
@@ -59,7 +51,7 @@ let source = (function(){
 							(getValue(id, state));
 					}
 					return (pullpush.register(sink, observers, $register, $unregister))
-						(pullpush.forcast(sink, delay || 0, change, id, value))
+						(pullpush.forcast(sink, undefined, delay, change, id, value))
 						(getValue(id, state));
 				},
 			};

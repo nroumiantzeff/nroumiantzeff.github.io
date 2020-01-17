@@ -309,25 +309,30 @@ let pullpush = (function(){
 		};
 		return handler;
 	}
-	function forcast(sink, delay, source, ...args){
-		if(delay ===  Number.POSITIVE_INFINITY){
-			return; // forcast does nothing for infinite delay
-		}
+	function forcast(sink, value, delay, source, ...args){
 		let $sink = sink($$safe);
 		if(delay === undefined){
-			warning('19: missing delay argument in pullpush.forcast(sink, delay, source, ...args) where only source argument is optional', $sink);
+			delay = 0;
 		}
-		if(typeof delay!== "number" || delay < 0 || delay > Number.MAX_SAFE_INTEGER){
-			warning('20: invalid delay argument ' + delay + ' in pullpush.forcast(sink, delay, source, ...args)', $sink);
+		else{
+			if(typeof delay !== "number"){
+				warning('20: invalid delay argument ' + delay + ' in pullpush.forcast(sink, value, delay, source, ...args)', $sink);
+			}
+			if(delay ===  Number.POSITIVE_INFINITY || delay > Number.MAX_SAFE_INTEGER || delay < 0){
+				return; // forcast does nothing for infinite delay
+			}
+		}
+		if(value !== undefined && source !== undefined){
+			warning('19: value argument in pullpush.forcast(sink, value, delay, source, ...args) is ignored when the source argument is specified: consider calling either pullpush.forcast(sink, value, delay) or pullpush.forcast(sink, undefined, delay, source, ...args)', $sink);
 		}
 		if($$sink === $sink || $$sink === $sink.sink){ // sink locality
 			let $nonce = $sink.nonce;
 			$nonce.handlers++;
-			return handlerChain($nonce, forcastHandler, sink, delay, source, args);
+			return handlerChain($nonce, forcastHandler, sink, value, delay, source, args);
 		}
 		warning('6: incorrect sink argument in pullpush.forcast call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
-	function forcastHandler(nonce, sink, delay, source, args){
+	function forcastHandler(nonce, sink, value, delay, source, args){
 		let $sink = sink($$safe);
 		if($sink.timer !== undefined){
 			clearTimeout($sink.timer);
@@ -339,16 +344,18 @@ let pullpush = (function(){
 		else{
 			$sink.skips = 0;
 		}
-		$sink.timer = setTimeout(forcastCallback, delay, sink, source, args);
+		$sink.timer = setTimeout(forcastCallback, delay, sink, value, source, args);
 		return nonce;
 	}
-	function forcastCallback(sink, source, args){
+	function forcastCallback(sink, value, source, args){
 		$$time = Date.now();
 		$$sequence++;
 		$$timeStamp = (new Event("custom")).timeStamp;
 		let $sink = sink($$safe);
 		$sink.timer = undefined;
-		let value = pull($sink, source || $sink.source, ...(source? args: $sink.args));
+		if(source !== undefined){
+			value = pull($sink, source, ...args);
+		}
 		if(value !== $sink.value){
 			push(sink, value, true);
 		}

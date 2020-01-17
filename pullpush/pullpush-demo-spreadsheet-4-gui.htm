@@ -81,10 +81,9 @@ function spreadsheet(sink){
 	}
 	function formulaDisplay(sink){
 		let delay = 300; // enough delay to perform dblclicks
-		let counter = cells.reduce(function(counter, id){
-			return counter + pullpush(sink, click(id));
+		let displayed = cells.reduce(function(counter, id){
+			return (counter + pullpush(sink, click(id))) % 2;
 		}, 0);
-		let displayed = (counter % 2) === 1; //todo use "toggle"?
 		pullpush(sink, disabled("spreadsheet-formula"), displayed, delay);
 		cells.reduce(function(unused, id){
 			let focused = pullpush(sink, trigger(click(id)));

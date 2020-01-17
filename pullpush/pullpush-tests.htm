@@ -58,7 +58,7 @@
 <input id="sink36" readonly/> button12 clicked (immediate reset)<br/>
 <input id="sink37" readonly/> button12 clicked (50 milli-second delay reset)<br/>
 <input id="sink38" readonly/> button12 clicked (500 milli-second delay reset)<br/>
-<input id="sink39" readonly/> style12 disabled by button12 click (toggle)<br/>
+<input id="sink39" readonly/> style12 disabled by button12 toggle<br/>
 <input id="sink40" readonly/> style12 enabled<br/>
 <input id="sink41" readonly/> focused on button13 click <input id="focus14" value="focus14"/><input id="button15" value="button15" type="button"/><br/>
 <input id="sink42" readonly/> length of title (input1 and input2)<br/>
@@ -222,7 +222,7 @@ function merge(sink, condition){
 }
 function query(sink, table, filter){
 	// simulate an asynchronous query //todo test using websockets (on the local page with webworkers)
-	return (pullpush.forcast(sink, 1000, function(){
+	return (pullpush.forcast(sink, undefined, 1000, function(){
 		return filter.length === 0? "azerty\nquerty\n": filter.length < 10? "azerty\n": "";
 	}))();
 }
@@ -437,8 +437,7 @@ function clicks38(sink){
 	return pullpush(sink, switcher(click("button12"), 500));
 }
 function style39(sink){
-	let clicks = pullpush(sink, click("button12"));
-	let disable = clicks % 2 === 1;
+	let disable = pullpush(sink, toggle(click("button12")));
 	return pullpush(sink, disabled("style13"), disable, 0);
 }
 function style40(sink){
