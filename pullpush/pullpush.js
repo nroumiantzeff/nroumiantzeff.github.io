@@ -11,16 +11,21 @@ let pullpush = (function(){
 	let $$unregister = Symbol("pullpushunregister");
 	function pullpush(sink, source, ...args){
 		//todo refactor using subfunctions so that debugging steps on essetial code only
+		// note: source may be undefined: declaration only (to keepalive the source for the sink)
 		let $sink = sink($$safe);
 		if($sink.sink === undefined || !$sink.pullpushable){
 			$sink = $sink.safe(source.name)($$safe); // generate a sink automatically (using the function name)
 		}
 		$sink.pullpushable = false;
-		checkDuplicates($sink);
+		let declaration = source === undefined;
+		checkDuplicates($sink, declaration); // if declaration: no duplicate check
+		if(declaration){
+			return;
+		}
 		$sink.duplicates = undefined;
 		if($sink.source === undefined || !equals(args, $sink.args)){
 			if($sink.source === undefined){
-				// note: use the source declared first ignoring sources declared afterwards (theoriticaly, functions could be laysilly evaluated by an optimized javascript implementation)
+				// note: use the source declared first ignoring sources declared afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
 				$sink.source = source;
 			}
 			$sink.args = args;
@@ -263,22 +268,30 @@ let pullpush = (function(){
 		}
 		$sink.resources = {};
 	}
-	function checkDuplicates($sink){
+	function checkDuplicates($sink, declaration){
 		let $parent = $sink.sink;
 		if($parent){
 			if($parent.duplicates === undefined){
 				$parent.duplicates = {};
 			}
-			if($parent.duplicates[$sink.id]){
-				if($sink.id){
-					warning('1: pullpush should not be called twice with the same sink as first argument: consider specifying an explicite localy unique id argument in sink("' + $sink.id + '")', $sink);
-				}
-				else{
-					warning('2: pullpush should not be called twice with the same sink as first argument and anonymous functions as second argument: consider specifying named functions as second argument to pullpush', $sink);
+			let duplicate = $parent.duplicates[$sink.id];
+			if(declaration){
+				if(duplicate === undefined && $sink.id){
+					$parent.duplicates[$sink.id] = 1; // simple declaration
 				}
 			}
 			else{
-				$parent.duplicates[$sink.id] = true;
+				if(duplicate === 2){
+					if($sink.id){
+						warning('1: pullpush should not be called twice with the same sink as first argument: consider specifying an explicite localy unique id argument in sink("' + $sink.id + '")', $sink);
+					}
+					else{
+						warning('2: pullpush should not be called twice with the same sink as first argument and anonymous functions as second argument: consider specifying named functions as second argument to pullpush', $sink);
+					}
+				}
+				else{
+					$parent.duplicates[$sink.id] = 2;
+				}
 			}
 		}
 	}
@@ -318,9 +331,6 @@ let pullpush = (function(){
 			if(typeof delay !== "number"){
 				warning('20: invalid delay argument ' + delay + ' in pullpush.forcast(sink, value, delay, source, ...args)', $sink);
 			}
-			if(delay ===  Number.POSITIVE_INFINITY || delay > Number.MAX_SAFE_INTEGER || delay < 0){
-				return; // forcast does nothing for infinite delay
-			}
 		}
 		if(value !== undefined && source !== undefined){
 			warning('19: value argument in pullpush.forcast(sink, value, delay, source, ...args) is ignored when the source argument is specified: consider calling either pullpush.forcast(sink, value, delay) or pullpush.forcast(sink, undefined, delay, source, ...args)', $sink);
@@ -344,7 +354,13 @@ let pullpush = (function(){
 		else{
 			$sink.skips = 0;
 		}
-		$sink.timer = setTimeout(forcastCallback, delay, sink, value, source, args);
+		if(delay >= 0 && delay !==  Number.POSITIVE_INFINITY && delay <= Number.MAX_SAFE_INTEGER){
+			$sink.timer = setTimeout(forcastCallback, delay, sink, value, source, args);
+		}
+		else{
+			// forcast does nothing for negative or infinite delay
+			$sink.timer = undefined;
+		}
 		return nonce;
 	}
 	function forcastCallback(sink, value, source, args){
