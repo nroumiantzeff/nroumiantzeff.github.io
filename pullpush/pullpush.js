@@ -12,12 +12,15 @@ let pullpush = (function(){
 	function pullpush(sink, source, ...args){
 		//todo refactor using subfunctions so that debugging steps on essetial code only
 		// note: source may be undefined: declaration only (to keepalive the source for the sink)
+		let declaration = source === undefined;
 		let $sink = sink($$safe);
 		if($sink.sink === undefined || !$sink.pullpushable){
+			if(declaration){
+				warning('1: pullpush should not be called with an undefined source argument directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument for actual source access', $sink);
+			}
 			$sink = $sink.safe(source.name)($$safe); // generate a sink automatically (using the function name)
 		}
 		$sink.pullpushable = false;
-		let declaration = source === undefined;
 		checkDuplicates($sink, declaration); // if declaration: no duplicate check
 		if(declaration){
 			return;
