@@ -50,8 +50,8 @@
 <input id="sink28" readonly/> step time every second<br/>
 <input id="sink29" readonly/> step double time every other second<br/>
 <input id="sink30" readonly/> step double time every other second unless input1 is empty<br/>
-<input id="sink31" readonly/> fibonacci series<br/>
-<input id="sink32" readonly/> fibonacci series unless input1 is empty (reset when input1 is empty)<br/>
+<input id="sink31" readonly/> fibonacci series unless input1 is empty (reset when input1 is empty)<br/>
+<input id="sink32" readonly/> fibonacci series unless input1 is empty (not reset when input1 is empty)<br/>
 <input id="sink33" readonly/> fibonacci series every input1 seconds (on-hold when input1 is empty)<br/>
 <input id="sink34" readonly/> locality<br/>
 <input id="sink35" readonly/> button12 clicks <input id="button12" value="button12" type="button"/><br/>
@@ -343,14 +343,20 @@ function fibonacci(index, values, value0, value1){
 	return [values.value[1], values.value[0] + values.value[1]];
 }
 function series31(sink, delay){
-	return pullpush(sink, series, pullpush(sink, stepper, delay), fibonacci, 0, 1);
-}
-function series32(sink, delay){
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
 	return pullpush(sink, series, pullpush(sink, stepper, delay), fibonacci, 0, 1);
+}
+function series32(sink, delay){
+	pullpush(sink(stepper.name)); // declaration (to keep alive the series)
+	pullpush(sink(series.name)); // declaration (to keep alive the series)
+	let value = pullpush(sink, input("input1"));
+	if(!value){
+		return "";
+	}
+	return pullpush(sink(series.name), series, pullpush(sink(stepper.name), stepper, delay), fibonacci, 0, 1);
 }
 function series33(sink, delay){
 	let period = pullpush(sink, input("input1"));
@@ -491,6 +497,7 @@ function fibonacci46(sink){
 	let value1 = pullpush(sink, global("fibonacci46:1")) || 0;
 	return pullpush(sink, nextFibonacci46, value2 + value1);
 }
+/* //debug
 pullpush(pullpush.sink(), sink1);
 pullpush(pullpush.sink(), sink2);
 pullpush(pullpush.sink(), sink3);
@@ -522,7 +529,9 @@ pullpush(pullpush.sink(), sink28);
 pullpush(pullpush.sink(), sink29);
 pullpush(pullpush.sink(), sink30);
 pullpush(pullpush.sink(), sink31);
+*/ //debug
 pullpush(pullpush.sink(), sink32);
+/* //debug
 pullpush(pullpush.sink(), sink33);
 pullpush(pullpush.sink(), sink34);
 pullpush(pullpush.sink(), sink35);
@@ -537,6 +546,7 @@ pullpush(pullpush.sink(), sink43);
 pullpush(pullpush.sink(), sink44);
 pullpush(pullpush.sink(), sink45);
 pullpush(pullpush.sink(), sink46);
+*/ //debug
 </script>
 </body>
 </html>
