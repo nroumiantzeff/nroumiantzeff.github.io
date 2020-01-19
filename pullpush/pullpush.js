@@ -58,15 +58,32 @@ let pullpush = (function(){
 		return result;
 	}
 	function push(sink, value, force){
-		let $sinks = [];
 		let $sink = sink($$safe);
+		let $sinks = [];
 		if(value !== $sink.value){
 			update($sink, value);
 			if(force){
 				$sink.currentValue = $sink.value;
 			}
 			$sink.sequence = $$sequence;
-			$sinks.push($sink);
+			if($sink.sink !== undefined && $sink.sink.observers !== undefined){
+				//todo warning if the parent sinks have observers declared (except the first parent)
+				//todo warning if declaring observers on a sink that has grand-childrens
+				for(let index in $sink.sink.observers){
+					let $observer = $sink.sink.observers[index]($$safe);
+					if(value !== $observer.value){
+						update($observer, value);
+						if(force){
+							$observer.currentValue = $observer.value;
+						}
+						$observer.sequence = $$sequence;
+						$sinks.push($observer);
+					}
+				}
+			}
+			else{
+				$sinks.push($sink);
+			}
 		}
 		pushSourcesInTopologicalOrder($sinks);
 		return value;
@@ -104,7 +121,8 @@ let pullpush = (function(){
 		}
 		if(!event.isTrusted){ //todo check $$timeStamp even for trusted events
 			if($$timeStamp === undefined || event.timeStamp < $$timeStamp){
-				warning('5: stale programmatic event argument in pullpush.event call');			}
+				warning('5: stale programmatic event argument in pullpush.event call');
+			}
 		}
 		//todo check that a previous real-event nor pseudo-event has not been checked yet in the same event loop step
 		//todo check that pullpush has not been called yet in the same event loop step
@@ -401,6 +419,7 @@ let pullpush = (function(){
 		let $sink = sink($$safe);
 		if(!$sink.registered){
 			$sink.registered = true;
+			$sink.observers = observers; //debug
 			let index = $sink.index;
 			if(observers[index] === undefined){
 				observers[index] = sink;
