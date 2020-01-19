@@ -38,7 +38,8 @@ let source = (function(){
 						dispatch(id, value, state);
 					}
 					else{
-						pullpush.event(undefined, observers, getValue(id, state));
+						return (pullpush.broadcast(sink, observers, next))
+							(next);						
 					}
 				}
 				return next;
@@ -242,16 +243,25 @@ let title = source("title",
 		element.title = value;
 	}
 );
+
 //todo implement websocket
 //todo implement ajax
-let warning = (function(){ //todo specify the warning handler by passing an option to the sink (shared by the whole sink hierarchy underneath): sink(undefined, {warning: handler})?
-	let observers = {};
-	pullpush.onwarning(function onwarning(message){
-		pullpush.event(undefined, observers, message);
-	});
-	return function warning(sink){
-		return (pullpush.register(sink, observers))();
+
+let guard = function guard(source, handler){
+	let name = guard.name + "_" + source.name;
+	let names = {
+		[name]: function (sink, ...args){
+			try{
+				let value = pullpush(sink, source, ...args);
+				return value;
+			}
+			catch(error){
+				let handled = handler(error);
+				return handled;
+			}
+		},
 	};
-})();
+	return names[name];
+};
 
 let sink = pullpush.sink("minimo");

@@ -76,7 +76,7 @@ let pullpush = (function(){
 	}
 	function event(event, observers, value){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
-		checkEvent(event); //todo check that event in not undefined
+		checkEvent(event);
 		$$pushes++; //todo reset $$pushes to 0 (to cope with potential exceptions in previous javascript queue loop)
 		$$time = Date.now();
 		$$sequence++;
@@ -94,12 +94,6 @@ let pullpush = (function(){
 		return value;
 	}
 	function checkEvent(event){
-		if(event === undefined){
-			// pseudo-event
-			//todo check that no pseudo-event or real-event has not been checked yet in the same event loop step
-			//todo check that pullpush has not been called yet in the same event loop step
-			return true;
-		}
 		if(!(event instanceof Event)){
 			warning('3: invalid event argument in pullpush.event call');
 		}
@@ -376,6 +370,7 @@ let pullpush = (function(){
 		$$time = Date.now();
 		$$sequence++;
 		$$timeStamp = (new Event("custom")).timeStamp;
+		$$pushes = 1;
 		let $sink = sink($$safe);
 		$sink.timer = undefined;
 		if(source !== undefined){
@@ -384,6 +379,7 @@ let pullpush = (function(){
 		if(value !== $sink.value){
 			push(sink, value, true);
 		}
+		$$pushes = 0;
 	}
 	function broadcast(sink, observers, value){
 		//todo check that the observers have not accessed the old value in the same javascript queue loop
@@ -527,11 +523,16 @@ let pullpush = (function(){
 		}
 		return levels.join("\n");
 	}
-	let $onwarning = undefined;
-	function warning(message, $sink){
-		if(typeof $onwarning === "function"){
-			setTimeout($onwarning, 0, message);
+	let $$onwarning = undefined;
+	function $$warning(message){
+		if(typeof $$onwarning === "function"){
+			$$pushes = 1;
+			$$onwarning(message);
+			$$pushes = 0;
 		}
+	}
+	function warning(message, $sink){
+		setTimeout($$warning, 0, message);
 		if($sink){
 			throw "pullpush warning " + message + "\n" + stack($sink.safe, true, true);
 		}
@@ -539,16 +540,16 @@ let pullpush = (function(){
 	}
 	function onwarning(handler){
 		if(typeof handler === "function"){
-			if($onwarning === undefined){
-				$onwarning = handler;
+			if($$onwarning === undefined){
+				$$onwarning = handler;
 			}
 			else{
-				$onwarning = (function(handler1, handler2){
+				$$onwarning = (function(handler1, handler2){
 					return function(message){
 						handler1(message);
 						handler2(message);
 					};
-				})($onwarning, handler);
+				})($$onwarning, handler);
 			}
 		}
 	};
