@@ -127,11 +127,32 @@ let share = (function(){
 		let named = {
 			[name]: function(sink, ...args){
 				let value = pullpush(sink, source, ...args);
+				return (pullpush.register(sink, observers, register, unregister))
+					(pullpush.broadcast(sink, observers, value))
+					(value);
+
+
+/* //debug
 				if(value !== pullpush.value(sink)){
-					pullpush.event(undefined, observers, value);
+					return (pullpush.register(sink, observers, register, unregister))
+						(pullpush.broadcast(sink, observers, value))
+						(value);
 				}
 				return (pullpush.register(sink, observers, register, unregister))
 					(value);
+*/ //debug
+
+
+/* //debug
+				if(value !== pullpush.value(sink)){
+					return (pullpush.broadcast(sink, observers, value))
+						(pullpush.register(sink, observers, register, unregister))
+						(value);
+				}
+				return (pullpush.register(sink, observers, register, unregister))
+					(value);
+*/ //debug
+
 			},
 		};
 		return cache[id] = named[name];

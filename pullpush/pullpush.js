@@ -6,6 +6,7 @@ let pullpush = (function(){
 	let $$sinks = 0;
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
+	let $$pushes = 0; // levels of push 
 	let $$registers = Symbol("pullpushregisters");
 	let $$register = Symbol("pullpushregister");
 	let $$unregister = Symbol("pullpushunregister");
@@ -16,7 +17,7 @@ let pullpush = (function(){
 		let $sink = sink($$safe);
 		if($sink.sink === undefined || !$sink.pullpushable){
 			if(declaration){
-				warning('1: pullpush should not be called with an undefined source argument directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument for actual source access', $sink);
+				warning('21: pullpush should not be called with an undefined source argument directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument for actual source access', $sink);
 			}
 			$sink = $sink.safe(source.name)($$safe); // generate a sink automatically (using the function name)
 		}
@@ -58,6 +59,7 @@ let pullpush = (function(){
 		return result;
 	}
 	function push(sink, value, force){
+		$$pushes++;
 		let $sink = sink($$safe);
 		let $sinks = [];
 		if(value !== $sink.value){
@@ -69,12 +71,13 @@ let pullpush = (function(){
 			$sinks.push($sink);
 		}
 		pushSourcesInTopologicalOrder($sinks);
+		$$pushes--;
 		return value;
 	}
 	function event(event, observers, value){
-		//todo implement pullpush.multicast for the case where event is undefined (see pullpush.forcast implementation including returned value handlers)
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
-		checkEvent(event);
+		checkEvent(event); //todo check that event in not undefined
+		$$pushes++; //todo reset $$pushes to 0 (to cope with potential exceptions in previous javascript queue loop)
 		$$time = Date.now();
 		$$sequence++;
 		let $sinks = [];
@@ -87,6 +90,7 @@ let pullpush = (function(){
 			}
 		}
 		pushSourcesInTopologicalOrder($sinks);
+		$$pushes--;
 		return value;
 	}
 	function checkEvent(event){
@@ -381,6 +385,35 @@ let pullpush = (function(){
 			push(sink, value, true);
 		}
 	}
+	function broadcast(sink, observers, value){
+		//todo check that the observers have not accessed the old value in the same javascript queue loop
+		let $sink = sink($$safe);
+		if($$sink === $sink || $$sink === $sink.sink){ // sink locality
+			let $nonce = $sink.nonce;
+			$nonce.handlers++;
+			return handlerChain($nonce, broadcastHandler, sink, observers, value);
+		}
+		warning('22: incorrect sink argument in pullpush.broadcast call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
+	}
+	function broadcastHandler(nonce, sink, observers, value){
+		//todo make sure that the broadcast and register handlers are always executed in the same order (note: forcast handler is always executed after all others because of setTimeout)
+		if($$pushes > 0){ // note: only broadcast when pushing (not pulling) //todo deal with pullpush calls when pushing
+			let $sink = sink($$safe);
+			if(value !== $sink.value){
+				let $sinks = [];
+				for(let index in observers){
+					let $observer = observers[index]($$safe);
+					if(value !== $observer.value){
+						update($observer, value);
+						$observer.sequence = $$sequence;
+						$sinks.push($observer);
+					}
+				}
+				pushSourcesInTopologicalOrder($sinks);
+			}
+		}
+		return nonce;
+	}
 	function register(sink, observers, register, unregister){
 		let $sink = sink($$safe);
 		if($$sink === $sink || $$sink === $sink.sink){ // sink locality
@@ -402,7 +435,6 @@ let pullpush = (function(){
 		let $sink = sink($$safe);
 		if(!$sink.registered){
 			$sink.registered = true;
-			$sink.observers = observers; //debug
 			let index = $sink.index;
 			if(observers[index] === undefined){
 				observers[index] = sink;
@@ -523,6 +555,7 @@ let pullpush = (function(){
 	pullpush.onwarning = onwarning;
 	pullpush.sink = sink;
 	pullpush.forcast = forcast;
+	pullpush.broadcast = broadcast;
 	pullpush.register = register;
 	pullpush.registered = registered;
 	pullpush.event = event;

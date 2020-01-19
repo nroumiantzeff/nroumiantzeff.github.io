@@ -69,6 +69,7 @@ Example:
 List of functions available from pullpush.js to build libraries and frameworks:
 - pullpush.sink(): the top level sink
 - pullpush.forcast(sink, value, delay, source, ...args): specifies the sink value at a future time (the nearest future corresponds to the next JavaScript event queue iteration). note: either value or source is specified (theother one must be equal to undefined)
+- pullpush.broadcast(sink, observers, value): specifies the sink value at observers.
 - pullpush.event(event, observers, value): updates the observers declared using pullpush.register after occurence of a DOM event
 - pullpush.register(sink, observers, register, unregister): declare a sink as observer, optionaly specifying register and unregister handlers  
 - pullpush.registered(sink, observers): checks whether a sink has been registered using pullpush.register
