@@ -66,30 +66,13 @@ let pullpush = (function(){
 				$sink.currentValue = $sink.value;
 			}
 			$sink.sequence = $$sequence;
-			if($sink.sink !== undefined && $sink.sink.observers !== undefined){
-				//todo warning if the parent sinks have observers declared (except the first parent)
-				//todo warning if declaring observers on a sink that has grand-childrens
-				for(let index in $sink.sink.observers){
-					let $observer = $sink.sink.observers[index]($$safe);
-					if(value !== $observer.value){
-						update($observer, value);
-						if(force){
-							$observer.currentValue = $observer.value;
-						}
-						$observer.sequence = $$sequence;
-						$sinks.push($observer);
-					}
-				}
-			}
-			else{
-				$sinks.push($sink);
-			}
+			$sinks.push($sink);
 		}
 		pushSourcesInTopologicalOrder($sinks);
 		return value;
 	}
 	function event(event, observers, value){
-		//todo should be returned is the handler chain
+		//todo implement pullpush.multicast for the case where event is undefined (see pullpush.forcast implementation including returned value handlers)
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
 		checkEvent(event);
 		$$time = Date.now();
