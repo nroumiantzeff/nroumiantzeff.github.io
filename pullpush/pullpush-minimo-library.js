@@ -112,6 +112,31 @@ let switcher = (function(){
 		return named[name];
 	};
 })();
+let share = (function(){
+	let cache = {};
+	return function share(id, source, register, unregister){
+		//todo test with a source with observers (for example an input from the framework)
+		//todo check that the source has no observers (local source)
+		//todo take into account the source, register and unregister as key to the cache (to ensure referential transparency for multiple calls with different arguments but the id)
+		let cached = cache[id];
+		if(cached){
+			return cached;
+		}
+		let observers = {};
+		let name = share.name + "_" + id + "_" + source.name;
+		let named = {
+			[name]: function(sink, ...args){
+				let value = pullpush(sink, source, ...args);
+				if(value !== pullpush.value(sink)){
+					pullpush.event(undefined, observers, value);
+				}
+				return (pullpush.register(sink, observers, register, unregister))
+				(value);
+			},
+		};
+		return cache[id] = named[name];
+	};
+})();
 function local(sink, initial, value, delay){
 	if(value === undefined){
 		return pullpush.value(sink, initial);
@@ -119,34 +144,9 @@ function local(sink, initial, value, delay){
 	return (pullpush.forcast(sink, value, delay))
 		(pullpush.value(sink, initial));
 }
-let global = (function(){
-	let cache = {};
-	return function global(id){
-		let cached = cache[id];
-		if(cached){
-			return cached;
-		}
-		let observers = {};
-		let current;
-		let update = function update(sink, value){
-			current = value;
-			return pullpush.event(undefined, observers, value);
-		};
-		let name = global.name + "_" + id;
-		let named = {
-			[name]: function(sink, value, delay){
-				if(value === undefined){
-					return (pullpush.register(sink, observers))
-					(current);
-				}
-				return (pullpush.forcast(sink, undefined, delay, update, value))
-					(pullpush.register(sink, observers))
-					(current);
-			},
-		};
-		return cache[id] = named[name];
-	};
-})();
+let global = function(id){
+	return share(id, local);
+};
 function latest(sources){
 	function latest(sink){
 		if(sources.length > 0){

@@ -488,14 +488,16 @@ function fibonacci45(sink){
 }
 function nextFibonacci46(sink, value3){
 	let triggered = pullpush(sink, trigger(click("button15")));
-	let value2 = pullpush(sink, global("fibonacci46:2"), triggered? value3: undefined) || 1;
-	let value1 = pullpush(sink, global("fibonacci46:1"), triggered? value2: undefined) || 0;
-	return pullpush(sink, global("fibonacci46:3"), triggered? undefined: value2 + value1);
+	let value2 = pullpush(sink, global("fibonacci46:2"), 1, triggered? value3: undefined);
+	let value1 = pullpush(sink, global("fibonacci46:1"), 0, triggered? value2: undefined);
+	let value = pullpush(sink, global("fibonacci46:3"), undefined, triggered? undefined: value2 + value1);
+	return value;
 }
 function fibonacci46(sink){
-	let value2 = pullpush(sink, global("fibonacci46:2")) || 1;
-	let value1 = pullpush(sink, global("fibonacci46:1")) || 0;
-	return pullpush(sink, nextFibonacci46, value2 + value1);
+	let value2 = pullpush(sink, global("fibonacci46:2"), 1);
+	let value1 = pullpush(sink, global("fibonacci46:1"), 0);
+	let value = pullpush(sink, nextFibonacci46, value2 + value1);
+	return value;
 }
 pullpush(pullpush.sink(), sink1);
 pullpush(pullpush.sink(), sink2);

@@ -72,6 +72,7 @@ let pullpush = (function(){
 		return value;
 	}
 	function event(event, observers, value){
+		//todo should be returned is the handler chain
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
 		checkEvent(event);
 		$$time = Date.now();

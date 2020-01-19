@@ -242,8 +242,11 @@ let title = source("title",
 		element.title = value;
 	}
 );
-//todo implement ajax query
+
+
+
 //todo implement websocket
+//todo implement ajax
 let warning = (function(){ //todo specify the warning handler by passing an option to the sink (shared by the whole sink hierarchy underneath): sink(undefined, {warning: handler})?
 	let observers = {};
 	pullpush.onwarning(function onwarning(message){
