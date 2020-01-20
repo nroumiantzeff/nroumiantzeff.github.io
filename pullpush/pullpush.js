@@ -6,7 +6,7 @@ let pullpush = (function(){
 	let $$sinks = 0;
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
-	let $$pushes = 0; // levels of push 
+	let $$pulls = 0; // levels of pulling
 	let $$options = { stack: false, lock: false, }; // default sink options
 	let $$registers = Symbol("pullpushregisters");
 	let $$register = Symbol("pullpushregister");
@@ -36,7 +36,9 @@ let pullpush = (function(){
 			$sink.args = args;
 			$sink.sequence = $$sequence;
 			$$timeStamp = undefined;
+			$$pulls++; //todo make sure to decrement even in case of exception
 			update($sink, pull($sink, $sink.source, ...$sink.args));
+			$$pulls--; //todo make sure to decrement even in case of exception
 		}
 		$sink.duplicates = undefined;
 		return $sink.value;
@@ -60,7 +62,6 @@ let pullpush = (function(){
 		return result;
 	}
 	function push(sink, value, force){
-		$$pushes++;
 		let $sink = sink($$safe);
 		let $sinks = [];
 		if(value !== $sink.value){
@@ -72,13 +73,12 @@ let pullpush = (function(){
 			$sinks.push($sink);
 		}
 		pushSourcesInTopologicalOrder($sinks);
-		$$pushes--;
 		return value;
 	}
 	function event(event, observers, value){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
 		checkEvent(event);
-		$$pushes++; //todo reset $$pushes to 0 (to cope with potential exceptions in previous javascript queue loop)
+		$$pulls = 0;
 		$$time = Date.now();
 		$$sequence++;
 		let $sinks = [];
@@ -91,7 +91,6 @@ let pullpush = (function(){
 			}
 		}
 		pushSourcesInTopologicalOrder($sinks);
-		$$pushes--;
 		return value;
 	}
 	function checkEvent(event){
@@ -382,7 +381,7 @@ let pullpush = (function(){
 		$$time = Date.now();
 		$$sequence++;
 		$$timeStamp = (new Event("custom")).timeStamp;
-		$$pushes = 1;
+		$$pulls = 0;
 		let $sink = sink($$safe);
 		$sink.timer = undefined;
 		if(source !== undefined){
@@ -391,7 +390,6 @@ let pullpush = (function(){
 		if(value !== $sink.value){
 			push(sink, value, true);
 		}
-		$$pushes = 0;
 	}
 	function broadcast(sink, observers, value){
 		//todo check that the observers have not accessed the old value in the same javascript queue loop
@@ -405,7 +403,7 @@ let pullpush = (function(){
 	}
 	function broadcastHandler(nonce, sink, observers, value){
 		//todo make sure that the broadcast and register handlers are always executed in the same order (note: forcast handler is always executed after all others because of setTimeout)
-		if($$pushes > 0){ // note: only broadcast when pushing (not pulling) //todo deal with pullpush calls when pushing
+		if($$pulls === 0){ // note: only broadcast when pushing (not pulling) //todo test pushing inside pulls
 			let $sink = sink($$safe);
 			if(value !== $sink.value){
 				let $sinks = [];
@@ -538,9 +536,8 @@ let pullpush = (function(){
 	let $$onwarning = undefined;
 	function $$warning(message){
 		if(typeof $$onwarning === "function"){
-			$$pushes = 1;
+			$$pulls = 0;
 			$$onwarning(message);
-			$$pushes = 0;
 		}
 	}
 	function warning(message, $sink){
