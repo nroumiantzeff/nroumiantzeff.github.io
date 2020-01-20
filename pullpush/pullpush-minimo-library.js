@@ -280,3 +280,23 @@ function apr(sAB, sCfBD, ...c){
 	};
 	return named[name];
 }
+function shield(source1, source2){
+	// shield :: source a -> source e a -> source a
+	if(source2 === undefined){
+		return source1;
+	}
+	let name = source1.name.indexOf(shield.name + "_") === 0? source1.name + "_" + source2.name: shield.name + "_" + source1.name + "_" + source2.name;
+	let names = {
+		[name]: function(sink, ...args){
+			try{
+				let value1 = pullpush(sink, source1, ...args);
+				return value1;
+			}
+			catch(exception1){
+				let value2 = pullpush(sink, source2, exception1, ...args);
+				return value2;
+			}
+		},
+	};
+	return names[name];
+}

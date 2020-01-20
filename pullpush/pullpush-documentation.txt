@@ -100,8 +100,10 @@ List of functions currently provided by the minimo library:
 - mapr: maps a function to a source // mapr :: source a b -> (b -> c) -> source a c
 - apl: applies a source to a function // apl :: source a (b -> c) -> source c d -> source b d
 - apr: applies a function to a source // apr :: source a b -> source c (b -> d) -> source b d
+- shield: source which value is the value of the first specified source that does not throw an error // shield :: source a -> source e a -> source a
 
 List of functions currently provided by the minimo framework:
+- sink: the framework top level sink
 - input(id): defines a source from an input DOM element (which triggers "change" events)
 - click(id): defines a source from a button DOM element (which triggers "click" events)
 - dblclick(id): defines a source from a button DOM element (which triggers "dblclick" events)
@@ -110,8 +112,6 @@ List of functions currently provided by the minimo framework:
 - disabled(id): defines a source from a DOM element with a "disabled" attribute (notably style elements)
 - title(id): defines a source from a title of a DOM element (tooltip)
 - source(type, getValue, setValue, register, unregister, dispatch, handler): specifies new type of sources
-- guard: source which value is the value of the specified source or the returned value of the specified exception handler
-- sink: the framework top level sink
 
 Distribution files:
 pullpush.js: the Functional Reactive Programming pullpush engine

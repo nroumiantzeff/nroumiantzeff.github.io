@@ -273,12 +273,12 @@ function implicit19(sink){
 	return value;
 }
 function warning20(sink){
-	return pullpush(sink, guard(function(sink){
+	return pullpush(sink, shield(function(sink){
 			// throws an exception because pullpush cannot be called with the same sink
 			Number(pullpush(sink, allValues17)[0]) + Number(pullpush(sink, allValues17)[1]);
 			return "error: an exception should have occured because pullpush cannot be called with the same sink";
 		},
-		function handler(message){
+		function handler(sink, message){
 			if(typeof message === "string" && message.indexOf("pullpush warning 1:") === 0){
 				return "success: " + message;
 			}
@@ -361,58 +361,58 @@ function series33(sink, delay){
 let warnings34 = {};
 function warning34(sink){
 	if(!warnings34.id){
-		pullpush(sink("id"), guard(function id(sink, parent){
+		pullpush(sink("id"), shield(function id(sink, parent){
 				let result = pullpush.id(parent);
 				return "error: pullpush.id locality not abided: " + result;
 			},
-			function(error){
-				if(typeof error === "string" && error.indexOf("pullpush.id") >= 0){
+			function handler(sink, exception){
+				if(typeof exception === "string" && exception.indexOf("pullpush.id") >= 0){
 					warnings34.id = true;
 				}
 				else{
-					throw error;
+					throw exception;
 				}
 			}), sink);
 	}
 	if(!warnings34.sequence){
-		pullpush(sink("sequence"), guard(function sequence(sink, parent){
+		pullpush(sink("sequence"), shield(function sequence(sink, parent){
 				let result = pullpush.sequence(parent);
 				return "error: pullpush.sequence locality not abided: " + result;
 			},
-			function(error){
-				if(typeof error === "string" && error.indexOf("pullpush.sequence") >= 0){
+			function handler(sink, exception){
+				if(typeof exception === "string" && exception.indexOf("pullpush.sequence") >= 0){
 					warnings34.sequence = true;
 				}
 				else{
-					throw error;
+					throw exception;
 				}
 			}), sink);
 	}
 	if(!warnings34.time){
-		pullpush(sink("time"), guard(function time(sink, parent){
+		pullpush(sink("time"), shield(function time(sink, parent){
 				let result = pullpush.time(parent);
 				return "error: pullpush.time locality not abided: " + result;
 			},
-			function(error){
-				if(typeof error === "string" && error.indexOf("pullpush.time") >= 0){
+			function handler(sink, exception){
+				if(typeof exception === "string" && exception.indexOf("pullpush.time") >= 0){
 					warnings34.time = true;
 				}
 				else{
-					throw error;
+					throw exception;
 				}
 			}), sink);
 	}
 	if(!warnings34.value){
-		pullpush(sink("value"), guard(function value(sink, parent){
+		pullpush(sink("value"), shield(function value(sink, parent){
 				let result = pullpush.value(parent);
 				return "error: pullpush.value locality not abided: " + result;
 			},
-			function(error){
-				if(typeof error === "string" && error.indexOf("pullpush.value") >= 0){
+			function handler(sink, exception){
+				if(typeof exception === "string" && exception.indexOf("pullpush.value") >= 0){
 					warnings34.value = true;
 				}
 				else{
-					throw error;
+					throw exception;
 				}
 			}), sink);
 	}
