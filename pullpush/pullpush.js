@@ -403,7 +403,7 @@ let pullpush = (function(){
 	}
 	function broadcastHandler(nonce, sink, observers, value){
 		//todo make sure that the broadcast and register handlers are always executed in the same order (note: forcast handler is always executed after all others because of setTimeout)
-		if($$pulls === 0){ // note: only broadcast when pushing (not pulling) //todo test pushing inside pulls
+		if($$pulls === 0){ // note: only broadcast when pushing (not pulling)
 			let $sink = sink($$safe);
 			if(value !== $sink.value){
 				let $sinks = [];

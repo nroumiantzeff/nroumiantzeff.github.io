@@ -66,6 +66,8 @@
 <input id="sink44" readonly/> input1 * input16 (ignore input16 when input1 is 0 or NaN)<br/>
 <input id="sink45" readonly/> next fibonacci number on button15 click (using local sources)<br/>
 <input id="sink46" readonly/> next fibonacci number on button15 click (using global sources)<br/>
+<input id="sink47" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness without persistency)<br/>
+<input id="sink48" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness with persistency)<br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -207,6 +209,12 @@ function sink45(sink){
 }
 function sink46(sink){
 	document.getElementById("sink46").value = pullpush(sink, fibonacci46);
+}
+function sink47(sink){
+	document.getElementById("sink47").value = pullpush(sink, fibonacci47);
+}
+function sink48(sink){
+	document.getElementById("sink48").value = pullpush(sink, fibonacci48);
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -487,6 +495,78 @@ function fibonacci46(sink){
 	let value = pullpush(sink, nextFibonacci46, value2 + value1);
 	return value;
 }
+function nextFibonacci47a(sink, value3){
+	let triggered = pullpush(sink, trigger(click("button15")));
+	let value2 = pullpush(sink, global("fibonacci47:2a"), 1, triggered? value3: undefined);
+	let value1 = pullpush(sink, global("fibonacci47:1a"), 0, triggered? value2: undefined);
+	let value = pullpush(sink, global("fibonacci47:3a"), undefined, triggered? undefined: value2 + value1);
+	return value;
+}
+function nextFibonacci47b(sink, value3){
+	let triggered = pullpush(sink, trigger(click("button15")));
+	let value2 = pullpush(sink, global("fibonacci47:2b"), 1, triggered? value3: undefined);
+	let value1 = pullpush(sink, global("fibonacci47:1b"), 0, triggered? value2: undefined);
+	let value = pullpush(sink, global("fibonacci47:3b"), undefined, triggered? undefined: value2 + value1);
+	return value;
+}
+function fibonacci47(sink){
+	let input1 = pullpush(sink, input("input1"));
+	if(input1){
+		let value2a = pullpush(sink, global("fibonacci47:2a"), 1);
+		let value1a = pullpush(sink, global("fibonacci47:1a"), 0);
+		let value3a = pullpush(sink, nextFibonacci47a, value2a + value1a);
+		return value3a;
+	}
+	let value2b = pullpush(sink, global("fibonacci47:2b"), 1);
+	let value1b = pullpush(sink, global("fibonacci47:1b"), 0);
+	let value3b = pullpush(sink, nextFibonacci47b, value2b + value1b);
+	return value3b;
+}
+function nextFibonacci48a(sink, value3){
+	pullpush(sink("fibonacci48:2a")); // declaration
+	pullpush(sink("fibonacci48:1a")); // declaration
+	pullpush(sink("fibonacci48:3a")); // declaration
+	let triggered = pullpush(sink, trigger(click("button15")));
+	let input1 = pullpush(sink, input("input1"));
+	if(input1){
+		let value2 = pullpush(sink("fibonacci48:2a"), global("fibonacci48:2a"), 1, triggered? value3: undefined);
+		let value1 = pullpush(sink("fibonacci48:1a"), global("fibonacci48:1a"), 0, triggered? value2: undefined);
+		let value = pullpush(sink("fibonacci48:3a"), global("fibonacci48:3a"), undefined, triggered? undefined: value2 + value1);
+		return value;
+	}
+}
+function nextFibonacci48b(sink, value3){
+	pullpush(sink("fibonacci48:2b")); // declaration
+	pullpush(sink("fibonacci48:1b")); // declaration
+	pullpush(sink("fibonacci48:3b")); // declaration
+	let triggered = pullpush(sink, trigger(click("button15")));
+	let input1 = pullpush(sink, input("input1"));
+	if(!input1){
+		let value2 = pullpush(sink("fibonacci48:2b"), global("fibonacci48:2b"), 1, triggered? value3: undefined);
+		let value1 = pullpush(sink("fibonacci48:1b"), global("fibonacci48:1b"), 0, triggered? value2: undefined);
+		let value = pullpush(sink("fibonacci48:3b"), global("fibonacci48:3b"), undefined, triggered? undefined: value2 + value1);
+		return value;
+	}
+}
+function fibonacci48(sink){
+	pullpush(sink("fibonacci48:2a")); // declaration
+	pullpush(sink("fibonacci48:1a")); // declaration
+	pullpush(sink("fibonacci48:3a")); // declaration
+	pullpush(sink("fibonacci48:2b")); // declaration
+	pullpush(sink("fibonacci48:1b")); // declaration
+	pullpush(sink("fibonacci48:3b")); // declaration
+	let input1 = pullpush(sink, input("input1"));
+	if(input1){
+		let value2a = pullpush(sink("fibonacci48:2a"), global("fibonacci48:2a"), 1);
+		let value1a = pullpush(sink("fibonacci48:1a"), global("fibonacci48:1a"), 0);
+		let value3a = pullpush(sink("fibonacci48:3a"), nextFibonacci48a, value2a + value1a);
+		return value3a;
+	}
+	let value2b = pullpush(sink("fibonacci48:2b"), global("fibonacci48:2b"), 1);
+	let value1b = pullpush(sink("fibonacci48:1b"), global("fibonacci48:1b"), 0);
+	let value3b = pullpush(sink("fibonacci48:3b"), nextFibonacci48b, value2b + value1b);
+	return value3b;
+}
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -533,6 +613,8 @@ pullpush(sink, sink43);
 pullpush(sink, sink44);
 pullpush(sink, sink45);
 pullpush(sink, sink46);
+pullpush(sink, sink47);
+pullpush(sink, sink48);
 </script>
 </body>
 </html>
