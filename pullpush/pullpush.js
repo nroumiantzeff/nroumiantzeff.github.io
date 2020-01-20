@@ -7,6 +7,7 @@ let pullpush = (function(){
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
 	let $$pushes = 0; // levels of push 
+	let $$options = { stack: false, lock: false, }; // default sink options
 	let $$registers = Symbol("pullpushregisters");
 	let $$register = Symbol("pullpushregister");
 	let $$unregister = Symbol("pullpushunregister");
@@ -177,31 +178,19 @@ let pullpush = (function(){
 		$sink.value = value;
 		return value;
 	}
-	let $debugging = (function(){
-		// debugger detection
-		// credit to huiting Chen https://stackoverflow.com/questions/7798748/find-out-whether-chrome-console-is-open/51533164#51533164?newreg=6a6f07fc87ce4756b2d7060fbadcc9ed
-		let debugging = false;
-		var element = document.createElement('chrome-debugger-detector');
-		Object.defineProperty(element, 'id', {
-			get: function(){
-				debugging = true;
-				return "chrome-debugger-is-opened";
-			}
-		});
-		console.log(element);
-		return debugging;
-	})();
-	function generateSink($sink, id){
+	function generateSink($sink, id, options){
 		let $parent = $sink;
 		if($parent && $parent.index !== 0 && $parent.source === undefined){
 			warning('16: invalid sink("' + $parent.id + '")("' + id + '"): only one level of id is allowed per pullpush call', $parent);
 		}
 		$sink = $parent? $parent.sources[id]: undefined;
 		if(!$sink){
+			let overriden = overrideOptions($parent, options);
 			$sink = {
 				index: $$sinks++,
 				sink: $parent,
 				id: id,
+				options: overriden,
 				source: undefined,
 				args: undefined,
 				value: undefined,
@@ -214,7 +203,7 @@ let pullpush = (function(){
 				sources: {},
 				resources: {}, // refreshed sources, used clean sources by comparing sources and resources
 				registers: {},
-				stack: $debugging? Error().stack: undefined,
+				stack: overriden.stack? Error().stack: undefined,
 			};
 			$$safe($sink);
 			if($parent){
@@ -231,16 +220,39 @@ let pullpush = (function(){
 		if(!$sink.safe || $sink.sequence !== $$sequence){ // note: do not call pullpush with the same $sink.safe argument for different $$sequence values
 			let name = "sink" + $sink.index;
 			let named = {
-				[name]: function(id, source, ...args){
+				[name]: function(id, options){
 					if(id === $$safe){
 						return $sink;
 					}
-					return generateSink($sink, id, source, ...args);
+					return generateSink($sink, id, options);
 				},
 			};
 			$sink.safe = named[name]; 
 		}
 		return $sink.safe;
+	}
+	function overrideOption(options, overriden, name, value){
+		if(options === overriden){
+			overriden = {};
+			for(let key in options){
+				overriden[key] = options[key];
+			}
+		}
+		overriden[name] = value;
+		return overriden;
+	}
+	function overrideOptions($sink, override){
+		let options = $sink? $sink.options: $$options;
+		if(override === undefined || options.lock){
+			return options;
+		}
+		let overriden = options;
+		for(let name in override){
+			if(override[name] !== options[name]){
+				overriden = overrideOption(options, overriden, name, override[name]);
+			}
+		}
+		return overriden;
 	}
 	function sink(){ // universal sink (top level)
 		if($$sink0 == undefined){
