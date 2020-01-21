@@ -280,10 +280,14 @@ function implicit19(sink){
 	let value = pullpush.id(sink);
 	return value;
 }
+function warning20value(sink, value){
+	return value;
+}
 function warning20(sink){
 	return pullpush(sink, shield(function(sink){
 			// throws an exception because pullpush cannot be called with the same sink
-			Number(pullpush(sink, allValues17)[0]) + Number(pullpush(sink, allValues17)[1]);
+			//debug Number(pullpush(sink, allValues17)[0]) + Number(pullpush(sink, allValues17)[1]); //todo shield should also protect exception when pushing
+			let value = pullpush(sink, warning20value, 1) + pullpush(sink, warning20value, 2);
 			return "error: an exception should have occured because pullpush cannot be called with the same sink";
 		},
 		function handler(sink, message){

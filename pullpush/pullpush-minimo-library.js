@@ -282,6 +282,7 @@ function apr(sAB, sCfBD, ...c){
 }
 function shield(source1, source2){
 	// shield :: source a -> source e a -> source a
+	//todo protect against source1 calls from push (in addition to protection against calls by pullpush): solution the engine should transform exceptions in sources to Error returned values
 	if(source2 === undefined){
 		return source1;
 	}
