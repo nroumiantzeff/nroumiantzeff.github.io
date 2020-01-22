@@ -263,24 +263,7 @@ function apr(sAB, sCfBD, ...c){
 	};
 	return named[name];
 }
-function shield(source1, source2){
-	// shield :: source a b -> source (e a) b -> source a b
-	if(source2 === undefined){
-		return source1;
-	}
-	let name = shield.name + "_" + source1.name + "_" + source2.name;
-	let names = {
-		[name]: function(sink, ...args){
-			try{
-				return pullpush(sink("handled"), source1, ...args);
-			}
-			catch(exception){
-				return pullpush(sink("handler"), source2, exception, ...args);
-			}
-		},
-	};
-	return names[name];
-}
+
 function shell(source1, source2){
 	// shell :: source a b -> source (source a b) b -> source a b
 	if(source2 === undefined){
@@ -294,5 +277,21 @@ function shell(source1, source2){
 	};
 	return names[name];
 }
-
-
+function shield(source1, source2){
+	// shield :: source a b -> source a b -> source a b :: source a b -> source (a error) b -> source a b
+	if(source2 === undefined){
+		return source1;
+	}
+	let name = shield.name + "_" + source1.name + "_" + source2.name;
+	let names = {
+		[name]: function(sink, ...args){
+			try{
+				return pullpush(sink("handled"), source1, ...args);
+			}
+			catch(exception){
+				return pullpush(sink("handler"), source2, ...args, exception);
+			}
+		},
+	};
+	return names[name];
+}
