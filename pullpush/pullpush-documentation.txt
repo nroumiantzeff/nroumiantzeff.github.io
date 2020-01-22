@@ -94,6 +94,8 @@ List of functions currently provided by the minimo library:
 - latest: a source which value is the the latest value among the specified sources
 - all: a source whitch value changes once all the specified sources value have changed
 - series: a source which value is the sum of n previous values
+- reverse: defines a source from a source with reversed arguments (except the sink argument)
+- shuffle: defines a source from a source and a function which suffles the source arguments (except the sink argument)
 - curry: a source with the last argument value fixed // curry :: source (a b) c -> a -> source b (source (a b) c)
 - identity: a source which value is the first argument // identity :: source a a
 - unit: defines a source with a constant value // unit :: a -> source () a

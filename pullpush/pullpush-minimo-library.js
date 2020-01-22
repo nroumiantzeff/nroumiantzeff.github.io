@@ -196,12 +196,12 @@ function curry(source, arg){
 	return named[name];
 }
 function identity(sink, arg){
-	// identity :: source a a
+	// identity :: source a a :: source (a b) a
 	return arg;
 }
 function unit(value){
 	// unit :: a -> source () a
-	let name = typeof value === "function"? value.name: value? value.toString(): "unit";
+	let name = typeof value === "function"? value.name: value? value.toString(): unit.name;
 	let named = {
 		[name]: function(sink){
 			return value;
@@ -263,6 +263,23 @@ function apr(sAB, sCfBD, ...c){
 	};
 	return named[name];
 }
+function shuffle(sBC, fAB){
+	// shuffle :: source (b) c -> ((a) -> (b)) -> source (a) c
+	let name = shuffle.name + "_" + sBC.name + "_" + fAB.name;
+	let named = {
+		[name]: function(sink, ...a){
+			let b = fAB(...a);
+			let c = pullpush(sink, sBC, ...b);
+			return c;
+		},
+	};
+	return named[name];
+}
+let reverse = function(source){
+	return shuffle(source, function reverse(...args){
+		return args.slice().reverse();
+	});
+};
 
 function shell(source1, source2){
 	// shell :: source a b -> source (source a b) b -> source a b
