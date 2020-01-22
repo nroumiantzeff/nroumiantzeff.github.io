@@ -12,6 +12,7 @@ What is pullpush.js and what it is not:
 - pullpush.js is not an architecture (such as the two-way-binding architecture or the Elm architecture), it is a new way of programming (such as structured programming or object-oriented programming)
 - pullpush.js is not an API, it exposes a single function, "pullpush" for writing applications (and a dozen other functions to develop libraries and frameworks)
 - pullpush.js is not about new concepts, it is based on two existing simple concepts, "source" and "sink" (and a third concept for libraries and frameworks, "observers")
+- pullpush.js is not about special flow continuation such as CPS, it only uses standard function return but note that try/catch is supported
 - pullpush.js is not about procedural vs functional programming, as pullpush.js supports both although its intends to promote pure functional programming
 - pullpush.js is not about category theory but libraries build on top of pullpush.js also provide higher-order functions which combine functions (sources) in a "point-less" way independent on function arguments (notably the sink) and function returned value (source value)
 - pullpush.js is not a type system but comments with source argument and value types are recommanded has they help reasoning when combining sources and other functions  (note that you may use any JavaScript type checker if you whish)

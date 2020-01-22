@@ -8,6 +8,7 @@ let pullpush = (function(){
 	let $$sink = undefined; // currently processed sink
 	let $$pulls = 0; // levels of pulling
 	let $$options = { stack: false, lock: false, }; // default sink options
+	let $$none = Symbol("none");
 	let $$registers = Symbol("pullpushregisters");
 	let $$register = Symbol("pullpushregister");
 	let $$unregister = Symbol("pullpushunregister");
@@ -41,13 +42,23 @@ let pullpush = (function(){
 			$$pulls--; //todo make sure to decrement even in case of exception
 		}
 		$sink.duplicates = undefined;
+		if($sink.error !== $$none){
+			throw $sink.error;
+		}
 		return $sink.value;
 	}
 	function pull($sink, source, ...args){
 		$sink.nonce = { handlers: 0 };
+		$sink.error = $$none; 
 		let current = $$sink;
 		$$sink = $sink;
-		let value = source($$safe($sink), ...args); // immutability: $$safe($sink) ensures that the first argument passed to $sink.source is different from previous calls
+		let value;
+		try{
+			value = source($$safe($sink), ...args); // immutability: $$safe($sink) ensures that the first argument passed to $sink.source is different from previous calls
+		}
+		catch(exception){
+			$sink.error = exception;
+		}
 		$$sink = current;
 		checkSources($sink);
 		let result = handlerValue($sink.nonce, value);
@@ -58,6 +69,11 @@ let pullpush = (function(){
 		if(result === $sink.nonce){
 			warning('18: no value specified in the returned chain. Note: even an undefined value must be explicitly specified in this case, for example: return (pullpush.forcast(sink, 0))()', $sink);
 			return;
+		}
+		if($sink.error !== $$none){
+			if($$pulls > 0){
+				throw $sink.error;
+			}
 		}
 		return result;
 	}
@@ -162,7 +178,7 @@ let pullpush = (function(){
 		$sink.duplicates = undefined;
 		let value = pull($sink, $sink.source, ...$sink.args);
 		$sink.duplicates = undefined;
-		if(value === $sink.value){
+		if(value === $sink.value && $sink.error === $$none){
 			return false;
 		}
 		update($sink, value);
@@ -543,9 +559,9 @@ let pullpush = (function(){
 	function warning(message, $sink){
 		setTimeout($$warning, 0, message);
 		if($sink){
-			throw "pullpush warning " + message + "\n" + stack($sink.safe, true, true);
+			throw Error("pullpush warning " + message + "\n" + stack($sink.safe, true, true));
 		}
-		throw "pullpush warning " + message;
+		throw Error("pullpush warning " + message);
 	}
 	function onwarning(handler){
 		if(typeof handler === "function"){
