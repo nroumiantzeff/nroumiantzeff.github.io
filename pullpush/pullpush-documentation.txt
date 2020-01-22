@@ -83,7 +83,6 @@ List of functions available from pullpush.js to build libraries and frameworks:
 
 List of functions currently provided by the minimo library:
 - stepper: a source which value increments automatically with the specified delay
-- series: a source which value is the sum of n previous values
 - timer: a source which value is the (relative) time
 - counter: a source which counts
 - toggle: a source which value toggles between false and true each time the specified source value changes
@@ -94,14 +93,16 @@ List of functions currently provided by the minimo library:
 - global: a source which value is specified globaly (the source is accessed by specifying an id)
 - latest: a source which value is the the latest value among the specified sources
 - all: a source whitch value changes once all the specified sources value have changed
-- curry: a source with the last argument value fixed
-- id: a source which value is the first argument
-- unit: defines a source with a constant value // unit :: a -> source a
+- series: a source which value is the sum of n previous values
+- curry: a source with the last argument value fixed // curry :: source (a b) c -> a -> source b (source (a b) c)
+- identity: a source which value is the first argument // identity :: source a a
+- unit: defines a source with a constant value // unit :: a -> source () a
 - mapl: maps a source to a function // mapl :: (a -> b) -> source b c -> source a c
 - mapr: maps a function to a source // mapr :: source a b -> (b -> c) -> source a c
 - apl: applies a source to a function // apl :: source a (b -> c) -> source c d -> source b d
 - apr: applies a function to a source // apr :: source a b -> source c (b -> d) -> source b d
-- shield: source which value is the value of the first specified source that does not throw an error // shield :: source a -> source e a -> source a
+- shield: source which value is the value of the first specified source that does not throw an error // shield :: source a b -> source (e a) b -> source a b
+- shell: source which value is the reslt of applying the second specified source on the value of the first specified source // shell :: source a b -> source ((source a b) a) c -> source a c
 
 List of functions currently provided by the minimo framework:
 - sink: the framework top level sink

@@ -280,13 +280,22 @@ function implicit19(sink){
 	let value = pullpush.id(sink);
 	return value;
 }
+function twice20(source1, sourcer1, sourcer2, source2){
+	// note: this is an example of source combinations (its fun but is it easily understandable?)
+	//todo use function comosition and curry to get "point-less" by removing: "(sink, ...args)" 
+	return function(sink, ...args){
+		return sourcer1(source1, sourcer2(source1, source2))(sink, ...args);
+	};
+}
 function warning20(sink){
-	return pullpush(sink, shield(function(sink){
-			// throws an exception because pullpush cannot be called with the same sink
-			Number(pullpush(sink, allValues17)[0]) + Number(pullpush(sink, allValues17)[1]);
-			return "error: an exception should have occured because pullpush cannot be called with the same sink";
+	return pullpush(sink, twice20(function(sink){
+		// throws an exception because pullpush cannot be called with the same sink
+		Number(pullpush(sink, allValues17)[0]) + Number(pullpush(sink, allValues17)[1]);
+		return "error: an exception should have occured because pullpush cannot be called with the same sink";
 		},
-		function handler(sink, exception){
+		shell,
+		shield,
+		function(sink, exception, ...args){
 			if(exception instanceof Error && typeof exception.message === "string" && exception.message.indexOf("pullpush warning 1:") === 0){
 				return "success: " + exception.message;
 			}

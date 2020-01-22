@@ -130,29 +130,6 @@ let share = (function(){
 				return (pullpush.register(sink, observers, register, unregister))
 					(pullpush.broadcast(sink, observers, value))
 					(value);
-
-
-/* //debug
-				if(value !== pullpush.value(sink)){
-					return (pullpush.register(sink, observers, register, unregister))
-						(pullpush.broadcast(sink, observers, value))
-						(value);
-				}
-				return (pullpush.register(sink, observers, register, unregister))
-					(value);
-*/ //debug
-
-
-/* //debug
-				if(value !== pullpush.value(sink)){
-					return (pullpush.broadcast(sink, observers, value))
-						(pullpush.register(sink, observers, register, unregister))
-						(value);
-				}
-				return (pullpush.register(sink, observers, register, unregister))
-					(value);
-*/ //debug
-
 			},
 		};
 		return cache[id] = named[name];
@@ -209,15 +186,21 @@ function all(sources){
 	};
 }
 function curry(source, arg){
-	return function curry(sink, ...args){
-		return source(sink, ...args, arg);
+	// curry :: source (a b) c -> a -> source b (source (a b) c)
+	let name = curry.name + "_" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			return source(sink, arg, ...args);
+		},
 	};
+	return named[name];
 }
 function identity(sink, arg){
+	// identity :: source a a
 	return arg;
 }
 function unit(value){
-	// unit :: a -> source a
+	// unit :: a -> source () a
 	let name = typeof value === "function"? value.name: value? value.toString(): "unit";
 	let named = {
 		[name]: function(sink){
@@ -228,7 +211,7 @@ function unit(value){
 }
 function mapl(fAB, sBC){
 	// mapl :: (a -> b) -> source b c -> source a c
-	let name = "map_" + fAB.name + "_" + sBC.name;
+	let name = mapl.name + "_" + fAB.name + "_" + sBC.name;
 	let named = {
 		[name]: function(sink, ...a){
 			let b = fAB(...a);
@@ -240,7 +223,7 @@ function mapl(fAB, sBC){
 }
 function mapr(sAB, fBC){
 	// mapr :: source a b -> (b -> c) -> source a c
-	let name = "mapr_" + sAB.name + "_" + fBC.name;
+	let name = mapr.name + "_" + sAB.name + "_" + fBC.name;
 	let named = {
 		[name]: function(sink, ...a){
 			let b = pullpush(sink, sAB, ...a);
@@ -252,7 +235,7 @@ function mapr(sAB, fBC){
 }
 function apl(sAfBC, sCD, ...a){
 	// apl :: source a (b -> c) -> source c d -> source b d
-	let name = "apl_" + sAfBC.name + "_" + sCD.name;
+	let name = apl.name + "_" + sAfBC.name + "_" + sCD.name;
 	let name1 = sAfBC.name; 
 	let name2 = sCD.name !== sAfBC.name? sCD.name: "apl" + sCD.name; 
 	let named = {
@@ -267,7 +250,7 @@ function apl(sAfBC, sCD, ...a){
 }
 function apr(sAB, sCfBD, ...c){
 	// apr :: source a b -> source c (b -> d) -> source b d
-	let name = "apr_" + sAB.name + "_" + sCfBD.name;
+	let name = apr.name + "_" + sAB.name + "_" + sCfBD.name;
 	let name1 = sAB.name; 
 	let name2 = sCfBD.name !== sAB.name? sCfBD.name: "apr" + sCfBD.name; 
 	let named = {
@@ -281,12 +264,11 @@ function apr(sAB, sCfBD, ...c){
 	return named[name];
 }
 function shield(source1, source2){
-	// shield :: source a -> source e a -> source a
-	//todo protect against source1 calls from push (in addition to protection against calls by pullpush): solution the engine should transform exceptions in sources to Error returned values
+	// shield :: source a b -> source (e a) b -> source a b
 	if(source2 === undefined){
 		return source1;
 	}
-	let name = source1.name.indexOf(shield.name + "_") === 0? source1.name + "_" + source2.name: shield.name + "_" + source1.name + "_" + source2.name;
+	let name = shield.name + "_" + source1.name + "_" + source2.name;
 	let names = {
 		[name]: function(sink, ...args){
 			try{
@@ -301,3 +283,19 @@ function shield(source1, source2){
 	};
 	return names[name];
 }
+function shell(source1, source2){
+	// shell :: source a b -> source (source a b) b -> source a b
+	if(source2 === undefined){
+		return source1;
+	}
+	let name = shell.name + "_" + source1.name + "_" + source2.name;
+	let names = {
+		[name]: function(sink, ...args){
+			let value = pullpush(sink, source2, source1, ...args);
+			return value;
+		},
+	};
+	return names[name];
+}
+
+
