@@ -272,12 +272,10 @@ function shield(source1, source2){
 	let names = {
 		[name]: function(sink, ...args){
 			try{
-				let value1 = pullpush(sink, source1, ...args);
-				return value1;
+				return pullpush(sink("handled"), source1, ...args);
 			}
-			catch(exception1){
-				let value2 = pullpush(sink, source2, exception1, ...args);
-				return value2;
+			catch(exception){
+				return pullpush(sink("handler"), source2, exception, ...args);
 			}
 		},
 	};
@@ -291,8 +289,7 @@ function shell(source1, source2){
 	let name = shell.name + "_" + source1.name + "_" + source2.name;
 	let names = {
 		[name]: function(sink, ...args){
-			let value = pullpush(sink, source2, source1, ...args);
-			return value;
+			return pullpush(sink, source2, source1, ...args);
 		},
 	};
 	return names[name];
