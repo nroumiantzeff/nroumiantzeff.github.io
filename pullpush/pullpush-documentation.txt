@@ -104,7 +104,7 @@ List of functions currently provided by the minimo library:
 - apl: applies a source to a function // apl :: source a (b -> c) -> source c d -> source b d
 - apr: applies a function to a source // apr :: source a b -> source c (b -> d) -> source b d
 - shell: source which value is the reslt of applying the second specified source on the value of the first specified source // shell :: source a b -> source ((source a b) a) c -> source a c
-- shield: source which value is the value of the first specified source that does not throw an error // shield :: source a b -> source a b -> source a b :: source a b -> source (a error) b -> source a b
+- shield: source which value is the value of the first specified source that does not throw an error // shield :: source a b -> source error b -> source a b
 
 List of functions currently provided by the minimo framework:
 - sink: the framework top level sink

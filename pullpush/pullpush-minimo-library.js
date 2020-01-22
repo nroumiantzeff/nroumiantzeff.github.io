@@ -280,7 +280,6 @@ let reverse = function(source){
 		return args.slice().reverse();
 	});
 };
-
 function shell(source1, source2){
 	// shell :: source a b -> source (source a b) b -> source a b
 	if(source2 === undefined){
@@ -295,7 +294,7 @@ function shell(source1, source2){
 	return names[name];
 }
 function shield(source1, source2){
-	// shield :: source a b -> source a b -> source a b :: source a b -> source (a error) b -> source a b
+	// shield :: source a b -> source error b -> source a b
 	if(source2 === undefined){
 		return source1;
 	}
@@ -306,7 +305,7 @@ function shield(source1, source2){
 				return pullpush(sink("handled"), source1, ...args);
 			}
 			catch(exception){
-				return pullpush(sink("handler"), source2, ...args, exception);
+				return pullpush(sink("handler"), source2, exception);
 			}
 		},
 	};
