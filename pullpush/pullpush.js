@@ -1,3 +1,6 @@
+//todo rename to pullpushEngine.js (more distinguishing whensearching the web than pullpush.js)
+//todo point to the documentation
+//todo copyright 
 let pullpush = (function(){
 	"use strict";
 	let $$time = Date.now();
@@ -23,25 +26,33 @@ let pullpush = (function(){
 			}
 			$sink = $sink.safe(source.name)($$safe); // generate a sink automatically (using the function name)
 		}
-		$sink.pullpushable = false;
 		checkDuplicates($sink, declaration); // if declaration: no duplicate check
 		if(declaration){
 			return;
 		}
-		$sink.duplicates = undefined;
-		if($sink.source === undefined || !equals(args, $sink.args)){
-			if($sink.source === undefined){
-				// note: use the source declared first ignoring sources declared afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
-				$sink.source = source;
+		let incremented = false;
+		try{
+			$sink.pullpushable = false;
+			$sink.duplicates = undefined;
+			if($sink.source === undefined || !equals(args, $sink.args)){
+				if($sink.source === undefined){
+					// note: use the source declared first ignoring sources declared afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
+					$sink.source = source;
+				}
+				$sink.args = args;
+				$sink.sequence = $$sequence;
+				$$timeStamp = undefined;
+				$$pulls++;
+				incremented = true;
+				update($sink, pull($sink, $sink.source, ...$sink.args));
 			}
-			$sink.args = args;
-			$sink.sequence = $$sequence;
-			$$timeStamp = undefined;
-			$$pulls++; //todo make sure to decrement even in case of exception
-			update($sink, pull($sink, $sink.source, ...$sink.args));
-			$$pulls--; //todo make sure to decrement even in case of exception
 		}
-		$sink.duplicates = undefined;
+		finally{
+			if(incremented){
+				$$pulls--;
+			}
+			$sink.duplicates = undefined;
+		}
 		if($sink.error !== $$none){
 			throw $sink.error;
 		}
