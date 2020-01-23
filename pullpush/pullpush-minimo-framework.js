@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////
 // pullpush minimo framework
 
-let source = (function(){
-	return function source(type, getValue, setValue, register, unregister, dispatch, handler){
+let sourcer = (function(){
+	return function sourcer(type, getValue, setValue, register, unregister, dispatch, handler){
 		let cache = {};
-		return function source(id, value){
+		return function sourcer(id, value){
 			let cached = cache[id];
 			if(cached){
 				return cached;
@@ -62,7 +62,7 @@ let source = (function(){
 		};
 	};
 })();
-let input = source("input",
+let input = sourcer("input",
 	function getValue(id){
 		let element = document.getElementById(id);
 		return element.value;
@@ -85,7 +85,7 @@ let input = source("input",
 		element.dispatchEvent(event);
 	}
 );
-let click = source("click",
+let click = sourcer("click",
 	function getValue(id, state){
 		return state || 0;
 	},
@@ -116,7 +116,7 @@ let click = source("click",
 		return state;
 	}
 );
-let dblclick = source("dblclick",
+let dblclick = sourcer("dblclick",
 	function getValue(id, state){
 		return state || 0;
 	},
@@ -147,7 +147,7 @@ let dblclick = source("dblclick",
 		return state;
 	}
 );
-let focus = source("focus",
+let focus = sourcer("focus",
 	function getValue(id){
 		let element = document.getElementById(id);
 		return (element === document.activeElement);
@@ -177,7 +177,7 @@ let focus = source("focus",
 		element.dispatchEvent(event);
 	}
 );
-let select = source("select",
+let select = sourcer("select",
 	function getValue(id){
 		let element = document.getElementById(id);
 		if(element !== document.activeElement){
@@ -223,7 +223,7 @@ let select = source("select",
 		element.dispatchEvent(event);
 	}
 );
-let disabled = source("disabled",
+let disabled = sourcer("disabled",
 	function getValue(id){
 		let element = document.getElementById(id);
 		return element.disabled;
@@ -233,7 +233,7 @@ let disabled = source("disabled",
 		element.disabled = value;
 	}
 );
-let title = source("title",
+let title = sourcer("title",
 	function getValue(id){
 		let element = document.getElementById(id);
 		return element.title;
