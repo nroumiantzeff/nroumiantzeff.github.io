@@ -247,7 +247,7 @@ let title = sourcer("title",
 //todo implement websocket
 //todo implement ajax
 
-let sink = pullpush.sink()("minimo", {
+let sink = pullpush.sink("minimo", {
 	stack: (function(){
 		// debugger detection, credit to huiting Chen https://stackoverflow.com/questions/7798748/find-out-whether-chrome-console-is-open/51533164#51533164?newreg=6a6f07fc87ce4756b2d7060fbadcc9ed
 		let debugging = false;
