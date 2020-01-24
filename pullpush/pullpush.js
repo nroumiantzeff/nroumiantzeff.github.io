@@ -10,6 +10,7 @@ let pullpush = (function(){
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
 	let $$pulls = 0; // levels of pulling
+	let $$stack = [null]; // pullpush call stack to check the consistecy of $sink.level
 	let $$options = { stack: false, lock: false, }; // default sink options
 	let $$none = Symbol("none");
 	let $$registers = Symbol("pullpushregisters");
@@ -44,7 +45,21 @@ let pullpush = (function(){
 				$$timeStamp = undefined;
 				$$pulls++;
 				incremented = true;
-				update($sink, pull($sink, $sink.source, ...$sink.args));
+				if($$stack.length !== 0){
+					if($$stack[$$stack.length - 1] === null){
+						$$stack[$$stack.length - 1] = $sink;
+					}
+					else if($sink.level !== $$stack[$$stack.length - 1].level){
+						warning('23: inconsistent sink level (' + $sink.level + ' instead of ' + $$stack[$$stack.length - 1].level + '): consider not using sink("' + $$stack[$$stack.length - 1].id + '") nor sink("' + $sink.id + '") as argument to several pullpush calls', $sink);
+					}
+				}
+				$$stack.push(null);
+				try{
+					update($sink, pull($sink, $sink.source, ...$sink.args));
+				}
+				finally{
+					$$stack.length--;
+				}
 			}
 		}
 		finally{
@@ -105,9 +120,10 @@ let pullpush = (function(){
 	function event(event, observers, value){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
 		checkEvent(event);
-		$$pulls = 0;
 		$$time = Date.now();
 		$$sequence++;
+		$$pulls = 0;
+		$$stack = [];
 		let $sinks = [];
 		for(let index in observers){
 			let $sink = observers[index]($$safe);
@@ -211,9 +227,11 @@ let pullpush = (function(){
 		}
 		$sink = $parent? $parent.sources[id]: undefined;
 		if(!$sink){
+			let level = $parent? $parent.level + 1: 0;
 			let overriden = overrideOptions($parent, options);
 			$sink = {
 				index: $$sinks++,
+				level: level,
 				sink: $parent,
 				id: id,
 				options: overriden,
@@ -409,6 +427,7 @@ let pullpush = (function(){
 		$$sequence++;
 		$$timeStamp = (new Event("custom")).timeStamp;
 		$$pulls = 0;
+		$$stack = [];
 		let $sink = sink($$safe);
 		$sink.timer = undefined;
 		if(source !== undefined){
@@ -564,6 +583,7 @@ let pullpush = (function(){
 	function $$warning(message){
 		if(typeof $$onwarning === "function"){
 			$$pulls = 0;
+			$$stack = [];
 			$$onwarning(message);
 		}
 	}
