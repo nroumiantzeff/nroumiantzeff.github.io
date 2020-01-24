@@ -31,42 +31,34 @@ let pullpush = (function(){
 		if(declaration){
 			return;
 		}
-		let incremented = false;
-		try{
-			$sink.pullpushable = false;
-			$sink.duplicates = undefined;
-			if($sink.source === undefined || !equals(args, $sink.args)){
-				if($sink.source === undefined){
-					// note: use the source declared first ignoring sources declared afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
-					$sink.source = source;
+		$sink.pullpushable = false;
+		if($sink.source === undefined || !equals(args, $sink.args)){
+			if($sink.source === undefined){
+				// note: use the source declared first ignoring sources declared afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
+				$sink.source = source;
+			}
+			$sink.args = args;
+			$sink.sequence = $$sequence;
+			$$timeStamp = undefined;
+			if($$stack.length !== 0){
+				if($$stack[$$stack.length - 1] === null){
+					$$stack[$$stack.length - 1] = $sink;
 				}
-				$sink.args = args;
-				$sink.sequence = $$sequence;
-				$$timeStamp = undefined;
-				$$pulls++;
-				incremented = true;
-				if($$stack.length !== 0){
-					if($$stack[$$stack.length - 1] === null){
-						$$stack[$$stack.length - 1] = $sink;
-					}
-					else if($sink.level !== $$stack[$$stack.length - 1].level){
-						warning('23: inconsistent sink level (' + $sink.level + ' instead of ' + $$stack[$$stack.length - 1].level + '): consider not using sink("' + $$stack[$$stack.length - 1].id + '") nor sink("' + $sink.id + '") as argument to several pullpush calls', $sink);
-					}
-				}
-				$$stack.push(null);
-				try{
-					update($sink, pull($sink, $sink.source, ...$sink.args));
-				}
-				finally{
-					$$stack.length--;
+				else if($sink.level !== $$stack[$$stack.length - 1].level){
+					warning('23: inconsistent sink level (' + $sink.level + ' instead of ' + $$stack[$$stack.length - 1].level + '): consider not using sink("' + $$stack[$$stack.length - 1].id + '") nor sink("' + $sink.id + '") as argument to several pullpush calls', $sink);
 				}
 			}
-		}
-		finally{
-			if(incremented){
+			$$stack.push(null);
+			$$pulls++;
+			$sink.duplicates = undefined;
+			try{
+				update($sink, pull($sink, $sink.source, ...$sink.args));
+			}
+			finally{
+				$sink.duplicates = undefined;
 				$$pulls--;
+				$$stack.length--;
 			}
-			$sink.duplicates = undefined;
 		}
 		if($sink.error !== $$none){
 			throw $sink.error;
