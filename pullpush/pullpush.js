@@ -184,7 +184,7 @@ let pullpush = (function(){
 					{
 						break;
 					}
-					if($parent.sink && $parent.sink.index === 0){
+					if($parent.sink && $parent.sink.index === 0 && $parent.value !== undefined){
 						warning('14: caution: the root sink is never pushed: top level pullpush call with id "' + $parent.id + '" should always return undefined instead of ' + typeof $parent.value + ' "' + $parent.value + '"', $parent);
 					}
 					$parent = $parent.sink;
