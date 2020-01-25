@@ -192,7 +192,7 @@ let pullpush = (function(){
 						if($parent.value !== undefined){
 							warning('14: caution: the root sink is never pushed: top level pullpush call with id "' + $parent.id + '" should always return undefined instead of ' + typeof $parent.value + ' "' + $parent.value + '"', $parent);
 						}
-						break; //todo should never happen
+						warning('24: pullpush internal error (the top level sink is nerver pushed)', $parent); // note: never should have landed here
 					}
 					$parent = $parent.sink;
 				}
