@@ -115,6 +115,7 @@ List of functions currently provided by the minimo framework:
 - select(id): defines a source from a DOM element (which triggers "select" events)
 - disabled(id): defines a source from a DOM element with a "disabled" attribute (notably style elements)
 - title(id): defines a source from a title of a DOM element (tooltip)
+- error(): defines a source from the window DOM object (which triggers "error" events)
 - sourcer(type, getValue, setValue, register, unregister, dispatch, handler): specifies new type of sources
 
 Distribution files:

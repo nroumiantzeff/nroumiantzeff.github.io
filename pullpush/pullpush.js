@@ -98,7 +98,7 @@ let pullpush = (function(){
 	function push(sink, value, force){
 		let $sink = sink($$safe);
 		let $sinks = [];
-		if(value !== $sink.value){
+		if(value !== $sink.value || $sink.error !== $$none){ //debug
 			update($sink, value);
 			if(force){
 				$sink.currentValue = $sink.value;
@@ -184,8 +184,14 @@ let pullpush = (function(){
 					{
 						break;
 					}
-					if($parent.sink && $parent.sink.index === 0 && $parent.value !== undefined){
-						warning('14: caution: the root sink is never pushed: top level pullpush call with id "' + $parent.id + '" should always return undefined instead of ' + typeof $parent.value + ' "' + $parent.value + '"', $parent);
+					if($parent.sink.index === 0){
+						if($parent.error !== $$none){
+							throw $parent.error;
+						}
+						if($parent.value !== undefined){
+							warning('14: caution: the root sink is never pushed: top level pullpush call with id "' + $parent.id + '" should always return undefined instead of ' + typeof $parent.value + ' "' + $parent.value + '"', $parent);
+						}
+						break; //todo should never happen
 					}
 					$parent = $parent.sink;
 				}
@@ -425,7 +431,7 @@ let pullpush = (function(){
 		if(source !== undefined){
 			value = pull($sink, source, ...args);
 		}
-		if(value !== $sink.value){
+		if(value !== $sink.value || $sink.error !== $$none){
 			push(sink, value, true);
 		}
 	}

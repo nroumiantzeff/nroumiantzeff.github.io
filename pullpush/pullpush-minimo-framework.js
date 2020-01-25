@@ -5,7 +5,7 @@ let sourcer = (function(){
 	return function sourcer(type, getValue, setValue, register, unregister, dispatch, handler){
 		let cache = {};
 		return function sourcer(id, value){
-			let cached = cache[id];
+			let cached = cache[id || ""];
 			if(cached){
 				return cached;
 			}
@@ -44,7 +44,7 @@ let sourcer = (function(){
 				}
 				return next;
 			};
-			let name = type + "_" + id;
+			let name = type + "_" + (id || "");
 			let namedFunctions = {
 				[name]: function(sink, value, delay){
 					if(value === undefined){
@@ -57,7 +57,7 @@ let sourcer = (function(){
 				},
 			};
 			let uncached = namedFunctions[name];
-			cache[id] = uncached;
+			cache[id || ""] = uncached;
 			return uncached;
 		};
 	};
@@ -243,9 +243,54 @@ let title = sourcer("title",
 		element.title = value;
 	}
 );
+let error = sourcer("error",
+	function getValue(id, state){
+		if(id){
+			return; //todo element.onerror
+		}
+		return state;
+	},
+	function setValue(id, value, state){
+		if(id){
+			return; //todo element.onerror
+		}
+		if(value !== undefined){
+			state = value;
+		}
+		return state;
+	},
+	function register(id, onchange){
+		if(id){
+			return; //todo element.onerror
+		}
+		window.addEventListener("error", onchange);
+	},
+	function unregister(id, onchange){
+		if(id){
+			return; //todo element.onerror
+		}
+		// note: do not unregister window error event listener (typically undeclared sinks used after the exception are dropped which unregisters the handlers of their observed sinks if there are no other observers left)
+	},
+	function dispatch(id, value, state){
+		if(id){
+			return; //todo element.onerror
+		}
+		let event = new Event('error', state);
+		window.dispatchEvent(event);
+	},
+	function handler(id, state, event){
+		if(id){
+			return; //todo element.onerror
+		}
+		state = event.message;
+		return state;
+	}
+);
 
+//todo implement message
 //todo implement websocket
 //todo implement ajax
+//todo implement indexBD and/or web storage
 
 let sink = pullpush.sink("minimo", {
 	stack: (function(){
@@ -262,5 +307,4 @@ let sink = pullpush.sink("minimo", {
 		return debugging;
 	})(),
 });
-
 delete pullpush.sink; // prevent using the top level sink

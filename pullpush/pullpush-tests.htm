@@ -68,6 +68,7 @@
 <input id="sink46" readonly/> next fibonacci number on button15 click (using global sources)<br/>
 <input id="sink47" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness without persistency)<br/>
 <input id="sink48" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness with persistency)<br/>
+<input id="sink49" readonly/> javascript exceptions <input id="button17" value="direct error" type="button"/><input id="button18" value="indirect error" type="button"/><input id="button19" value="system error" type="button" onclick="null()"/><br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -215,6 +216,9 @@ function sink47(sink){
 }
 function sink48(sink){
 	document.getElementById("sink48").value = pullpush(sink, fibonacci48);
+}
+function sink49(sink){
+	document.getElementById("sink49").value = pullpush(sink, error49);
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -572,6 +576,18 @@ function fibonacci48(sink){
 	let value3b = pullpush(sink("fibonacci48:3b"), nextFibonacci48b, value2b + value1b);
 	return value3b;
 }
+function error49(sink){
+	let direct = pullpush(sink, trigger(click("button17")));
+	if(direct){
+		return pullpush(sink, error(), Error("direct error"));
+	}
+	let indirect = pullpush(sink, trigger(click("button18")));
+	if(indirect){
+		return undefined();
+	}
+	let value = pullpush(sink, error());
+	return value;
+}
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -620,6 +636,7 @@ pullpush(sink, sink45);
 pullpush(sink, sink46);
 pullpush(sink, sink47);
 pullpush(sink, sink48);
+pullpush(sink, sink49);
 </script>
 </body>
 </html>
