@@ -9,6 +9,7 @@ let pullpush = (function(){
 	let $$sinks = 0;
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
+	let $$nonce = undefined; // safe access to the private properties of a sink
 	let $$pulls = 0; // levels of pulling
 	let $$stack = [null]; // pullpush call stack to check the consistecy of $sink.level
 	let $$options = { stack: false, lock: false, }; // default sink options
@@ -20,12 +21,12 @@ let pullpush = (function(){
 		//todo refactor using subfunctions so that debugging steps on essetial code only
 		// note: source may be undefined: declaration only (to keepalive the source for the sink)
 		let declaration = source === undefined;
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if($sink.sink === undefined || !$sink.pullpushable){
 			if(declaration){
 				warning('21: pullpush should not be called with an undefined source argument directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument for actual source access', $sink);
 			}
-			$sink = $sink.safe(source.name)($$safe); // generate a sink automatically (using the function name)
+			$sink = $sink.safe(source.name)(nonce()); // generate a sink automatically (using the function name)
 		}
 		checkDuplicates($sink, declaration); // if declaration: no duplicate check
 		if(declaration){
@@ -96,7 +97,7 @@ let pullpush = (function(){
 		return result;
 	}
 	function push(sink, value, force){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		let $sinks = [];
 		if(value !== $sink.value || $sink.error !== $$none){ //debug
 			update($sink, value);
@@ -118,7 +119,7 @@ let pullpush = (function(){
 		$$stack = [];
 		let $sinks = [];
 		for(let index in observers){
-			let $sink = observers[index]($$safe);
+			let $sink = observers[index](nonce());
 			if(value !== $sink.value){
 				update($sink, value);
 				$sink.sequence = $$sequence;
@@ -258,12 +259,15 @@ let pullpush = (function(){
 		$sink.pullpushable = true;
 		return $sink.safe;
 	}
-	function $$safe($sink){ //todo safer mechanism to protect $sink: use a nonce (global $$nonce which changes before each call to sink($$safe))
+	function nonce(){
+		return $$nonce = {};
+	}
+	function $$safe($sink){
 		if(!$sink.safe || $sink.sequence !== $$sequence){ // note: do not call pullpush with the same $sink.safe argument for different $$sequence values
 			let name = "sink" + $sink.index;
 			let named = {
 				[name]: function(id, options){
-					if(id === $$safe){
+					if(id === $$nonce){
 						return $sink;
 					}
 					return generateSink($sink, id, options);
@@ -298,7 +302,7 @@ let pullpush = (function(){
 	}
 	function sink(){ // universal sink (top level)
 		if($$sink0 == undefined){
-			$$sink0 = generateSink(undefined, "")($$safe);
+			$$sink0 = generateSink(undefined, "")(nonce());
 		}
 		return $$safe($$sink0);
 	}
@@ -352,19 +356,19 @@ let pullpush = (function(){
 			}
 		}
 	}
-	function handlerValue(nonce, value){
+	function handlerValue($nonce, value){
 		if(typeof value === "function" && value.name === "pullpushreturnedvalue"){
-			return value(nonce);
+			return value($nonce);
 		} 
 		return value;
 	}
-	function handlerChain(nonce, handler1, sink, ...args){
-		// syntax #1 (head of the chain and any other link): handler1(sink, ...args) -> undefined, handlerChain(nonce, handler1, sink, ...args) -> handler, handler(nonce) -> undefined
-		// syntax #2 (chaining two links in the middle of the chain): handler1(nonce) -> undefined, handler2(nonce) -> undefined, handlerChain(nonce, handler1, handler2) -> handler(nonce) -> undefined
-		// syntax #3 (specifying a value at the tail of the chain): handler1(nonce) -> undefined, handlerChain(nonce, handler1, value) -> handler(nonce) -> value
+	function handlerChain($nonce, handler1, sink, ...args){
+		// syntax #1 (head of the chain and any other link): handler1(sink, ...args) -> undefined, handlerChain($nonce, handler1, sink, ...args) -> handler, handler($nonce) -> undefined
+		// syntax #2 (chaining two links in the middle of the chain): handler1($nonce) -> undefined, handler2($nonce) -> undefined, handlerChain($nonce, handler1, handler2) -> handler($nonce) -> undefined
+		// syntax #3 (specifying a value at the tail of the chain): handler1($nonce) -> undefined, handlerChain($nonce, handler1, value) -> handler($nonce) -> value
 		let handler = function pullpushreturnedvalue(value){
-			if(value !== nonce){
-				return handlerChain(nonce, handler, value);
+			if(value !== $nonce){
+				return handlerChain($nonce, handler, value);
 			}
 			if(typeof handler1 === "function" && handler1.name === pullpushreturnedvalue.name){
 				handler1(value);
@@ -374,13 +378,13 @@ let pullpush = (function(){
 				}
 				return handler2;
 			}
-			nonce.handlers--;
-			return handler1(nonce, sink, ...args);
+			$nonce.handlers--;
+			return handler1($nonce, sink, ...args);
 		};
 		return handler;
 	}
 	function forcast(sink, value, delay, source, ...args){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if(delay === undefined){
 			delay = 0;
 		}
@@ -399,8 +403,8 @@ let pullpush = (function(){
 		}
 		warning('6: incorrect sink argument in pullpush.forcast call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
-	function forcastHandler(nonce, sink, value, delay, source, args){
-		let $sink = sink($$safe);
+	function forcastHandler($nonce, sink, value, delay, source, args){
+		let $sink = sink(nonce());
 		if($sink.timer !== undefined){
 			clearTimeout($sink.timer);
 			if(++$sink.skips > 1000){
@@ -418,7 +422,7 @@ let pullpush = (function(){
 			// forcast does nothing for negative or infinite delay
 			$sink.timer = undefined;
 		}
-		return nonce;
+		return $nonce;
 	}
 	function forcastCallback(sink, value, source, args){
 		$$time = Date.now();
@@ -426,7 +430,7 @@ let pullpush = (function(){
 		$$timeStamp = (new Event("custom")).timeStamp;
 		$$pulls = 0;
 		$$stack = [];
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		$sink.timer = undefined;
 		if(source !== undefined){
 			value = pull($sink, source, ...args);
@@ -437,7 +441,7 @@ let pullpush = (function(){
 	}
 	function broadcast(sink, observers, value){
 		//todo check that the observers have not accessed the old value in the same javascript queue loop
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			let $nonce = $sink.nonce;
 			$nonce.handlers++;
@@ -445,14 +449,14 @@ let pullpush = (function(){
 		}
 		warning('22: incorrect sink argument in pullpush.broadcast call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
-	function broadcastHandler(nonce, sink, observers, value){
+	function broadcastHandler($nonce, sink, observers, value){
 		//todo make sure that the broadcast and register handlers are always executed in the same order (note: forcast handler is always executed after all others because of setTimeout)
 		if($$pulls === 0){ // note: only broadcast when pushing (not pulling)
-			let $sink = sink($$safe);
+			let $sink = sink(nonce());
 			if(value !== $sink.value){
 				let $sinks = [];
 				for(let index in observers){
-					let $observer = observers[index]($$safe);
+					let $observer = observers[index](nonce());
 					if(value !== $observer.value){
 						update($observer, value);
 						$observer.sequence = $$sequence;
@@ -462,10 +466,10 @@ let pullpush = (function(){
 				pushSourcesInTopologicalOrder($sinks);
 			}
 		}
-		return nonce;
+		return $nonce;
 	}
 	function register(sink, observers, register, unregister){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			let $nonce = $sink.nonce;
 			$nonce.handlers++;
@@ -473,7 +477,7 @@ let pullpush = (function(){
 		}
 		warning('7: incorrect sink argument in pullpush.register call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
-	function registerHandler(nonce, sink, observers, register, unregister){
+	function registerHandler($nonce, sink, observers, register, unregister){
 		if(observers[$$registers] === undefined){
 			observers[$$registers] = 0;
 			observers[$$register] = register;
@@ -482,7 +486,7 @@ let pullpush = (function(){
 				register();
 			}
 		}
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if(!$sink.registered){
 			$sink.registered = true;
 			let index = $sink.index;
@@ -497,7 +501,7 @@ let pullpush = (function(){
 				}
 			}
 		}
-		return nonce;
+		return $nonce;
 	}
 	function unregister($sink){
 		for(let index in $sink.registers){
@@ -521,14 +525,14 @@ let pullpush = (function(){
 		}
 	}
 	function registered(sink, observers){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			return observers[$sink.index] !== undefined;
 		}
 		warning('8: incorrect sink argument in pullpush.registered call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function value(sink, defaultValue){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			let currentValue = ($$sequence > $sink.currentSequence)? $sink.value: $sink.currentValue;
 			return currentValue !== undefined? currentValue: defaultValue;
@@ -536,26 +540,26 @@ let pullpush = (function(){
 		warning('9: incorrect sink argument in pullpush.value call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function id(sink){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			return $sink.id;
 		}
 		warning('10: incorrect sink argument in pullpush.id call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function time(sink){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			return $$time - $sink.time;
 		}
 		warning('11: incorrect sink argument in pullpush.time call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function sequence(sink1, sink2){
-		let $sink1 = sink1($$safe);
+		let $sink1 = sink1(nonce());
 		if($$sink === $sink1 || $$sink === $sink1.sink){ // sink locality extended to 1 level
 			if(sink2 === undefined){
 				return $sink1.sequence;
 			}
-			let $sink2 = sink2($$safe);
+			let $sink2 = sink2(nonce());
 			if($$sink === $sink2 || $$sink === $sink2.sink){ // sink locality extended to 1 level
 				return $sink1.sequence - $sink2.sequence;
 			}
@@ -564,7 +568,7 @@ let pullpush = (function(){
 		warning('13: incorrect sink first argument in pullpush.sequence call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink1);
 	}
 	function stack(sink, all, debug){
-		let $sink = sink($$safe);
+		let $sink = sink(nonce());
 		let levels = [];
 		while($sink){
 			if(debug && $sink.stack){
