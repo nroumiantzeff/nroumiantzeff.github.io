@@ -97,7 +97,7 @@ function sink9(sink){
 	document.getElementById("sink9").value = pullpush(sink, sin8, 100);
 }
 function sink10(sink){
-	document.getElementById("sink10").value = pullpush(sink, divide); 
+	document.getElementById("sink10").value = pullpush(sink, divide10); 
 }
 function sink11(sink){
 	document.getElementById("sink11").value = pullpush(sink, counter, 1000, 90, 100);
@@ -255,11 +255,11 @@ function sin8(sink, delay){
 	value += "o";
 	return value;
 }
-function divide(sink){
+function divide10(sink){
 	let value = Number(pullpush(sink("input9a"), input("input9")));
 	if(value >= 2){
 		value = value / 2;
-		value = pullpush(sink, input("input9"), value, 2000);
+		value = pullpush(sink("input9b"), input("input9"), value, 2000);
 	}
 	return value;
 }
