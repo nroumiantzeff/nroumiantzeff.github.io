@@ -99,7 +99,7 @@ let pullpush = (function(){
 	function push(sink, value, force){
 		let $sink = sink(nonce());
 		let $sinks = [];
-		if(value !== $sink.value || $sink.error !== $$none){ //debug
+		if(value !== $sink.value || $sink.error !== $$none){
 			update($sink, value);
 			if(force){
 				$sink.currentValue = $sink.value;
