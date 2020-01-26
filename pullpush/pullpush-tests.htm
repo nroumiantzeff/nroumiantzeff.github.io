@@ -26,7 +26,7 @@
 <input id="sink4" readonly/> input3? input4: input5<br/>
 <input id="sink5" readonly/> input2? input4: input5<br/>
 <input id="sink6" readonly/> input1 with "-test1-" prefix + input1 with "-test2-" prefix<br/>
-<input id="sink7" readonly/> count of records queried on upper-case input6 table with input7 filter<br/>
+<input id="sink7" readonly/> count of records (tooltip shows the records) queried on upper-case input6 table with input7 filter (empty filter: 2 records, long filter: 0 records)<br/>
 <input id="sink8" readonly/> sin with input8 frequence sampled every 10 milliseconds<br/>
 <input id="sink9" readonly/> sin with input8 frequence sampled every 100 milliseconds<br/>
 <input id="sink10" readonly/> input9 divided by 2 recursively<br/>
@@ -70,6 +70,7 @@
 <input id="sink48" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness with persistency)<br/>
 <input id="sink49" readonly/> javascript exceptions <input id="button17" value="direct error" type="button"/><input id="button18" value="indirect error" type="button"/><input id="button19" value="system error" type="button" onclick="null()"/><br/>
 <input id="sink50" readonly style="width:800px"/> toggle image <input id="button20" value="toggle" type="button"/><img id="img21" height="50"/><br/>
+<input id="sink51" readonly/> button22 clicks with three second lag <input id="button22" value="button22" type="button"/><br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -224,6 +225,9 @@ function sink49(sink){
 function sink50(sink){
 	document.getElementById("sink50").value = pullpush(sink, img50);
 }
+function sink51(sink){
+	document.getElementById("sink51").value = pullpush(sink, lagger51);
+}
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
 }
@@ -238,19 +242,27 @@ function merge(sink, condition){
 }
 function message7(sink, table, filter){
 	// simulate an asynchronous query with window.postMessage
-	pullpush(sink("request"), message(), "request/" + table + "/" + filter);
-	var query = pullpush(sink("query"), message());
+	pullpush(sink, backend7, table, filter);
+	return pullpush(sink, frontend7, table, filter);
+}
+function backend7(sink, table, filter){
+	pullpush(sink("response"));
+	var query = pullpush(sink("request"), message());
 	if(query){
 		let items = query.split("/");
-		if(items[0] === "request"){
-			let table = items[1];
-			let filter = items[2];
-			let requestRecords = filter.length === 0? "azerty\nquerty\n": filter.length < 10? "azerty\n": "";
-			pullpush(sink("response"), message(), "response/" + requestRecords);
+		if(items[0] === "request" && items[1] === table && items[2] === filter){
+			let records = filter.length === 0? "azerty\nquerty\n": filter.length < 10? "azerty\n": "";
+			pullpush(sink("response"), lagger(message(), 2000), "response/" + table + "/" + filter + "/" + records);
 		}
-		else if(items[0] === "response"){
-			let responseRecords = items[1];
-			return responseRecords;
+	}
+}
+function frontend7(sink, table, filter){
+	pullpush(sink("request"), message(), "request/" + table + "/" + filter);
+	var query = pullpush(sink, message());
+	if(query){
+		let items = query.split("/");
+		if(items[0] === "response" && items[1] === table && items[2] === filter){
+			return items[3];
 		}
 	}
 }
@@ -258,6 +270,7 @@ function query7(sink){
 	let table = pullpush(sink, input("input6"));
 	let filter = pullpush(sink, input("input7"));
 	let result = pullpush(sink, message7, table.toUpperCase(), filter);
+	pullpush(sink, title("sink7"), result);
 	let count = (result === undefined)? "": result.split("\n").length - 1;
 	return count;
 }
@@ -609,6 +622,9 @@ function img50(sink){
 	pullpush(sink, src("img21"), clicks === 0? "pullpush-tests-img21a.png": clicks === 1? "pullpush-tests-img21x.png": clicks === 2? "pullpush-tests-img21b.png": "pullpush-tests-img21y.png");
 	return pullpush(sink, latest([load("img21"), error("img21")])) || "";
 }
+function lagger51(sink){
+	return pullpush(sink, lagger(click("button22"), 3000)) || "";
+}
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -659,6 +675,7 @@ pullpush(sink, sink47);
 pullpush(sink, sink48);
 pullpush(sink, sink49);
 pullpush(sink, sink50);
+pullpush(sink, sink51);
 </script>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 </body>
