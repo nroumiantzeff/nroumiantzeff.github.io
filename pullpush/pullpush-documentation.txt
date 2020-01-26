@@ -108,14 +108,15 @@ List of functions currently provided by the minimo library:
 
 List of functions currently provided by the minimo framework:
 - sink: the framework top level sink
-- input(id): defines a source from an input DOM element (which triggers "change" events)
-- click(id): defines a source from a button DOM element (which triggers "click" events)
-- dblclick(id): defines a source from a button DOM element (which triggers "dblclick" events)
-- focus(id): defines a source from a DOM element (which triggers "focus" and "blur" events)
-- select(id): defines a source from a DOM element (which triggers "select" events)
-- disabled(id): defines a source from a DOM element with a "disabled" attribute (notably style elements)
-- title(id): defines a source from a title of a DOM element (tooltip)
-- error(): defines a source from the window DOM object (which triggers "error" events)
+- input(id): defines a source from a DOM element with a "value" attibute and which triggers "change" events (typically an "input" element)
+- click(id): defines a source from a DOM element which triggers "click" events (typically a "button" element)
+- dblclick(id): defines a source from a DOM element which triggers "dblclick" events (typically a "button" element)
+- focus(id): defines a source from a DOM element which triggers "focus" and "blur" events (typically an "input" element)
+- select(id): defines a source from a DOM element which triggers "select" events (typically an "input" element)
+- disabled(id): defines a source from a DOM element with a "disabled" attribute (typically a "style" element)
+- title(id): defines a source from a DOM element with a "title" attribute (typically an "input" element)
+- src(id): defines a source from a DOM element with an "scr" attribute (typically an "img" element)
+- error(id): defines a source from a DOM element which triggers an "error" event (typically an "img" element or the "window" element for an undefined "id" argument)
 - sourcer(type, getValue, setValue, register, unregister, dispatch, handler): specifies new type of sources
 
 Distribution files:

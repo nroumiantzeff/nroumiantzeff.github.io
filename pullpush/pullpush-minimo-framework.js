@@ -243,16 +243,24 @@ let title = sourcer("title",
 		element.title = value;
 	}
 );
+let src = sourcer("src",
+	function getValue(id){
+		let element = document.getElementById(id);
+		return element.src;
+	},
+	function setValue(id, value){
+		let element = document.getElementById(id);
+		element.src = value;
+	}
+);
 let error = sourcer("error",
 	function getValue(id, state){
-		if(id){
-			return; //todo element.onerror
-		}
 		return state;
 	},
 	function setValue(id, value, state){
 		if(id){
-			return; //todo element.onerror
+			// raising an error on an element is not allowed (except on the window element)
+			return state;
 		}
 		if(value !== undefined){
 			state = value;
@@ -260,29 +268,23 @@ let error = sourcer("error",
 		return state;
 	},
 	function register(id, onchange){
-		if(id){
-			return; //todo element.onerror
-		}
-		window.addEventListener("error", onchange);
+		let element = id? document.getElementById(id): window;
+		element.addEventListener("error", onchange);
 	},
 	function unregister(id, onchange){
 		if(id){
-			return; //todo element.onerror
+			let element = document.getElementById(id);
+			element.removeEventListener("error", onchange);
 		}
 		// note: do not unregister window error event listener (typically undeclared sinks used after the exception are dropped which unregisters the handlers of their observed sinks if there are no other observers left)
 	},
 	function dispatch(id, value, state){
-		if(id){
-			return; //todo element.onerror
-		}
+		let element = id? document.getElementById(id): window;
 		let event = new Event('error', state);
-		window.dispatchEvent(event);
+		element.dispatchEvent(event);
 	},
 	function handler(id, state, event){
-		if(id){
-			return; //todo element.onerror
-		}
-		state = event.message;
+		state = event.message? event.message: event.type + ((event.target && event.target.src)? (" " + event.target.src): ""); //todo should be more generic in case event.message is not available (typically for img elements)
 		return state;
 	}
 );
