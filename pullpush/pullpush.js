@@ -5,7 +5,7 @@ let pullpush = (function(){
 	"use strict";
 	let $$time = Date.now();
 	let $$timeStamp = undefined;
-	let $$sequence = 0;
+	let $$ticks = 0;
 	let $$sinks = 0;
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
@@ -39,7 +39,7 @@ let pullpush = (function(){
 				$sink.source = source;
 			}
 			$sink.args = args;
-			$sink.sequence = $$sequence;
+			$sink.tick = $$ticks;
 			$$timeStamp = undefined;
 			if($$stack.length !== 0){
 				if($$stack[$$stack.length - 1] === null){
@@ -104,7 +104,7 @@ let pullpush = (function(){
 			if(force){
 				$sink.currentValue = $sink.value;
 			}
-			$sink.sequence = $$sequence;
+			$sink.tick = $$ticks;
 			$sinks.push($sink);
 		}
 		pushSourcesInTopologicalOrder($sinks);
@@ -114,7 +114,7 @@ let pullpush = (function(){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
 		checkEvent(event);
 		$$time = Date.now();
-		$$sequence++;
+		$$ticks++;
 		$$pulls = 0;
 		$$stack = [];
 		let $sinks = [];
@@ -122,7 +122,7 @@ let pullpush = (function(){
 			let $sink = observers[index](nonce());
 			if(value !== $sink.value){
 				update($sink, value);
-				$sink.sequence = $$sequence;
+				$sink.tick = $$ticks;
 				$sinks.push($sink);
 			}
 		}
@@ -141,8 +141,8 @@ let pullpush = (function(){
 				warning('5: stale programmatic event argument in pullpush.event call');
 			}
 		}
-		//todo check that a previous real-event nor pseudo-event has not been checked yet in the same event loop step
-		//todo check that pullpush has not been called yet in the same event loop step
+		//todo check that a previous real-event nor pseudo-event has not been checked yet in the same javascript event queue tick
+		//todo check that pullpush has not been called yet in the same javascript event queue tick
 	}
 	function pushSourcesInTopologicalOrder($sinks){
 		if($sinks.length !== 0){
@@ -208,13 +208,13 @@ let pullpush = (function(){
 			return false;
 		}
 		update($sink, value);
-		$sink.sequence = $$sequence;
+		$sink.tick = $$ticks;
 		return true;
 	}
 	function update($sink, value){
-		if($sink.currentSequence === undefined || $$sequence > $sink.currentSequence){
+		if($sink.currentTick === undefined || $$ticks > $sink.currentTick){
 			$sink.currentValue = $sink.value;
-			$sink.currentSequence = $$sequence;
+			$sink.currentTick = $$ticks;
 		}
 		$sink.value = value;
 		return value;
@@ -239,8 +239,8 @@ let pullpush = (function(){
 				value: undefined,
 				currentValue: undefined,
 				time: $$time,
-				sequence: $$sequence,
-				currentSequence: undefined,
+				tick: $$ticks,
+				currentTick: undefined,
 				timer: undefined,
 				skips: 0,
 				sources: {},
@@ -263,7 +263,7 @@ let pullpush = (function(){
 		return $$nonce = {};
 	}
 	function $$safe($sink){
-		if(!$sink.safe || $sink.sequence !== $$sequence){ // note: do not call pullpush with the same $sink.safe argument for different $$sequence values
+		if(!$sink.safe || $sink.tick !== $$ticks){ // note: do not call pullpush with the same $sink.safe argument for different $$ticks values
 			let name = "sink" + $sink.index;
 			let named = {
 				[name]: function(id, options){
@@ -426,7 +426,7 @@ let pullpush = (function(){
 	}
 	function forcastCallback(sink, value, source, args){
 		$$time = Date.now();
-		$$sequence++;
+		$$ticks++;
 		$$timeStamp = (new Event("custom")).timeStamp;
 		$$pulls = 0;
 		$$stack = [];
@@ -440,7 +440,7 @@ let pullpush = (function(){
 		}
 	}
 	function broadcast(sink, observers, value){
-		//todo check that the observers have not accessed the old value in the same javascript queue loop
+		//todo check that the observers have not accessed the old value in the same javascript event queue tick
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			let $nonce = $sink.nonce;
@@ -459,7 +459,7 @@ let pullpush = (function(){
 					let $observer = observers[index](nonce());
 					if(value !== $observer.value){
 						update($observer, value);
-						$observer.sequence = $$sequence;
+						$observer.tick = $$ticks;
 						$sinks.push($observer);
 					}
 				}
@@ -534,7 +534,7 @@ let pullpush = (function(){
 	function value(sink, defaultValue){
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
-			let currentValue = ($$sequence > $sink.currentSequence)? $sink.value: $sink.currentValue;
+			let currentValue = ($$ticks > $sink.currentTick)? $sink.value: $sink.currentValue;
 			return currentValue !== undefined? currentValue: defaultValue;
 		}
 		warning('9: incorrect sink argument in pullpush.value call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
@@ -557,11 +557,11 @@ let pullpush = (function(){
 		let $sink1 = sink1(nonce());
 		if($$sink === $sink1 || $$sink === $sink1.sink){ // sink locality extended to 1 level
 			if(sink2 === undefined){
-				return $sink1.sequence;
+				return $sink1.tick;
 			}
 			let $sink2 = sink2(nonce());
 			if($$sink === $sink2 || $$sink === $sink2.sink){ // sink locality extended to 1 level
-				return $sink1.sequence - $sink2.sequence;
+				return $sink1.tick - $sink2.tick;
 			}
 			warning('12: incorrect sink second argument in pullpush.sequence call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink2);
 		}

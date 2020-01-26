@@ -18,7 +18,7 @@ What is pullpush.js and what it is not:
 - pullpush.js is not a type system but comments with source argument and value types are recommanded has they help reasoning when combining sources and other functions  (note that you may use any JavaScript type checker if you whish)
 - pullpush.js is not about streams, you typically use a single value, the current value
 - pullpush.js is not an immutability library, but you might consider using one when dealing with complex structured data since pullpush.js detects changes based on stric reference equality
-- pullpush.js is not strictly side-effectless, values mutate but you cannot access the modified value (within the same JavaScript event queue iteration)
+- pullpush.js is not strictly side-effectless, values mutate but you cannot access the modified value (within the same JavaScript event queue tick)
 - pullpush.js is not about pull vs push tradeoff, pullpush.js implements both pull and push in a efficient synergy
 - pullpush.js is not about behaviours (continuous) vs events (discrete), it deals with both with a unified implementation
 - pullpush.js is not about async vs callbacks, you program as sources where synchronous although they are typically asynchronous
@@ -69,7 +69,7 @@ Example:
 
 List of functions available from pullpush.js to build libraries and frameworks:
 - pullpush.sink(): the top level sink
-- pullpush.forcast(sink, value, delay, source, ...args): specifies the sink value at a future time (the nearest future corresponds to the next JavaScript event queue iteration). note: either value or source is specified (theother one must be equal to undefined)
+- pullpush.forcast(sink, value, delay, source, ...args): specifies the sink value at a future time (the nearest future corresponds to the next JavaScript event queue tick). note: either value or source is specified (theother one must be equal to undefined)
 - pullpush.broadcast(sink, observers, value): specifies the sink value at observers.
 - pullpush.event(event, observers, value): updates the observers declared using pullpush.register after occurence of a DOM event
 - pullpush.register(sink, observers, register, unregister): declare a sink as observer, optionaly specifying register and unregister handlers  
