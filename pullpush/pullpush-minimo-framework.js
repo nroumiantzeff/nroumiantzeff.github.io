@@ -254,6 +254,17 @@ let text = sourcer("text",
 		return element.textContent;
 	}
 );
+let html = sourcer("html", //todo remove for security reasons (script injection) and implement a more secure source "subnodes" to change the DOM nodes (passing an object describing the subnodes with whitelisted node attributes) 
+	function getValue(id){
+		let element = document.getElementById(id);
+		return element.innerHTML;
+	},
+	function setValue(id, value){
+		let element = document.getElementById(id);
+		element.innerHTML = value;
+		return element.innerHTML;
+	}
+);
 let src = sourcer("src",
 	function getValue(id){
 		let element = document.getElementById(id);
@@ -357,7 +368,6 @@ let message = sourcer("message",
 //todo implement websocket
 //todo implement ajax
 //todo implement indexBD and/or web storage
-//todo implement html (for innerHTML)
 
 let sink = pullpush.sink("minimo", {
 	stack: (function(){

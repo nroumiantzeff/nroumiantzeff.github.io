@@ -72,6 +72,7 @@
 <input id="sink50" readonly style="width:800px"/> toggle image <input id="button20" value="toggle" type="button"/><img id="img21" height="50"/><br/>
 <input id="sink51" readonly/> button22 clicks with three second lag <input id="button22" value="button22" type="button"/><br/>
 <input id="sink52" readonly/> span24 text node value <input id="button23" value="use input1 as span24 text" type="button"/><span id="span24" style="background:grey">span24</span><br/>
+<input id="sink53" readonly style="width:800px"/> div26 inner HTML <input id="button25" value="use input1 as div26 inner HTML" type="button"/><div id="div26" style="background:yellow">div26</div><br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -231,6 +232,9 @@ function sink51(sink){
 }
 function sink52(sink){
 	document.getElementById("sink52").value = pullpush(sink, text52);
+}
+function sink53(sink){
+	document.getElementById("sink53").value = pullpush(sink, html53);
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -634,6 +638,11 @@ function text52(sink){
 	let clicks = pullpush(sink, click("button23"));
 	return pullpush(sink, text("span24"), clicks? input1: undefined);
 }
+function html53(sink){
+	let input1 = pullpush(sink, input("input1"));
+	let clicks = pullpush(sink, click("button25"));
+	return pullpush(sink, html("div26"), clicks? input1: undefined);
+}
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -686,6 +695,7 @@ pullpush(sink, sink49);
 pullpush(sink, sink50);
 pullpush(sink, sink51);
 pullpush(sink, sink52);
+pullpush(sink, sink53);
 </script>
 </body>
 </html>

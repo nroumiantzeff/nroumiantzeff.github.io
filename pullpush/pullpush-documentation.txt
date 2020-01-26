@@ -118,6 +118,7 @@ List of functions currently provided by the minimo framework:
 - title(id): defines a source from a DOM element with a "title" attribute (typically an "input" element)
 - src(id): defines a source from a DOM element with an "scr" attribute (typically an "img" element)
 - text(id): defines a source from a DOM element with a "textContent" attribute (typically a "span" element)
+- html(id): defines a source from a DOM element with an "innerHTML" attribute (typically a "div" element)
 - load(id): defines a source from a DOM element which triggers a "load" events (typically an "img" element or the "window" element for an undefined "id" argument)
 - error(id): defines a source from a DOM element which triggers a "error" events (typically an "img" element or the "window" element for an undefined "id" argument)
 - message(id): defines a source from a window DOM element with a postMessge method and which triggers a "message" events (an undefined "id" argument refferes to the current window)
