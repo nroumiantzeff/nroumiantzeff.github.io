@@ -1,5 +1,3 @@
-# nroumiantzeff.github.io
+# nroumiantzeff.github.io/pullpush
 
 pullpush.js: Pull Push Functional Reactive Programming Engine
-
-CH3RDS: Web Audio Chord Station for Nerds
