@@ -236,16 +236,28 @@ function fork(sink, condition){
 function merge(sink, condition){
 	return pullpush(sink("test1"), insert, "-test1-") + pullpush(sink, insert, "-test2-");
 }
-function query(sink, table, filter){
-	// simulate an asynchronous query //todo test using websockets (on the local page with webworkers)
-	return (pullpush.forcast(sink, undefined, 1000, function(){
-		return filter.length === 0? "azerty\nquerty\n": filter.length < 10? "azerty\n": "";
-	}))();
+function message7(sink, table, filter){
+	// simulate an asynchronous query with window.postMessage
+	pullpush(sink("request"), message(), "request/" + table + "/" + filter);
+	var query = pullpush(sink("query"), message());
+	if(query){
+		let items = query.split("/");
+		if(items[0] === "request"){
+			let table = items[1];
+			let filter = items[2];
+			let requestRecords = filter.length === 0? "azerty\nquerty\n": filter.length < 10? "azerty\n": "";
+			pullpush(sink("response"), message(), "response/" + requestRecords);
+		}
+		else if(items[0] === "response"){
+			let responseRecords = items[1];
+			return responseRecords;
+		}
+	}
 }
 function query7(sink){
 	let table = pullpush(sink, input("input6"));
 	let filter = pullpush(sink, input("input7"));
-	let result = pullpush(sink, query, table.toUpperCase(), filter);
+	let result = pullpush(sink, message7, table.toUpperCase(), filter);
 	let count = (result === undefined)? "": result.split("\n").length - 1;
 	return count;
 }
