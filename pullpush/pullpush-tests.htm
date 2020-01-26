@@ -333,8 +333,8 @@ function warning20(sink){
 		shell,
 		shield,
 		function handler(sink, exception){
-			if(exception instanceof Error && typeof exception.message === "string" && exception.message.indexOf("pullpush warning 1:") === 0){
-				return "success: " + exception.message;
+			if(exception instanceof Error && typeof exception.message === "string" && parseInt(exception.message) === 1){
+				return "success: " + exception.name + " warning " + exception.message;
 			}
 			throw exception;
 		}));

@@ -598,7 +598,9 @@ let pullpush = (function(){
 	function warning(message, $sink){
 		setTimeout($$warning, 0, message);
 		if($sink){
-			throw Error("pullpush warning " + message + "\n" + stack($sink.safe, true, true));
+			let error = Error(message + "\n" + stack($sink.safe, true, true));
+			error.name = "pullpush";
+			throw error;
 		}
 		throw Error("pullpush warning " + message);
 	}
