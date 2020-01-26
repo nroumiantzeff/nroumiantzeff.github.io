@@ -140,7 +140,9 @@ Compatibility:
 ES6
 
 Current limitations:
-//todo (static DOM, missing source for some DOM events, event handlers declared for individual DOM elements, global names...)
+- engine: IE6 compatiblity required, missing unit-tests, reference documentation //todo
+- library: missing some usual combinators, global names, missing unit-tests, reference documentation //todo
+- framework: missing source for some DOM events, event handlers declared for individual DOM elements, global names, security breaches, missing unit-tests, reference documentation //todo
 
 Licence:
 	MIT License (https://opensource.org/licenses/MIT)
