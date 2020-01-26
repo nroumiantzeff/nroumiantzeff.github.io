@@ -69,8 +69,7 @@
 <input id="sink47" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness without persistency)<br/>
 <input id="sink48" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness with persistency)<br/>
 <input id="sink49" readonly/> javascript exceptions <input id="button17" value="direct error" type="button"/><input id="button18" value="indirect error" type="button"/><input id="button19" value="system error" type="button" onclick="null()"/><br/>
-<input id="sink50" readonly style="width:800px"/> toggle image <input id="button20" value="toggle" type="button"/><img id="img21"/><br/>
-<input id="sink51" readonly style="width:800px"/> image error<br/>
+<input id="sink50" readonly style="width:800px"/> toggle image <input id="button20" value="toggle" type="button"/><img id="img21" height="50"/><br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -224,9 +223,6 @@ function sink49(sink){
 }
 function sink50(sink){
 	document.getElementById("sink50").value = pullpush(sink, img50);
-}
-function sink51(sink){
-	document.getElementById("sink51").value = pullpush(sink, error51);
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -597,14 +593,9 @@ function error49(sink){
 	return value || "";
 }
 function img50(sink){
-	let clicks = pullpush(sink, click("button20"));
-	let foggle = clicks % 4;
-	return pullpush(sink, src("img21"), foggle === 0? "pullpush-tests-img21a.png": foggle === 1? "pullpush-tests-img21x.png": foggle === 2? "pullpush-tests-img21b.png": "pullpush-tests-img21y.png");
-}
-function error51(sink){
-	//todo how to reset the error message when the image src is changed to a correct URL? (use the onload event?)
-	let error21 = pullpush(sink, error("img21"));
-	return error21 || "";
+	let clicks = pullpush(sink, click("button20")) % 4;
+	pullpush(sink, src("img21"), clicks === 0? "pullpush-tests-img21a.png": clicks === 1? "pullpush-tests-img21x.png": clicks === 2? "pullpush-tests-img21b.png": "pullpush-tests-img21y.png");
+	return pullpush(sink, latest([load("img21"), error("img21")])) || "";
 }
 pullpush(sink, sink1);
 pullpush(sink, sink2);
@@ -656,7 +647,6 @@ pullpush(sink, sink47);
 pullpush(sink, sink48);
 pullpush(sink, sink49);
 pullpush(sink, sink50);
-pullpush(sink, sink51);
 </script>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 </body>

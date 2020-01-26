@@ -253,6 +253,32 @@ let src = sourcer("src",
 		element.src = value;
 	}
 );
+let load = sourcer("error",
+	function getValue(id, state){
+		return state;
+	},
+	function setValue(id, value, state){
+		// triggering a load event is not allowed
+		return state;
+	},
+	function register(id, onchange){
+		let element = id? document.getElementById(id): window;
+		element.addEventListener("load", onchange);
+	},
+	function unregister(id, onchange){
+		let element = id? document.getElementById(id): window;
+		element.removeEventListener("error", onchange);
+	},
+	function dispatch(id, value, state){
+		let element = id? document.getElementById(id): window;
+		let event = new Event('load', state);
+		element.dispatchEvent(event);
+	},
+	function handler(id, state, event){
+		state = event.type + ((event.target && event.target.src)? (": " + event.target.src): "");
+		return state;
+	}
+);
 let error = sourcer("error",
 	function getValue(id, state){
 		return state;
@@ -284,7 +310,7 @@ let error = sourcer("error",
 		element.dispatchEvent(event);
 	},
 	function handler(id, state, event){
-		state = event.message? event.message: event.type + ((event.target && event.target.src)? (" " + event.target.src): ""); //todo should be more generic in case event.message is not available (typically for img elements)
+		state = event.message? event.message: event.type + ((event.target && event.target.src)? (": " + event.target.src): ""); //todo should be more generic in case event.message is not available (typically for img elements)
 		return state;
 	}
 );
