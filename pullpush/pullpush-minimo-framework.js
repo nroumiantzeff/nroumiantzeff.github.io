@@ -243,6 +243,17 @@ let title = sourcer("title",
 		element.title = value;
 	}
 );
+let text = sourcer("text",
+	function getValue(id){
+		let element = document.getElementById(id);
+		return element.textContent;
+	},
+	function setValue(id, value){
+		let element = document.getElementById(id);
+		element.textContent = value;
+		return element.textContent;
+	}
+);
 let src = sourcer("src",
 	function getValue(id){
 		let element = document.getElementById(id);
@@ -314,7 +325,6 @@ let error = sourcer("error",
 		return state;
 	}
 );
-
 let message = sourcer("message",
 	function getValue(id, state){
 		return state;
@@ -326,15 +336,15 @@ let message = sourcer("message",
 		return state;
 	},
 	function register(id, onchange){
-		let element = id? document.getElementById(id): window;
+		let element = id? document.getElementById(id): window; //todo support other window objects (opener, open, frames, parent...)
 		element.addEventListener("message", onchange);
 	},
 	function unregister(id, onchange){
-		let element = id? document.getElementById(id): window;
+		let element = id? document.getElementById(id): window; //todo support other window objects (opener, open, frames, parent...)
 		element.removeEventListener("message", onchange);
 	},
 	function dispatch(id, value, state){
-		let element = id? document.getElementById(id): window;
+		let element = id? document.getElementById(id): window; //todo support other window objects (opener, open, frames, parent...)
 		element.postMessage(state, "*"); //todo do not specify "*" as the targetOrigin for security reasons
 	},
 	function handler(id, state, event){
@@ -348,7 +358,6 @@ let message = sourcer("message",
 //todo implement ajax
 //todo implement indexBD and/or web storage
 //todo implement html (for innerHTML)
-//todo implement text (for text node with a value)
 
 let sink = pullpush.sink("minimo", {
 	stack: (function(){

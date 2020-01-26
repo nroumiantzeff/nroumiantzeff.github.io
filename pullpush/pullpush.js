@@ -174,6 +174,7 @@ let pullpush = (function(){
 		for(let index = 0; index < $sinks.length; index++){
 			let $sink = $sinks[index];
 			let $parent = $sink.sink;
+			let skip = false;
 			while($parent){
 				let sourcesCount = sourcesCounts[$parent.index];
 				if(sourcesCount > 1){
@@ -181,18 +182,22 @@ let pullpush = (function(){
 					break;
 				}
 				else{
-					if(!pushSource($parent))
-					{
-						break;
+					if(!skip){
+						if(!pushSource($parent))
+						{
+							skip = true;
+						}
 					}
-					if($parent.sink.index === 0){
-						if($parent.error !== $$none){
-							throw $parent.error;
+					if(!skip){
+						if($parent.sink.index === 0){
+							if($parent.error !== $$none){
+								throw $parent.error;
+							}
+							if($parent.value !== undefined){
+								warning('14: caution: the root sink is never pushed: top level pullpush call with id "' + $parent.id + '" should always return undefined instead of ' + typeof $parent.value + ' "' + $parent.value + '"', $parent);
+							}
+							warning('24: pullpush internal error (the top level sink is nerver pushed)', $parent); // note: never should have landed here
 						}
-						if($parent.value !== undefined){
-							warning('14: caution: the root sink is never pushed: top level pullpush call with id "' + $parent.id + '" should always return undefined instead of ' + typeof $parent.value + ' "' + $parent.value + '"', $parent);
-						}
-						warning('24: pullpush internal error (the top level sink is nerver pushed)', $parent); // note: never should have landed here
 					}
 					$parent = $parent.sink;
 				}
@@ -325,6 +330,7 @@ let pullpush = (function(){
 				let $source = $sink.sources[id];
 				unregister($source);
 				delete $sink.sources[id];
+				//todo implement a warning in the engine when source sinks are inadvertantly dropped (typically beacuse they are used inside an "if" block) which could be removed by an explicit declaration (boolean "false" as the second argument of pulllpush) 
 			}
 		}
 		$sink.resources = {};

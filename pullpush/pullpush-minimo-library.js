@@ -112,6 +112,23 @@ let switcher = (function(){
 		return named[name];
 	};
 })();
+let lagger = (function(){
+	function lagger(sink, source, ...args){
+		let value = pullpush(sink, source, ...args);
+		return value;
+	}
+	return function(source, delay, ...args){
+		let name = lagger.name + "_" + source.name;
+		let named = {
+			[name]: function(sink, ...args){
+				let value = pullpush.value(sink);
+				return (pullpush.forcast(sink, undefined, delay, lagger, source, ...args))
+					(value);
+			},
+		};
+		return named[name];
+	};
+})();
 let share = (function(){
 	let cache = {};
 	return function share(id, source, register, unregister){
@@ -145,7 +162,7 @@ function local(sink, initial, value, delay){
 let global = function(id){
 	return share(id, local);
 };
-function latest(sources){
+function latest(sources){ //todo use spreading if first argument is a function
 	function latest(sink){
 		if(sources.length > 0){
 			let values = sources.map(function(source, index){
@@ -161,7 +178,7 @@ function latest(sources){
 	}
 	return latest;
 }
-function all(sources){
+function all(sources){ //todo use spreading if first argument is a function
 	function earliest(sink){
 		let value = pullpush.value(sink);
 		let sequences = sources.map(function(source, index){

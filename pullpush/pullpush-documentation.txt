@@ -88,6 +88,7 @@ List of functions currently provided by the minimo library:
 - toggle: a source which value toggles between false and true each time the specified source value changes
 - trigger: a source which value is true when the specified source value changes and false afterwards
 - switcher: a source which value is true when the specified source value changes and false after a specified delay
+- lagger: a source which value is the value of the specified source with a lag of the specified delay
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
 - global: a source which value is specified globaly (the source is accessed by specifying an id)
@@ -116,6 +117,7 @@ List of functions currently provided by the minimo framework:
 - disabled(id): defines a source from a DOM element with a "disabled" attribute (typically a "style" element)
 - title(id): defines a source from a DOM element with a "title" attribute (typically an "input" element)
 - src(id): defines a source from a DOM element with an "scr" attribute (typically an "img" element)
+- text(id): defines a source from a DOM element with a "textContent" attribute (typically a "span" element)
 - load(id): defines a source from a DOM element which triggers a "load" events (typically an "img" element or the "window" element for an undefined "id" argument)
 - error(id): defines a source from a DOM element which triggers a "error" events (typically an "img" element or the "window" element for an undefined "id" argument)
 - message(id): defines a source from a window DOM element with a postMessge method and which triggers a "message" events (an undefined "id" argument refferes to the current window)
