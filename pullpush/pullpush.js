@@ -65,7 +65,8 @@ let pullpush = (function(){
 			$$pulls++;
 			$sink.duplicates = undefined;
 			try{
-				update($sink, pull($sink, $sink.source, ...$sink.args));
+				let value = pull($sink, $sink.source, ...$sink.args);
+				update($sink, value);
 			}
 			finally{
 				$sink.duplicates = undefined;
@@ -83,9 +84,10 @@ let pullpush = (function(){
 		$sink.error = $$none; 
 		let current = $$sink;
 		$$sink = $sink;
+		let $safe = $$safe($sink); // immutability: $$safe($sink) ensures that the first argument passed to $sink.source is different from previous calls
 		let value;
 		try{
-			value = source($$safe($sink), ...args); // immutability: $$safe($sink) ensures that the first argument passed to $sink.source is different from previous calls
+			value = source($safe, ...args);
 		}
 		catch(exception){
 			$sink.error = exception;
@@ -334,17 +336,19 @@ let pullpush = (function(){
 		return true;
 	}
 	function checkSources($sink){
-		for(let id in $sink.sources){
-			let resource = $sink.resources[id];
-			if(!resource){
-				if(resource === false){
-					// a declaration has allowed reclaiming the unused sink
+		if($sink.resources !== undefined){ // no checks when sources have not been collected
+			for(let id in $sink.sources){
+				let resource = $sink.resources[id];
+				if(!resource){
 					let $source = $sink.sources[id];
-					unregister($source);
-					delete $sink.sources[id];
-				}
-				else{
-					warning('25: reclaiming unused sink("' + id + '") is denied: consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $sink);
+					if(resource === false){
+						// a declaration has allowed reclaiming the unused sink
+						unregister($source);
+						delete $sink.sources[id];
+					}
+					else{
+						warning('25: missing declaration for reclaiming sink("' + id + '") which is no longer used by sink("' + $sink.id + '"): consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $source);
+					}
 				}
 			}
 		}
