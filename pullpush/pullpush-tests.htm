@@ -243,7 +243,9 @@ function sum(sink){
 	return Number(pullpush(sink("input2"), input("input2"))) + Number(pullpush(sink, input("input3")));
 }
 function fork(sink, condition){
-	return condition? pullpush(sink("input4"), input("input4")): pullpush(sink, input("input5"));
+	pullpush(sink("input4"), false); // declaration needed because of the conditional call
+	pullpush(sink("input5"), false); // declaration needed because of the conditional call
+	return condition? pullpush(sink("input4"), input("input4")): pullpush(sink("input5"), input("input5"));
 }
 function merge(sink, condition){
 	return pullpush(sink("test1"), insert, "-test1-") + pullpush(sink, insert, "-test2-");
@@ -254,7 +256,7 @@ function message7(sink, table, filter){
 	return pullpush(sink, frontend7, table, filter);
 }
 function backend7(sink, table, filter){
-	pullpush(sink("response"));
+	pullpush(sink("response")); // declaration to prevent reclaiming the unused sink
 	var query = pullpush(sink("request"), message());
 	if(query){
 		let items = query.split("/");
@@ -297,6 +299,7 @@ function sin8(sink, delay){
 	return value;
 }
 function divide10(sink){
+	pullpush(sink("input9b"), true); // declaration to allow reclaiming the unused skink
 	let value = Number(pullpush(sink("input9a"), input("input9")));
 	if(value >= 2){
 		value = value / 2;

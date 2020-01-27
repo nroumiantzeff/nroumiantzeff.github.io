@@ -37,17 +37,19 @@ let series = (function(){
 function timer(sink, delay, begining, end){
 	let time = pullpush.time(sink) + (begining || 0);
 	if(time > end){
+		pullpush(sink(stepper.name), true); // declaration to allow reclaim
 		return pullpush.value(sink, begining || 0);
 	}
-	pullpush(sink, stepper, delay);
+	pullpush(sink(stepper.name), stepper, delay);
 	return time;
 }
 function counter(sink, delay, begining, end){
 	let count = pullpush.value(sink, begining || 0);
 	if(count >= end){
+		pullpush(sink(stepper.name), true); // declaration to allow reclaim
 		return end;
 	}
-	pullpush(sink, stepper, delay);
+	pullpush(sink(stepper.name), stepper, delay);
 	return count + 1;
 }
 let toggle = (function(){
@@ -114,7 +116,7 @@ let switcher = (function(){
 })();
 let lagger = (function(){
 	function lagger(sink, source, ...args){
-		let value = pullpush(sink, source, ...args);
+		let value = pullpush(sink(lagger.name), source, ...args);
 		return value;
 	}
 	return function(source, delay, ...args){
@@ -122,6 +124,7 @@ let lagger = (function(){
 		let named = {
 			[name]: function(sink, ...args){
 				let value = pullpush.value(sink);
+				pullpush(sink(lagger.name)); // declaration to prevent reclaiming the unused sink //todo should sinks used by the forcast callabck be checked for reclaim?
 				return (pullpush.forcast(sink, undefined, delay, lagger, source, ...args))
 					(value);
 			},
@@ -180,6 +183,10 @@ function latest(sources){ //todo use spreading if first argument is a function
 }
 function all(sources){ //todo use spreading if first argument is a function
 	function earliest(sink){
+		sources.reduce(function(unused, source, index){
+			pullpush(sink(index)); // declaration to prevent reclaiming the unused sink
+		}, undefined);
+
 		let value = pullpush.value(sink);
 		let sequences = sources.map(function(source, index){
 			return pullpush.sequence(sink(index));

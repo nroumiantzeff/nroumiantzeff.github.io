@@ -29,6 +29,7 @@ function pullpush(sink, source, ...args): connects a source to a sink
 	it is a function that you may call with an id as single argument to explicitely generate a sub-sink (note that most of the time pullpush automatically generates sub-sinks)
 - source: implements a source typically provided by the framework or implemented as part of the application
 	it is a function taking a sink as first argument and the spread args as other arguments
+	alternatively, the source argument may be of a type other than "function" for declaration purpose, in that case it is converted to boolean (true/false to allow/prevent the automatic deletion of the corresponding sub-sink in case it is not used during the current javascript event queue tick)
 
 Example:
 	function functionalReactiveFibonacci(sink){

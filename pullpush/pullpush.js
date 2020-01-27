@@ -6,6 +6,7 @@ let pullpush = (function(){
 	let $$time = Date.now();
 	let $$timeStamp = undefined;
 	let $$ticks = 0;
+	let $$warnings = 0;
 	let $$sinks = 0;
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
@@ -14,28 +15,39 @@ let pullpush = (function(){
 	let $$stack = [null]; // pullpush call stack to check the consistecy of $sink.level
 	let $$options = { stack: false, lock: false, }; // default sink options
 	let $$none = Symbol("none");
+	let $$keepalive = Symbol("keepalive"); // prevent reclaiming the shink when unused
+	let $$cleanup = Symbol("cleanup"); // allow reclaiming the sink when unused
 	let $$registers = Symbol("pullpushregisters");
 	let $$register = Symbol("pullpushregister");
 	let $$unregister = Symbol("pullpushunregister");
 	function pullpush(sink, source, ...args){
 		//todo refactor using subfunctions so that debugging steps on essetial code only
-		// note: source may be undefined: declaration only (to keepalive the source for the sink)
-		let declaration = source === undefined;
+		// note: the source argument may be of a type other than "function" for declaration purpose, in that case it is converted to boolean (true/false to allow/prevent the automatic deletion of the corresponding sub-sink in case it is not used during the current javascript event queue tick) with undefined being equivalent to true
+		let declaration = (typeof source === "function"? false: (source? $$cleanup: $$keepalive));
 		let $sink = sink(nonce());
 		if($sink.sink === undefined || !$sink.pullpushable){
 			if(declaration){
-				warning('21: pullpush should not be called with an undefined source argument directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument for actual source access', $sink);
+				warning('21: pullpush should not be called with a source argument of type other than "function" directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument of type "function" for actual source access', $sink);
 			}
 			$sink = $sink.safe(source.name)(nonce()); // generate a sink automatically (using the function name)
 		}
-		checkDuplicates($sink, declaration); // if declaration: no duplicate check
+		checkDuplicates($sink, declaration);
 		if(declaration){
+			if($sink.sink){
+				if($sink.sink.resources[$sink.id] !== undefined){
+					warning('27: declaration pullpush(sink("' + $sink.id + '"),' + (declaration === $$keepalive? 'false': 'true') + ') should not be called after any other pullpush call on sink("' + $sink.id + '"): consider moving declaration call to the top of the source implementation and removing duplicate or conflicting declarations', $sink);
+				}
+				$sink.sink.resources[$sink.id] = (declaration === $$keepalive);
+			}
 			return;
+		}
+		if($sink.sink){
+			$sink.sink.resources[$sink.id] = true;
 		}
 		$sink.pullpushable = false;
 		if($sink.source === undefined || !equals(args, $sink.args)){
 			if($sink.source === undefined){
-				// note: use the source declared first ignoring sources declared afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
+				// note: use the source specified first ignoring sources specified afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
 				$sink.source = source;
 			}
 			$sink.args = args;
@@ -249,7 +261,7 @@ let pullpush = (function(){
 				timer: undefined,
 				skips: 0,
 				sources: {},
-				resources: {}, // refreshed sources, used clean sources by comparing sources and resources
+				resources: {}, // refreshed sources, used for reclaiming sub-sinks by comparing sources and resources
 				registers: {},
 				stack: overriden.stack? Error().stack: undefined,
 			};
@@ -257,9 +269,6 @@ let pullpush = (function(){
 			if($parent){
 				$parent.sources[id] = $sink;
 			}
-		}
-		if($parent){
-			$parent.resources[id] = true;
 		}
 		$sink.pullpushable = true;
 		return $sink.safe;
@@ -326,11 +335,17 @@ let pullpush = (function(){
 	}
 	function checkSources($sink){
 		for(let id in $sink.sources){
-			if($sink.resources[id] !== true){
-				let $source = $sink.sources[id];
-				unregister($source);
-				delete $sink.sources[id];
-				//todo implement a warning in the engine when source sinks are inadvertantly dropped (typically beacuse they are used inside an "if" block) which could be removed by an explicit declaration (boolean "false" as the second argument of pulllpush) 
+			let resource = $sink.resources[id];
+			if(!resource){
+				if(resource === false){
+					// a declaration has allowed reclaiming the unused sink
+					let $source = $sink.sources[id];
+					unregister($source);
+					delete $sink.sources[id];
+				}
+				else{
+					warning('25: reclaiming unused sink("' + id + '") is denied: consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $sink);
+				}
 			}
 		}
 		$sink.resources = {};
@@ -343,8 +358,10 @@ let pullpush = (function(){
 			}
 			let duplicate = $parent.duplicates[$sink.id];
 			if(declaration){
-				if(duplicate === undefined && $sink.id){
-					$parent.duplicates[$sink.id] = 1; // simple declaration
+				if(declaration === $$keepalive){
+					if(duplicate === undefined){
+						$parent.duplicates[$sink.id] = 1; //todo is this usefull?
+					}
 				}
 			}
 			else{
@@ -596,13 +613,19 @@ let pullpush = (function(){
 		}
 	}
 	function warning(message, $sink){
-		setTimeout($$warning, 0, message);
-		if($sink){
-			let error = Error(message + "\n" + stack($sink.safe, true, true));
-			error.name = "pullpush";
-			throw error;
+		let offlimit = $$warnings++ - 50;
+		if(offlimit > 0){
+			// too many warnings
+			return;
 		}
-		throw Error("pullpush warning " + message);
+		if(offlimit === 0){
+			message = '26: too many pullpush warnings (no more pullpush warnings will be raised): consider removing all pullpush warnings';
+			$sink = undefined;
+		}
+		setTimeout($$warning, 0, message);
+		let error = Error($sink? message + "\n" + stack($sink.safe, true, true): message);
+		error.name = "pullpush";
+		throw error;
 	}
 	function onwarning(handler){
 		if(typeof handler === "function"){
