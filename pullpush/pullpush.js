@@ -13,7 +13,7 @@ let pullpush = (function(){
 	let $$nonce = undefined; // safe access to the private properties of a sink
 	let $$pulls = 0; // levels of pulling
 	let $$stack = [null]; // pullpush call stack to check the consistecy of $sink.level
-	let $$options = { stack: false, lock: false, }; // default sink options
+	let $$options = { stack: true, lock: false, }; // default sink options
 	let $$none = Symbol("none");
 	let $$keepalive = Symbol("keepalive"); // prevent reclaiming the shink when unused
 	let $$cleanup = Symbol("cleanup"); // allow reclaiming the sink when unused
@@ -263,7 +263,7 @@ let pullpush = (function(){
 				sources: {},
 				resources: {}, // refreshed sources, used for reclaiming sub-sinks by comparing sources and resources
 				registers: {},
-				stack: overriden.stack? Error().stack: undefined,
+				debug: overriden.stack? Error(): undefined,
 			};
 			$$safe($sink);
 			if($parent){
@@ -594,8 +594,14 @@ let pullpush = (function(){
 		let $sink = sink(nonce());
 		let levels = [];
 		while($sink){
-			if(debug && $sink.stack){
-				levels.push($sink.id + ": " + ($sink.stack).replace(/^.*\n/, "\n"));
+			if(debug && $sink.debug){
+				// note: we need to throw the Error object to get its stack buit (at least on chrome V8)
+				try{
+					throw $sink.debug;
+				}
+				catch(exception){
+				}
+				levels.push($sink.id + ": " + ($sink.debug.stack).replace(/^.*\n/, "\n"));
 			}
 			else{
 				levels.push($sink.id);
