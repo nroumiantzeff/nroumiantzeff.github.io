@@ -328,7 +328,8 @@ let error = sourcer("error",
 	},
 	function dispatch(id, value, state){
 		let element = id? document.getElementById(id): window;
-		let event = new Event('error', state);
+		let error = Error.prototype.isPrototypeOf(state)? state: new Error(state);
+		let event = new ErrorEvent("error", error);
 		element.dispatchEvent(event);
 	},
 	function handler(id, state, event){

@@ -165,10 +165,11 @@ function local(sink, initial, value, delay){
 let global = function(id){
 	return share(id, local);
 };
-function latest(sources){ //todo use spreading if first argument is a function
+function latest(...sources){
+	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
-		if(sources.length > 0){
-			let values = sources.map(function(source, index){
+		if(array.length > 0){
+			let values = array.map(function(source, index){
 				let subsink = sink(index);
 				let value = pullpush(subsink, source);
 				return { sink: subsink, value };
@@ -181,13 +182,14 @@ function latest(sources){ //todo use spreading if first argument is a function
 	}
 	return latest;
 }
-function all(sources){ //todo use spreading if first argument is a function
+function all(...sources){
+	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function earliest(sink){
-		sources.reduce(function(unused, source, index){
+		array.reduce(function(unused, source, index){
 			pullpush(sink(index)); // declaration to prevent reclaiming the unused sink
 		}, undefined);
 		let value = pullpush.value(sink);
-		let sequences = sources.map(function(source, index){
+		let sequences = array.map(function(source, index){
 			return pullpush.sequence(sink(index));
 		});
 		sequences.sort(function(sequence1, sequence2) {
@@ -196,13 +198,13 @@ function all(sources){ //todo use spreading if first argument is a function
 		if(value !== undefined && sequences[0] <= value.latest){
 			return value;
 		}
-		let values = sources.map(function(source, index){
+		let values = array.map(function(source, index){
 			return pullpush(sink(index), source);
 		});
 		return { latest: sequences[sequences.length - 1], values: values };
 	};
 	return function all(sink){
-		if(sources.length > 0){
+		if(array.length > 0){
 			let value = pullpush(sink, earliest);
 			return value.values;
 		}
@@ -282,6 +284,19 @@ function apr(sAB, sCfBD, ...c){
 			let fBD = pullpush(sink(name2), sCfBD, ...c);
 			let d = fBD(b);
 			return d;
+		},
+	};
+	return named[name];
+}
+function composition(...sources){
+	// composition :: (source y z) (source x y) ... (source b c) (source a b) -> source a z
+	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
+	let name = composition.name + "_" + array.map(source => source.name).join("_");
+	let named = {
+		[name]: function(sink, value){
+			return array.slice().reverse().reduce(function(value, source, index){
+				return pullpush(sink(index), source, value);
+			}, value);
 		},
 	};
 	return named[name];
