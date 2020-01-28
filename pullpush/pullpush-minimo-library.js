@@ -286,6 +286,25 @@ function apr(sAB, sCfBD, ...c){
 	};
 	return named[name];
 }
+function chain(source, ...args){
+	// chain :: source a ((source (b a) c) -> ((source (d c) e) -> ... ((source (y x) z) -> (() -> z))))
+	let sources = [ { source, args } ];
+	return function link(source, ...args){
+		if(source === undefined){
+			let name = chain.name + "_" + sources.map(item => item.source.name).join("_");
+			let named = {
+				[name]: function(sink, value){
+					return sources.reduce(function(value, item, index){
+						return pullpush(sink(index), item.source, ...item.args, value);
+					}, value);
+				},
+			};
+			return named[name];
+		}
+		sources.push({ source, args });
+		return link;		
+	};
+}
 function shuffle(sBC, fAB){
 	// shuffle :: source (b) c -> ((a) -> (b)) -> source (a) c
 	let name = shuffle.name + "_" + sBC.name + "_" + fAB.name;

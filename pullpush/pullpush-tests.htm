@@ -73,6 +73,7 @@
 <input id="sink51" readonly/> button22 clicks with three second lag <input id="button22" value="button22" type="button"/><br/>
 <input id="sink52" readonly/> span24 text node value <input id="button23" value="use input1 as span24 text" type="button"/><span id="span24" style="background:grey">span24</span><br/>
 <input id="sink53" readonly style="width:800px"/> div26 inner HTML <input id="button25" value="use input1 as div26 inner HTML" type="button"/><div id="div26" style="background:yellow">div26</div><br/>
+<input id="sink54" readonly/> chain (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 <input id="input27" value="2"/> input27<br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -236,6 +237,9 @@ function sink52(sink){
 }
 function sink53(sink){
 	document.getElementById("sink53").value = pullpush(sink, html53);
+}
+function sink54(sink){
+	document.getElementById("sink54").value = pullpush(sink, chain54);
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -668,6 +672,21 @@ function html53(sink){
 	let clicks = pullpush(sink, click("button25"));
 	return pullpush(sink, html("div26"), clicks? input1: undefined);
 }
+
+function sum54(sink, a, b){
+	let x = typeof a === "function"? pullpush(sink("a"), a): a;
+	let y = typeof b === "function"? pullpush(sink("b"), b): b;
+	return Number(x) + Number(y);
+}
+function product54(sink, a, b){
+	let x = typeof a === "function"? pullpush(sink("a"), a): a;
+	let y = typeof b === "function"? pullpush(sink("b"), b): b;
+	return Number(x) * Number(y);
+}
+function chain54(sink){
+	// (2 * (3 + (input27 * (1 + (2 * input27))))
+	return pullpush(sink, chain(product54, input("input27"))(sum54, 1)(product54, input("input27"))(sum54, 3)(product54, 2)(), 2);
+}
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -721,6 +740,7 @@ pullpush(sink, sink50);
 pullpush(sink, sink51);
 pullpush(sink, sink52);
 pullpush(sink, sink53);
+pullpush(sink, sink54);
 </script>
 </body>
 </html>
