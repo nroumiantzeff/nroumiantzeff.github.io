@@ -12,7 +12,6 @@ let pullpush = (function(){
 	let $$sink = undefined; // currently processed sink
 	let $$nonce = undefined; // safe access to the private properties of a sink
 	let $$pulls = 0; // levels of pulling
-	let $$stack = [null]; // pullpush call stack to check the consistecy of $sink.level
 	let $$options = { stack: true, lock: false, }; // default sink options
 	let $$none = Symbol("none");
 	let $$keepalive = Symbol("keepalive"); // prevent reclaiming the shink when unused
@@ -23,28 +22,50 @@ let pullpush = (function(){
 	function pullpush(sink, source, ...args){
 		//todo refactor using subfunctions so that debugging steps on essetial code only
 		// note: the source argument may be of a type other than "function" for declaration purpose, in that case it is converted to boolean (true/false to allow/prevent the automatic deletion of the corresponding sub-sink in case it is not used during the current javascript event queue tick) with undefined being equivalent to true
-		let declaration = (typeof source === "function"? false: (source? $$cleanup: $$keepalive));
 		let $sink = sink(nonce());
-		if($sink.sink === undefined || !$sink.pullpushable){
-			if(declaration){
+
+		//todo move all checks to a separate function
+		let declaration = (typeof source === "function"? false: (source? $$cleanup: $$keepalive));
+		if(declaration){
+			if($sink.sink === undefined || $sink.sink !== $$sink){
+				//todo add different warnings for different conditions
 				warning('21: pullpush should not be called with a source argument of type other than "function" directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument of type "function" for actual source access', $sink);
 			}
-			$sink = $sink.safe(source.name)(nonce()); // generate a sink automatically (using the function name)
-		}
-		checkDuplicates($sink, declaration);
-		if(declaration){
-			if($sink.sink){
-				if($sink.sink.resources[$sink.id] !== undefined){
-					warning('27: declaration pullpush(sink("' + $sink.id + '"),' + (declaration === $$keepalive? 'false': 'true') + ') should not be called after any other pullpush call on sink("' + $sink.id + '"): consider moving declaration call to the top of the source implementation and removing duplicate or conflicting declarations', $sink);
-				}
-				$sink.sink.resources[$sink.id] = (declaration === $$keepalive);
+			if($sink.sink.resources[$sink.id] !== undefined){
+				warning('27: declaration pullpush(sink("' + $sink.id + '"),' + (declaration === $$keepalive? 'false': 'true') + ') should not be called after any other pullpush call on sink("' + $sink.id + '"): consider moving declaration call to the top of the source implementation and removing duplicate or conflicting declarations', $sink);
 			}
+			$sink.sink.resources[$sink.id] = (declaration === $$keepalive);
 			return;
 		}
+		else if($sink === $$sink){
+			// implicit sink: generate a sub-sink automatically (using the source name)
+			$sink = $sink.safe(source.name)(nonce());
+		}
+		else if($sink.sink === undefined){
+			if($$sink === undefined){
+				$sink = $sink.safe(source.name)(nonce());
+			}
+			else{
+				debugger; //todo check whether this is usefull otherwise add a warning
+				$sink = $sink.safe(source.name)(nonce());
+			}
+		}
+		else if($sink.sink !== $$sink){
+			if($$sink !== undefined){
+				//todo add differnt warning for different conditions
+				warning('23: pullpush called with an invalid sink argument (with id "' + $sink.id + '"): the invalid sink should either be the the sink passed by the caller (with id "' + $$sink.id + '") or an explicit sub-sink of it such as sink("' + $sink.id  + '")', $sink);
+			}
+			else{
+				debugger; //todo is this usefull //todo if yes add a specific warning
+			}
+		}
+		checkDuplicates($sink);
 		if($sink.sink){
 			$sink.sink.resources[$sink.id] = true;
 		}
-		$sink.pullpushable = false;
+
+
+
 		if($sink.source === undefined || !equals(args, $sink.args)){
 			if($sink.source === undefined){
 				// note: use the source specified first ignoring sources specified afterwards (theoriticaly, functions could be laysily evaluated by an optimized javascript implementation)
@@ -53,15 +74,6 @@ let pullpush = (function(){
 			$sink.args = args;
 			$sink.tick = $$ticks;
 			$$timeStamp = undefined;
-			if($$stack.length !== 0){
-				if($$stack[$$stack.length - 1] === null){
-					$$stack[$$stack.length - 1] = $sink;
-				}
-				else if($sink.level !== $$stack[$$stack.length - 1].level){
-					warning('23: inconsistent sink level (' + $sink.level + ' instead of ' + $$stack[$$stack.length - 1].level + '): consider not using sink("' + $$stack[$$stack.length - 1].id + '") nor sink("' + $sink.id + '") as argument to several pullpush calls', $sink);
-				}
-			}
-			$$stack.push(null);
 			$$pulls++;
 			$sink.duplicates = undefined;
 			try{
@@ -71,7 +83,6 @@ let pullpush = (function(){
 			finally{
 				$sink.duplicates = undefined;
 				$$pulls--;
-				$$stack.length--;
 			}
 		}
 		if($sink.error !== $$none){
@@ -93,7 +104,9 @@ let pullpush = (function(){
 			$sink.error = exception;
 		}
 		$$sink = current;
-		checkSources($sink);
+		if($sink.error === $$none){
+			reclaimSources($sink); // do not reclaim resource when an exception occured
+		}
 		let result = handlerValue($sink.nonce, value);
 		if($sink.nonce.handlers > 0){
 			warning('17: pullpush.forcast and pullpush.register should not be called outside the return chain. Consider using the following syntax: return (pullpush.forcast(sink, 0))(value)', $sink);
@@ -130,7 +143,6 @@ let pullpush = (function(){
 		$$time = Date.now();
 		$$ticks++;
 		$$pulls = 0;
-		$$stack = [];
 		let $sinks = [];
 		for(let index in observers){
 			let $sink = observers[index](nonce());
@@ -272,7 +284,6 @@ let pullpush = (function(){
 				$parent.sources[id] = $sink;
 			}
 		}
-		$sink.pullpushable = true;
 		return $sink.safe;
 	}
 	function nonce(){
@@ -335,51 +346,40 @@ let pullpush = (function(){
 		}
 		return true;
 	}
-	function checkSources($sink){
-		if($sink.resources !== undefined){ // no checks when sources have not been collected
-			for(let id in $sink.sources){
-				let resource = $sink.resources[id];
-				if(!resource){
-					let $source = $sink.sources[id];
-					if(resource === false){
-						// a declaration has allowed reclaiming the unused sink
-						unregister($source);
-						delete $sink.sources[id];
-					}
-					else{
-						warning('25: missing declaration for reclaiming sink("' + id + '") which is no longer used by sink("' + $sink.id + '"): consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $source);
-					}
+	function reclaimSources($sink){
+		for(let id in $sink.sources){
+			let resource = $sink.resources[id];
+			if(!resource){
+				let $source = $sink.sources[id];
+				if(resource === false){
+					// a declaration has allowed reclaiming the unused sink
+					unregister($source);
+					delete $sink.sources[id];
+				}
+				else{
+					warning('25: missing declaration for reclaiming sink("' + id + '") which is no longer used by sink("' + $sink.id + '"): consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $source);
 				}
 			}
 		}
 		$sink.resources = {};
 	}
-	function checkDuplicates($sink, declaration){
+	function checkDuplicates($sink){
 		let $parent = $sink.sink;
 		if($parent){
 			if($parent.duplicates === undefined){
 				$parent.duplicates = {};
 			}
 			let duplicate = $parent.duplicates[$sink.id];
-			if(declaration){
-				if(declaration === $$keepalive){
-					if(duplicate === undefined){
-						$parent.duplicates[$sink.id] = 1; //todo is this usefull?
-					}
+			if(duplicate === 1){
+				if($sink.id){
+					warning('1: pullpush should not be called twice with the same sink as first argument: consider specifying an explicite localy unique id argument in sink("' + $sink.id + '")', $sink);
+				}
+				else{
+					warning('2: pullpush should not be called twice with the same sink as first argument and anonymous functions as second argument: consider specifying named functions as second argument to pullpush', $sink);
 				}
 			}
 			else{
-				if(duplicate === 2){
-					if($sink.id){
-						warning('1: pullpush should not be called twice with the same sink as first argument: consider specifying an explicite localy unique id argument in sink("' + $sink.id + '")', $sink);
-					}
-					else{
-						warning('2: pullpush should not be called twice with the same sink as first argument and anonymous functions as second argument: consider specifying named functions as second argument to pullpush', $sink);
-					}
-				}
-				else{
-					$parent.duplicates[$sink.id] = 2;
-				}
+				$parent.duplicates[$sink.id] = 1;
 			}
 		}
 	}
@@ -456,7 +456,6 @@ let pullpush = (function(){
 		$$ticks++;
 		$$timeStamp = (new Event("custom")).timeStamp;
 		$$pulls = 0;
-		$$stack = [];
 		let $sink = sink(nonce());
 		$sink.timer = undefined;
 		if(source !== undefined){
@@ -618,7 +617,6 @@ let pullpush = (function(){
 	function $$warning(message){
 		if(typeof $$onwarning === "function"){
 			$$pulls = 0;
-			$$stack = [];
 			$$onwarning(message);
 		}
 	}

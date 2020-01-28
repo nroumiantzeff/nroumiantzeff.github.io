@@ -369,5 +369,4 @@ let message = sourcer("message",
 //todo implement ajax
 //todo implement indexBD and/or web storage
 
-let sink = pullpush.sink("minimo");
-delete pullpush.sink; // prevent using the top level sink
+let sink = pullpush.sink();

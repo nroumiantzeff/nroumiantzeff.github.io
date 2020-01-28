@@ -144,7 +144,8 @@ function sink23(sink){
 	document.getElementById("sink23").value = pullpush(sink, identity, pullpush(sink, input("input11"))); 
 }
 function sink24(sink){
-	document.getElementById("sink24").value = pullpush(sink, unit(pullpush(sink, input("input11")))); 
+	pullpush(sink("xxxx")); // declaration to prevent reclaim of the sink
+	document.getElementById("sink24").value = pullpush(sink("yyy"), unit(pullpush(sink("xxxx"), input("input11"))));
 }
 function sink25(sink){
 	document.getElementById("sink25").value = pullpush(sink, apl25, 1000); 
@@ -381,12 +382,13 @@ function steptime29(sink, delay){
 	return time * 2;
 }
 function steptime30(sink, delay){
+	pullpush(sink("stepper"), true); // declaration to allow reclaiming the sink
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
 	let time = pullpush.time(sink);
-	pullpush(sink, stepper, delay);
+	pullpush(sink("stepper"), stepper, delay);
 	return time * 2;
 }
 function fibonacci(index, values, value0, value1){
@@ -396,15 +398,17 @@ function fibonacci(index, values, value0, value1){
 	return [values.value[1], values.value[0] + values.value[1]];
 }
 function series31(sink, delay){
+	pullpush(sink("series"), true);  // declaration to allow reclaiming the sink
+	pullpush(sink("stepper"), true); // declaration to allow reclaiming the sink
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
-	return pullpush(sink, series, pullpush(sink, stepper, delay), fibonacci, 0, 1);
+	return pullpush(sink("series"), series, pullpush(sink("stepper"), stepper, delay), fibonacci, 0, 1);
 }
 function series32(sink, delay){
-	pullpush(sink(stepper.name)); // declaration (to keep alive the series)
-	pullpush(sink(series.name)); // declaration (to keep alive the series)
+	pullpush(sink(stepper.name), false); // declaration to prevent reclaiming the sink
+	pullpush(sink(series.name), false); // declaration to allow reclaiming the sink
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
@@ -512,9 +516,10 @@ function title43(sink){
 	return pullpush(sink, title("sink42"));
 }
 function unregister44(sink){
+	pullpush(sink("input16"), true); // declaration to allow reclaiming the sink
 	let value1 = Number(pullpush(sink, input("input1")));
 	if(value1 > 0){
-		let value16 = Number(pullpush(sink, input("input16")));
+		let value16 = Number(pullpush(sink("input16"), input("input16")));
 		return value1 * value16;
 	}
 	return value1;
@@ -545,6 +550,9 @@ function fibonacci46(sink){
 	return value;
 }
 function nextFibonacci47a(sink, value3){
+	pullpush(sink("fibonacci47:2a"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:1a"), true);  // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:3a"), true);  // declaration to allow reclaiming the sink
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let value2 = pullpush(sink, global("fibonacci47:2a"), 1, triggered? value3: undefined);
 	let value1 = pullpush(sink, global("fibonacci47:1a"), 0, triggered? value2: undefined);
@@ -552,6 +560,9 @@ function nextFibonacci47a(sink, value3){
 	return value;
 }
 function nextFibonacci47b(sink, value3){
+	pullpush(sink("fibonacci47:2b"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:1b"), true);  // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:3b"), true);  // declaration to allow reclaiming the sink
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let value2 = pullpush(sink, global("fibonacci47:2b"), 1, triggered? value3: undefined);
 	let value1 = pullpush(sink, global("fibonacci47:1b"), 0, triggered? value2: undefined);
@@ -559,22 +570,28 @@ function nextFibonacci47b(sink, value3){
 	return value;
 }
 function fibonacci47(sink){
+	pullpush(sink("fibonacci47:1a"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:2a"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:3a"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:1b"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:2b"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:3b"), true); // declaration to allow reclaiming the sink
 	let input1 = pullpush(sink, input("input1"));
 	if(input1){
-		let value2a = pullpush(sink, global("fibonacci47:2a"), 1);
-		let value1a = pullpush(sink, global("fibonacci47:1a"), 0);
-		let value3a = pullpush(sink, nextFibonacci47a, value2a + value1a);
+		let value2a = pullpush(sink("fibonacci47:2a"), global("fibonacci47:2a"), 1);
+		let value1a = pullpush(sink("fibonacci47:1a"), global("fibonacci47:1a"), 0);
+		let value3a = pullpush(sink("fibonacci47:3a"), nextFibonacci47a, value2a + value1a);
 		return value3a;
 	}
-	let value2b = pullpush(sink, global("fibonacci47:2b"), 1);
-	let value1b = pullpush(sink, global("fibonacci47:1b"), 0);
-	let value3b = pullpush(sink, nextFibonacci47b, value2b + value1b);
+	let value2b = pullpush(sink("fibonacci47:2b"), global("fibonacci47:2b"), 1);
+	let value1b = pullpush(sink("fibonacci47:1b"), global("fibonacci47:1b"), 0);
+	let value3b = pullpush(sink("fibonacci47:3b"), nextFibonacci47b, value2b + value1b);
 	return value3b;
 }
 function nextFibonacci48a(sink, value3){
-	pullpush(sink("fibonacci48:2a")); // declaration
-	pullpush(sink("fibonacci48:1a")); // declaration
-	pullpush(sink("fibonacci48:3a")); // declaration
+	pullpush(sink("fibonacci48:2a"), false); // declaration to prevent reclaiming the sink
+	pullpush(sink("fibonacci48:1a"), false);  // declaration to prevent reclaiming the sink
+	pullpush(sink("fibonacci48:3a"), false);  // declaration to prevent reclaiming the sink
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let input1 = pullpush(sink, input("input1"));
 	if(input1){
@@ -585,9 +602,9 @@ function nextFibonacci48a(sink, value3){
 	}
 }
 function nextFibonacci48b(sink, value3){
-	pullpush(sink("fibonacci48:2b")); // declaration
-	pullpush(sink("fibonacci48:1b")); // declaration
-	pullpush(sink("fibonacci48:3b")); // declaration
+	pullpush(sink("fibonacci48:2b"), false); // declaration to prevent reclaiming the sink
+	pullpush(sink("fibonacci48:1b"), false);  // declaration to prevent reclaiming the sink
+	pullpush(sink("fibonacci48:3b"), false);  // declaration to prevent reclaiming the sink
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let input1 = pullpush(sink, input("input1"));
 	if(!input1){
@@ -617,15 +634,20 @@ function fibonacci48(sink){
 	return value3b;
 }
 function error49(sink){
-	let direct = pullpush(sink, trigger(click("button17")));
+	//todo fix warnings when ckicing "indirect error"
+	pullpush(sink("button17"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("button18"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("direct"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("error"), true); // declaration to allow reclaiming the sink
+	let direct = pullpush(sink("button17"), trigger(click("button17")));
 	if(direct){
-		return pullpush(sink, error(), Error("direct error"));
+		return pullpush(sink("direct"), error(), Error("direct error"));
 	}
-	let indirect = pullpush(sink, trigger(click("button18")));
+	let indirect = pullpush(sink("button18"), trigger(click("button18")));
 	if(indirect){
 		return undefined();
 	}
-	let value = pullpush(sink, error());
+	let value = pullpush(sink("error"), error());
 	return value || "";
 }
 function img50(sink){
@@ -669,7 +691,7 @@ pullpush(sink, sink20);
 pullpush(sink, sink21);
 pullpush(sink, sink22);
 pullpush(sink, sink23);
-pullpush(sink, sink24);
+//debug pullpush(sink, sink24); //todo analyse why it does not work as it used to
 pullpush(sink, sink25);
 pullpush(sink, sink26);
 pullpush(sink, sink27);

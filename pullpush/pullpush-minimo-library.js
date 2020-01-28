@@ -123,8 +123,8 @@ let lagger = (function(){
 		let name = lagger.name + "_" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
-				let value = pullpush.value(sink);
 				pullpush(sink(lagger.name)); // declaration to prevent reclaiming the unused sink //todo should sinks used by the forcast callabck be checked for reclaim?
+				let value = pullpush.value(sink);
 				return (pullpush.forcast(sink, undefined, delay, lagger, source, ...args))
 					(value);
 			},
@@ -186,7 +186,6 @@ function all(sources){ //todo use spreading if first argument is a function
 		sources.reduce(function(unused, source, index){
 			pullpush(sink(index)); // declaration to prevent reclaiming the unused sink
 		}, undefined);
-
 		let value = pullpush.value(sink);
 		let sequences = sources.map(function(source, index){
 			return pullpush.sequence(sink(index));
@@ -219,11 +218,11 @@ function curry(source, arg){
 	};
 	return named[name];
 }
-function identity(sink, arg){
+function identity(sink, arg){ //todo identity :: function a b -> source a b???
 	// identity :: source a a :: source (a b) a
 	return arg;
 }
-function unit(value){
+function unit(value){ //todo unit :: function a b -> source a b????
 	// unit :: a -> source () a
 	let name = typeof value === "function"? value.name: value? value.toString(): unit.name;
 	let named = {
