@@ -44,7 +44,7 @@ let sourcer = (function(){
 				}
 				return next;
 			};
-			let name = type + "_" + (id || "");
+			let name = type + "~" + (id || "");
 			let namedFunctions = {
 				[name]: function(sink, value, delay){
 					if(value === undefined){
