@@ -14,6 +14,7 @@ let pullpush = (function(){
 	let $$pulls = 0; // levels of pulling
 	let $$options = { stack: true, lock: false, }; // default sink options
 	let $$none = Symbol("none");
+	let $$all = Symbol("all");
 	let $$keepalive = Symbol("keepalive"); // prevent reclaiming the shink when unused
 	let $$cleanup = Symbol("cleanup"); // allow reclaiming the sink when unused
 	let $$registers = Symbol("pullpushregisters");
@@ -27,14 +28,24 @@ let pullpush = (function(){
 		//todo move all checks to a separate function
 		let declaration = (typeof source === "function"? false: (source? $$cleanup: $$keepalive));
 		if(declaration){
-			if($sink.sink === undefined || $sink.sink !== $$sink){
-				//todo add different warnings for different conditions
-				warning('21: pullpush should not be called with a source argument of type other than "function" directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument of type "function" for actual source access', $sink);
+			if($sink === $$sink){
+				// generic declaration for all sub-sinks
+				if($sink.resources[$$all] !== undefined){
+					warning('27: declaration pullpush(sink,' + (declaration === $$cleanup? 'false': 'true') + ') should not be called after declaration pullpush(sink,' + ($sink.resources[$$all]? 'false': 'true') + '): consider removing the conflicting declaration', $sink);
+				}
+				//todo warning if $sink.resources is not empty
+				$sink.resources[$$all] = (declaration === $$cleanup);
 			}
-			if($sink.sink.resources[$sink.id] !== undefined){
-				warning('27: declaration pullpush(sink("' + $sink.id + '"),' + (declaration === $$keepalive? 'false': 'true') + ') should not be called after any other pullpush call on sink("' + $sink.id + '"): consider moving declaration call to the top of the source implementation and removing duplicate or conflicting declarations', $sink);
+			else{
+				if($sink.sink === undefined || $sink.sink !== $$sink){
+					//todo add different warnings for different conditions
+					warning('21: pullpush should not be called with a source argument of type other than "function" directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument of type "function" for actual source access', $sink);
+				}
+				if($sink.sink.resources[$sink.id] !== undefined){
+					warning('27: declaration pullpush(sink("' + $sink.id + '"),' + (declaration === $$cleanup? 'false': 'true') + ') should not be called after any other pullpush call on sink("' + $sink.id + '"): consider moving declaration call to the top of the source implementation and removing duplicate or conflicting declarations', $sink);
+				}
+				$sink.sink.resources[$sink.id] = (declaration === $$cleanup);
 			}
-			$sink.sink.resources[$sink.id] = (declaration === $$keepalive);
 			return;
 		}
 		else if($sink === $$sink){
@@ -347,17 +358,20 @@ let pullpush = (function(){
 		return true;
 	}
 	function reclaimSources($sink){
-		for(let id in $sink.sources){
-			let resource = $sink.resources[id];
-			if(!resource){
-				let $source = $sink.sources[id];
-				if(resource === false){
-					// a declaration has allowed reclaiming the unused sink
-					unregister($source);
-					delete $sink.sources[id];
-				}
-				else{
-					warning('25: missing declaration for reclaiming sink("' + id + '") which is no longer used by sink("' + $sink.id + '"): consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $source);
+		let cleanupAll = $sink.resources[$$all];
+		if(cleanupAll !== false){
+			for(let id in $sink.sources){
+				let cleanup = cleanupAll === true? true: $sink.resources[id];
+				if(cleanup !== false){
+					let $source = $sink.sources[id];
+					if(cleanup === true){
+						// a declaration has allowed reclaiming the unused sink
+						unregister($source);
+						delete $sink.sources[id];
+					}
+					else{
+						warning('25: missing declaration for reclaiming sink("' + id + '") which is no longer used by sink("' + $sink.id + '"): consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $source);
+					}
 				}
 			}
 		}

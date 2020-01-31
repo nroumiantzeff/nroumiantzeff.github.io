@@ -146,8 +146,15 @@ function sink23(sink){
 	document.getElementById("sink23").value = pullpush(sink, identity, pullpush(sink, input("input11"))); 
 }
 function sink24(sink){
-	pullpush(sink("xxxx")); // declaration to prevent reclaim of the sink
-	document.getElementById("sink24").value = pullpush(sink("yyy"), unit(pullpush(sink("xxxx"), input("input11"))));
+	pullpush(sink, true); //declaration to allow reclaming all the sources
+	let input11 = pullpush(sink("yyy"), input("input11"));
+	pullpush(sink(input11), true);
+	let value = pullpush(sink, unit(input11));
+	if(value === "111")
+	{
+		console.log("DEBUG: 111");
+	}
+	document.getElementById("sink24").value = value; 
 }
 function sink25(sink){
 	document.getElementById("sink25").value = pullpush(sink, apl25, 1000); 
@@ -695,6 +702,7 @@ function composition55(sink){
 	// (2 * (3 + (input27 * (1 + (2 * input27))))
 	return pullpush(sink, composition(curry(product54, 2), curry(sum54, 3), curry(product54, input("input27")), curry(sum54, 1), curry(product54, input("input27"))), 2);
 }
+/* //debug
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -718,7 +726,9 @@ pullpush(sink, sink20);
 pullpush(sink, sink21);
 pullpush(sink, sink22);
 pullpush(sink, sink23);
-//debug pullpush(sink, sink24); //todo analyse why it does not work as it used to
+*/ //debug
+pullpush(sink, sink24); //todo analyse why it does not work as it used to
+/* //debug
 pullpush(sink, sink25);
 pullpush(sink, sink26);
 pullpush(sink, sink27);
@@ -750,6 +760,7 @@ pullpush(sink, sink52);
 pullpush(sink, sink53);
 pullpush(sink, sink54);
 pullpush(sink, sink55);
+*/ //debug
 </script>
 </body>
 </html>
