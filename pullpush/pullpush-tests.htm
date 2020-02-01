@@ -660,6 +660,7 @@ function error49(sink){
 	}
 	let indirect = pullpush(sink("button18"), trigger(click("button18")));
 	if(indirect){
+		//todo fix trigger so that it does not returns "true" twice for a single click on the "indirect error" button (use queueMicrotask for write only forcasts?)
 		return undefined();
 	}
 	let value = pullpush(sink("error"), error());
