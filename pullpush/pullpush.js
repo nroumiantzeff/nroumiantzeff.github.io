@@ -86,25 +86,19 @@ let pullpush = (function(){
 		if(typeof source !== "function"){
 			warning('29: pullpush called with an invalid source argument of type "' + (typeof source) + '": the source argument should either be of type "function" (or "boolean" for a keepalive declaration)', $sink);
 		}
-		if($sink === $$sink){
+		if($sink === $$sink || $sink.sink === undefined && $$sink === undefined){
 			// implicit sink: generate a sub-sink automatically (using the source name)
 			$sink = $sink.safe(source.name)(nonce());
 		}
-		else if($sink.sink === undefined){
-			if($$sink === undefined){
-				$sink = $sink.safe(source.name)(nonce());
-			}
-			else{
-				debugger; //todo check whether this is usefull otherwise add a warning
-				$sink = $sink.safe(source.name)(nonce());
-			}
+		else if($sink.sink === undefined && $$sink !== undefined){
+			warning('30: non-top level pullpush (with source name "' + source.name + '") should not be called with an invalid top level sink (with id "' + $sink.id + '")', $sink);
 		}
 		else if($sink.sink !== $$sink){
 			if($$sink !== undefined){
 				warning('23: pullpush called with an invalid sink argument (with id "' + $sink.id + '"): the sink argument should either be the the sink passed by the caller (with id "' + $$sink.id + '") or an explicit sub-sink of it such as sink("' + $sink.id  + '")', $sink);
 			}
 			else{
-				debugger; //todo is this usefull //todo if yes add a specific warning
+				warning('31: top level pullpush called with an invalid non-top level sink argument (with id "' + $sink.id + '")', $sink);
 			}
 		}
 		if($sink.sink){
