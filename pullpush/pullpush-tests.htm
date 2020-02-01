@@ -146,8 +146,16 @@ function sink23(sink){
 	document.getElementById("sink23").value = pullpush(sink, identity, pullpush(sink, input("input11"))); 
 }
 function sink24(sink){
-	pullpush(sink("xxxx")); // declaration to prevent reclaim of the sink
-	document.getElementById("sink24").value = pullpush(sink("yyy"), unit(pullpush(sink("xxxx"), input("input11"))));
+	pullpush(sink, false); // declaration to not keep the unused source
+	let value = pullpush(sink, input("input11"));
+	let name = value;
+	let named = {
+		[name]: function(){
+			return value;
+		},
+	};
+	let source = named[name]; // named constant source (the source needs to have a different name for different values in order for the corresponding sink to be replaced)
+	document.getElementById("sink24").value = pullpush(sink, unit(source));
 }
 function sink25(sink){
 	document.getElementById("sink25").value = pullpush(sink, apl25, 1000); 
@@ -252,8 +260,8 @@ function sum(sink){
 	return Number(pullpush(sink("input2"), input("input2"))) + Number(pullpush(sink, input("input3")));
 }
 function fork(sink, condition){
-	pullpush(sink("input4"), false); // declaration needed because of the conditional call
-	pullpush(sink("input5"), false); // declaration needed because of the conditional call
+	pullpush(sink("input4"), true); // declaration to keep the unused source
+	pullpush(sink("input5"), true); // declaration to keep the unused source
 	return condition? pullpush(sink("input4"), input("input4")): pullpush(sink("input5"), input("input5"));
 }
 function merge(sink, condition){
@@ -265,7 +273,7 @@ function message7(sink, table, filter){
 	return pullpush(sink, frontend7, table, filter);
 }
 function backend7(sink, table, filter){
-	pullpush(sink("response")); // declaration to prevent reclaiming the unused sink
+	pullpush(sink("response"), true); // declaration to keep the unused source
 	var query = pullpush(sink("request"), message());
 	if(query){
 		let items = query.split("/");
@@ -308,7 +316,7 @@ function sin8(sink, delay){
 	return value;
 }
 function divide10(sink){
-	pullpush(sink("input9b"), true); // declaration to allow reclaiming the unused skink
+	pullpush(sink("input9b"), false); // declaration to not keep the unused skink
 	let value = Number(pullpush(sink("input9a"), input("input9")));
 	if(value >= 2){
 		value = value / 2;
@@ -390,7 +398,7 @@ function steptime29(sink, delay){
 	return time * 2;
 }
 function steptime30(sink, delay){
-	pullpush(sink("stepper"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("stepper"), false); // declaration to not keep the unused source
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
@@ -406,8 +414,8 @@ function fibonacci(index, values, value0, value1){
 	return [values.value[1], values.value[0] + values.value[1]];
 }
 function series31(sink, delay){
-	pullpush(sink("series"), true);  // declaration to allow reclaiming the sink
-	pullpush(sink("stepper"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("series"), false);  // declaration to not keep the unused source
+	pullpush(sink("stepper"), false); // declaration to not keep the unused source
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
@@ -415,8 +423,8 @@ function series31(sink, delay){
 	return pullpush(sink("series"), series, pullpush(sink("stepper"), stepper, delay), fibonacci, 0, 1);
 }
 function series32(sink, delay){
-	pullpush(sink(stepper.name), false); // declaration to prevent reclaiming the sink
-	pullpush(sink(series.name), false); // declaration to allow reclaiming the sink
+	pullpush(sink(stepper.name), true); // declaration to keep the unused source
+	pullpush(sink(series.name), true); // declaration to keep the unused source
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
@@ -524,7 +532,7 @@ function title43(sink){
 	return pullpush(sink, title("sink42"));
 }
 function unregister44(sink){
-	pullpush(sink("input16"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("input16"), false); // declaration to not keep the unused source
 	let value1 = Number(pullpush(sink, input("input1")));
 	if(value1 > 0){
 		let value16 = Number(pullpush(sink("input16"), input("input16")));
@@ -558,9 +566,9 @@ function fibonacci46(sink){
 	return value;
 }
 function nextFibonacci47a(sink, value3){
-	pullpush(sink("fibonacci47:2a"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:1a"), true);  // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:3a"), true);  // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:2a"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:1a"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:3a"), false); // declaration to not keep the unused source
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let value2 = pullpush(sink, global("fibonacci47:2a"), 1, triggered? value3: undefined);
 	let value1 = pullpush(sink, global("fibonacci47:1a"), 0, triggered? value2: undefined);
@@ -568,9 +576,9 @@ function nextFibonacci47a(sink, value3){
 	return value;
 }
 function nextFibonacci47b(sink, value3){
-	pullpush(sink("fibonacci47:2b"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:1b"), true);  // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:3b"), true);  // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:2b"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:1b"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:3b"), false); // declaration to not keep the unused source
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let value2 = pullpush(sink, global("fibonacci47:2b"), 1, triggered? value3: undefined);
 	let value1 = pullpush(sink, global("fibonacci47:1b"), 0, triggered? value2: undefined);
@@ -578,12 +586,12 @@ function nextFibonacci47b(sink, value3){
 	return value;
 }
 function fibonacci47(sink){
-	pullpush(sink("fibonacci47:1a"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:2a"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:3a"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:1b"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:2b"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("fibonacci47:3b"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("fibonacci47:1a"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:2a"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:3a"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:1b"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:2b"), false); // declaration to not keep the unused source
+	pullpush(sink("fibonacci47:3b"), false); // declaration to not keep the unused source
 	let input1 = pullpush(sink, input("input1"));
 	if(input1){
 		let value2a = pullpush(sink("fibonacci47:2a"), global("fibonacci47:2a"), 1);
@@ -597,9 +605,9 @@ function fibonacci47(sink){
 	return value3b;
 }
 function nextFibonacci48a(sink, value3){
-	pullpush(sink("fibonacci48:2a"), false); // declaration to prevent reclaiming the sink
-	pullpush(sink("fibonacci48:1a"), false);  // declaration to prevent reclaiming the sink
-	pullpush(sink("fibonacci48:3a"), false);  // declaration to prevent reclaiming the sink
+	pullpush(sink("fibonacci48:2a"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:1a"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:3a"), true); // declaration to keep the unused source
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let input1 = pullpush(sink, input("input1"));
 	if(input1){
@@ -610,9 +618,9 @@ function nextFibonacci48a(sink, value3){
 	}
 }
 function nextFibonacci48b(sink, value3){
-	pullpush(sink("fibonacci48:2b"), false); // declaration to prevent reclaiming the sink
-	pullpush(sink("fibonacci48:1b"), false);  // declaration to prevent reclaiming the sink
-	pullpush(sink("fibonacci48:3b"), false);  // declaration to prevent reclaiming the sink
+	pullpush(sink("fibonacci48:2b"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:1b"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:3b"), true); // declaration to keep the unused source
 	let triggered = pullpush(sink, trigger(click("button15")));
 	let input1 = pullpush(sink, input("input1"));
 	if(!input1){
@@ -623,12 +631,12 @@ function nextFibonacci48b(sink, value3){
 	}
 }
 function fibonacci48(sink){
-	pullpush(sink("fibonacci48:2a")); // declaration
-	pullpush(sink("fibonacci48:1a")); // declaration
-	pullpush(sink("fibonacci48:3a")); // declaration
-	pullpush(sink("fibonacci48:2b")); // declaration
-	pullpush(sink("fibonacci48:1b")); // declaration
-	pullpush(sink("fibonacci48:3b")); // declaration
+	pullpush(sink("fibonacci48:2a"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:1a"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:3a"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:2b"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:1b"), true); // declaration to keep the unused source
+	pullpush(sink("fibonacci48:3b"), true); // declaration to keep the unused source
 	let input1 = pullpush(sink, input("input1"));
 	if(input1){
 		let value2a = pullpush(sink("fibonacci48:2a"), global("fibonacci48:2a"), 1);
@@ -642,11 +650,10 @@ function fibonacci48(sink){
 	return value3b;
 }
 function error49(sink){
-	//todo fix warnings when ckicing "indirect error"
-	pullpush(sink("button17"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("button18"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("direct"), true); // declaration to allow reclaiming the sink
-	pullpush(sink("error"), true); // declaration to allow reclaiming the sink
+	pullpush(sink("button17"), false); // declaration to not keep the unused source
+	pullpush(sink("button18"), false); // declaration to not keep the unused source
+	pullpush(sink("direct"), false); // declaration to not keep the unused source
+	pullpush(sink("error"), false); // declaration to not keep the unused source
 	let direct = pullpush(sink("button17"), trigger(click("button17")));
 	if(direct){
 		return pullpush(sink("direct"), error(), Error("direct error"));
@@ -718,7 +725,7 @@ pullpush(sink, sink20);
 pullpush(sink, sink21);
 pullpush(sink, sink22);
 pullpush(sink, sink23);
-//debug pullpush(sink, sink24); //todo analyse why it does not work as it used to
+pullpush(sink, sink24);
 pullpush(sink, sink25);
 pullpush(sink, sink26);
 pullpush(sink, sink27);
