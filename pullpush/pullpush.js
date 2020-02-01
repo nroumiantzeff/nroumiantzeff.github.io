@@ -3,14 +3,15 @@
 //todo copyright 
 let pullpush = (function(){
 	"use strict";
-	let $$time = Date.now();
-	let $$timeStamp = undefined;
+	let $$time = undefined;
+	let $$ticking = false;
 	let $$ticks = 0;
 	let $$warnings = 0;
 	let $$sinks = 0;
 	let $$sink0 = undefined; // universal sink (top level) 
 	let $$sink = undefined; // currently processed sink
 	let $$nonce = undefined; // safe access to the private properties of a sink
+	let $$pushing = false;
 	let $$pulls = 0; // levels of pulling
 	let $$options = { stack: true, lock: false, }; // default sink options
 	let $$none = Symbol("none");
@@ -60,6 +61,7 @@ let pullpush = (function(){
 		return value;
 	}
 	function pullpushProlog1(sink, source){
+		tick();
 		let $sink = sink(nonce());
 		let declaration = source === true? $$keepalive: source === false? $$reclaimable: false;
 		if(declaration){
@@ -114,7 +116,6 @@ let pullpush = (function(){
 		}
 		$sink.args = args;
 		$sink.tick = $$ticks;
-		$$timeStamp = undefined;
 		$$pulls++;
 		$sink.duplicates = undefined;
 	}
@@ -162,19 +163,19 @@ let pullpush = (function(){
 	}
 	function event(event, observers, value){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
-		checkEvent(event);
-		if(event.isTrusted){
-			// user generated event (handled in its own javascript event queue tick)
+		if(!(event instanceof Event)){
+			warning('3: invalid event argument in pullpush.event call');
+		}
+		if(tick()){
+			// new javascript event queue tick: synchronous handling is OK
 			return eventCallback(event, observers, value);
 		}
-		// script generated event (force a new javascript event queue tick)
+		// same javascript event queue tick: asynchronous handling is necessary
 		setTimeout(eventCallback, 0, event, observers, value);
 		return value;
 	}
 	function eventCallback(event, observers, value){
-		$$time = Date.now();
-		$$ticks++;
-		$$pulls = 0;
+		tick();
 		let $sinks = [];
 		for(let index in observers){
 			let $sink = observers[index](nonce());
@@ -186,21 +187,6 @@ let pullpush = (function(){
 		}
 		pushSourcesInTopologicalOrder($sinks);
 		return value;
-	}
-	function checkEvent(event){
-		if(!(event instanceof Event)){
-			warning('3: invalid event argument in pullpush.event call');
-		}
-		if(event.eventPhase === 0){
-			warning('4: stale event argument in pullpush.event call');
-		}
-		if(!event.isTrusted){ //todo check $$timeStamp even for trusted events
-			if($$timeStamp === undefined || event.timeStamp < $$timeStamp){
-				warning('5: stale programmatic event argument in pullpush.event call');
-			}
-		}
-		//todo check that a previous event has not been checked yet in the same javascript event queue tick
-		//todo check that pullpush has not been called yet in the same javascript event queue tick
 	}
 	function pushSourcesInTopologicalOrder($sinks){
 		if($sinks.length !== 0){
@@ -283,6 +269,7 @@ let pullpush = (function(){
 		return value;
 	}
 	function generateSink($sink, id, options){
+		tick();
 		let $parent = $sink;
 		if($parent && $parent.index !== 0 && $parent.source === undefined){
 			warning('16: invalid sink("' + $parent.id + '")("' + id + '"): only one level of id is allowed per pullpush call', $parent);
@@ -448,6 +435,7 @@ let pullpush = (function(){
 		return handler;
 	}
 	function forcast(sink, value, delay, source, ...args){
+		tick();
 		let $sink = sink(nonce());
 		if(delay === undefined){
 			delay = 0;
@@ -489,10 +477,7 @@ let pullpush = (function(){
 		return $nonce;
 	}
 	function forcastCallback(sink, value, source, args){
-		$$time = Date.now();
-		$$ticks++;
-		$$timeStamp = (new Event("custom")).timeStamp;
-		$$pulls = 0;
+		tick();
 		let $sink = sink(nonce());
 		$sink.timer = undefined;
 		if(source !== undefined){
@@ -504,6 +489,7 @@ let pullpush = (function(){
 	}
 	function broadcast(sink, observers, value){
 		//todo check that the observers have not accessed the old value in the same javascript event queue tick
+		tick();
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			let $nonce = $sink.nonce;
@@ -532,6 +518,7 @@ let pullpush = (function(){
 		return $nonce;
 	}
 	function register(sink, observers, register, unregister){
+		tick();
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			let $nonce = $sink.nonce;
@@ -588,6 +575,7 @@ let pullpush = (function(){
 		}
 	}
 	function registered(sink, observers){
+		tick();
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			return observers[$sink.index] !== undefined;
@@ -595,6 +583,7 @@ let pullpush = (function(){
 		warning('8: incorrect sink argument in pullpush.registered call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function value(sink, defaultValue){
+		tick();
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			let currentValue = ($$ticks > $sink.currentTick)? $sink.value: $sink.currentValue;
@@ -603,6 +592,7 @@ let pullpush = (function(){
 		warning('9: incorrect sink argument in pullpush.value call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function id(sink){
+		tick();
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			return $sink.id;
@@ -610,6 +600,7 @@ let pullpush = (function(){
 		warning('10: incorrect sink argument in pullpush.id call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function time(sink){
+		tick();
 		let $sink = sink(nonce());
 		if($$sink === $sink){ // sink locality
 			return $$time - $sink.time;
@@ -617,6 +608,7 @@ let pullpush = (function(){
 		warning('11: incorrect sink argument in pullpush.time call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function sequence(sink1, sink2){
+		tick();
 		let $sink1 = sink1(nonce());
 		if($$sink === $sink1 || $$sink === $sink1.sink){ // sink locality extended to 1 level
 			if(sink2 === undefined){
@@ -653,7 +645,7 @@ let pullpush = (function(){
 	let $$onwarning = undefined;
 	function $$warning(message){
 		if(typeof $$onwarning === "function"){
-			$$pulls = 0;
+			tick();
 			$$onwarning(message);
 		}
 	}
@@ -673,6 +665,7 @@ let pullpush = (function(){
 		throw error;
 	}
 	function onwarning(handler){
+		tick();
 		if(typeof handler === "function"){
 			if($$onwarning === undefined){
 				$$onwarning = handler;
@@ -687,6 +680,20 @@ let pullpush = (function(){
 			}
 		}
 	};
+	function ticked(){
+		$$ticking = false;
+	}
+	function tick(){
+		if(!$$ticking){
+			$$time = Date.now();
+			$$ticks++;
+			$$ticking = true;
+			$$pulls = 0;
+			Promise.resolve().then(ticked); // use a Promise (microtask) to detect javascript event queue tick (macrotask)
+			return true; // new javascript event queue tick
+		}
+		return false; // same javascript event queue tick
+	}
 	pullpush.onwarning = onwarning;
 	pullpush.sink = sink;
 	pullpush.forcast = forcast;
