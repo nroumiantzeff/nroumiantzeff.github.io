@@ -37,7 +37,7 @@ let series = (function(){
 function timer(sink, delay, begining, end){
 	let time = pullpush.time(sink) + (begining || 0);
 	if(time > end){
-		pullpush(sink(stepper.name), true); // declaration to allow reclaim
+		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
 		return pullpush.value(sink, begining || 0);
 	}
 	pullpush(sink(stepper.name), stepper, delay);
@@ -46,7 +46,7 @@ function timer(sink, delay, begining, end){
 function counter(sink, delay, begining, end){
 	let count = pullpush.value(sink, begining || 0);
 	if(count >= end){
-		pullpush(sink(stepper.name), true); // declaration to allow reclaim
+		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
 		return end;
 	}
 	pullpush(sink(stepper.name), stepper, delay);
@@ -123,7 +123,7 @@ let lagger = (function(){
 		let name = lagger.name + "~" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
-				pullpush(sink(lagger.name)); // declaration to prevent reclaiming the unused sink //todo should sinks used by the forcast callabck be checked for reclaim?
+				pullpush(sink(lagger.name), true); // declaration to keep the unused source //todo should sinks used by the forcast callabck be checked for reclaim?
 				let value = pullpush.value(sink);
 				return (pullpush.forcast(sink, undefined, delay, lagger, source, ...args))
 					(value);
@@ -186,7 +186,7 @@ function all(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function earliest(sink){
 		array.reduce(function(unused, source, index){
-			pullpush(sink(index)); // declaration to prevent reclaiming the unused sink
+			pullpush(sink(index), true); // declaration to keep the unused source
 		}, undefined);
 		let value = pullpush.value(sink);
 		let sequences = array.map(function(source, index){
