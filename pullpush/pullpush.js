@@ -14,44 +14,30 @@ let pullpush = (function(){
 	let $$pulls = 0; // levels of pulling
 	let $$options = { stack: true, lock: false, }; // default sink options
 	let $$none = Symbol("none");
-	let $$all = Symbol("all");
 	let $$keepalive = Symbol("keepalive"); // prevent reclaiming the shink when unused
-	let $$reclaimable = Symbol("cleanup"); // allow reclaiming the sink when unused
+	let $$cleanup = Symbol("cleanup"); // allow reclaiming the sink when unused
 	let $$registers = Symbol("pullpushregisters");
 	let $$register = Symbol("pullpushregister");
 	let $$unregister = Symbol("pullpushunregister");
 	function pullpush(sink, source, ...args){
 		//todo refactor using subfunctions so that debugging steps on essetial code only
-		// note: the source argument may be of a type other than "function" for declaration purpose, in that case it is a boolean (true/false to keepalive/cleanup the corresponding sub-sink in case it is not used during the current javascript event queue tick)
+		// note: the source argument may be of a type other than "function" for declaration purpose, in that case it is converted to boolean (true/false to allow/prevent the automatic deletion of the corresponding sub-sink in case it is not used during the current javascript event queue tick) with undefined being equivalent to true
 		let $sink = sink(nonce());
 
 		//todo move all checks to a separate function
-		let declaration = source === true? $$keepalive: source === false? $$reclaimable: false;
+		let declaration = (typeof source === "function"? false: (source? $$cleanup: $$keepalive));
 		if(declaration){
-			if($sink === $$sink){
-				// generic declaration for all sub-sinks
-				if($sink.keepalives[$$all] !== undefined && $sink.keepalives[$$all] !== declaration){
-					warning('28: keepalive declaration pullpush(sink,' + (declaration === $$keepalive? 'true': 'false') + ') is insconsistent with the previous keepalive declaration pullpush(sink,' + ($sink.keepalives[$$all] === $$keepalive? 'true': 'false') + '): consider removing the conflicting declaration', $sink);
-				}
-				$sink.keepalives[$$all] = declaration;
+			if($sink.sink === undefined || $sink.sink !== $$sink){
+				//todo add different warnings for different conditions
+				warning('21: pullpush should not be called with a source argument of type other than "function" directly on the current sink: consider passing an explicit id argument to the sink for source declaration or pass an explicit source argument of type "function" for actual source access', $sink);
 			}
-			else{
-				if($sink.sink === undefined || $sink.sink !== $$sink){
-					warning('21: pullpush keepalive declaration called with an invalid sink argument (with id "' + $sink.id + '"): the sink argument should either be the the sink passed by the caller (with id "' + $$sink.id + '") or an explicit sub-sink of it such as sink("' + $sink.id  + '")', $sink);
-				}
-				if($sink.sink.keepalives[$sink.id] !== true){ // the source has not been call yet
-					if($sink.sink.keepalives[$sink.id] !== undefined && $sink.sink.keepalives[$sink.id] !== declaration){
-						warning('27: keepalive declaration pullpush(sink("' + $sink.id + '"),' + (declaration === $$keepalive? 'true': 'false') + ') is insconsistent with the previous keepalive declaration pullpush(sink("' + $sink.id + '"),' + ($sink.keepalives[$sink.id] === $$keepalive? 'true': 'false') + '): consider removing the conflicting declaration', $sink);
-					}
-					$sink.sink.keepalives[$sink.id] = declaration;
-				}
+			if($sink.sink.resources[$sink.id] !== undefined){
+				warning('27: declaration pullpush(sink("' + $sink.id + '"),' + (declaration === $$keepalive? 'false': 'true') + ') should not be called after any other pullpush call on sink("' + $sink.id + '"): consider moving declaration call to the top of the source implementation and removing duplicate or conflicting declarations', $sink);
 			}
+			$sink.sink.resources[$sink.id] = (declaration === $$keepalive);
 			return;
 		}
-		if(typeof source !== "function"){
-			warning('29: pullpush called with an invalid source argument of type "' + (typeof source) + '": the source argument should either be of type "function" (or "boolean" for a keepalive declaration)', $sink);
-		}
-		if($sink === $$sink){
+		else if($sink === $$sink){
 			// implicit sink: generate a sub-sink automatically (using the source name)
 			$sink = $sink.safe(source.name)(nonce());
 		}
@@ -66,16 +52,17 @@ let pullpush = (function(){
 		}
 		else if($sink.sink !== $$sink){
 			if($$sink !== undefined){
-				warning('23: pullpush called with an invalid sink argument (with id "' + $sink.id + '"): the sink argument should either be the the sink passed by the caller (with id "' + $$sink.id + '") or an explicit sub-sink of it such as sink("' + $sink.id  + '")', $sink);
+				//todo add differnt warning for different conditions
+				warning('23: pullpush called with an invalid sink argument (with id "' + $sink.id + '"): the invalid sink should either be the the sink passed by the caller (with id "' + $$sink.id + '") or an explicit sub-sink of it such as sink("' + $sink.id  + '")', $sink);
 			}
 			else{
 				debugger; //todo is this usefull //todo if yes add a specific warning
 			}
 		}
-		if($sink.sink){
-			$sink.sink.keepalives[$sink.id] = true;
-		}
 		checkDuplicates($sink);
+		if($sink.sink){
+			$sink.sink.resources[$sink.id] = true;
+		}
 
 
 
@@ -288,7 +275,7 @@ let pullpush = (function(){
 				timer: undefined,
 				skips: 0,
 				sources: {},
-				keepalives: {},
+				resources: {}, // refreshed sources, used for reclaiming sub-sinks by comparing sources and resources
 				registers: {},
 				debug: overriden.stack? Error(): undefined,
 			};
@@ -361,25 +348,20 @@ let pullpush = (function(){
 	}
 	function reclaimSources($sink){
 		for(let id in $sink.sources){
-			let keepalive = $sink.keepalives[id];
-			if(keepalive !== true){
-				// the source has not been called
-				if(keepalive !== $$keepalive && (keepalive !== undefined || $sink.keepalives[$$all] !== $$keepalive)){
-					// the source is not declared as keepalive
-					let $source = $sink.sources[id];
-					if(keepalive !== $$reclaimable && (keepalive !== undefined || $sink.keepalives[$$all] !== $$reclaimable)){
-						// the source is not declared as reclaimable
-						warning('25: missing declaration for reclaiming sink("' + id + '") which is no longer used by sink("' + $sink.id + '"): consider calling either pullpush(sink("' + id + '"),true) for keepalive or pullpush(sink("' + id + '"),false) for cleanup', $source);
-					}
-					else{
-						// reclaim the unused source
-						unregister($source);
-						delete $sink.sources[id];
-					}
+			let resource = $sink.resources[id];
+			if(!resource){
+				let $source = $sink.sources[id];
+				if(resource === false){
+					// a declaration has allowed reclaiming the unused sink
+					unregister($source);
+					delete $sink.sources[id];
+				}
+				else{
+					warning('25: missing declaration for reclaiming sink("' + id + '") which is no longer used by sink("' + $sink.id + '"): consider calling either pullpush(sink("' + id + '"),true) to allow the reclaim or pullpush(sink("' + id + '"),false) to prevent the reclaim', $source);
 				}
 			}
 		}
-		$sink.keepalives = {};
+		$sink.resources = {};
 	}
 	function checkDuplicates($sink){
 		let $parent = $sink.sink;

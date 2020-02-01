@@ -37,7 +37,7 @@ let series = (function(){
 function timer(sink, delay, begining, end){
 	let time = pullpush.time(sink) + (begining || 0);
 	if(time > end){
-		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
+		pullpush(sink(stepper.name), true); // declaration to allow reclaim
 		return pullpush.value(sink, begining || 0);
 	}
 	pullpush(sink(stepper.name), stepper, delay);
@@ -46,7 +46,7 @@ function timer(sink, delay, begining, end){
 function counter(sink, delay, begining, end){
 	let count = pullpush.value(sink, begining || 0);
 	if(count >= end){
-		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
+		pullpush(sink(stepper.name), true); // declaration to allow reclaim
 		return end;
 	}
 	pullpush(sink(stepper.name), stepper, delay);
@@ -65,7 +65,7 @@ let toggle = (function(){
 		return { toggle: !current.toggle, value };
 	}
 	return function(source, ...args){
-		let name = toggle.name + "~" + source.name;
+		let name = toggle.name + "_" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
 				return pullpush(sink, toggle, source, ...args).toggle;
@@ -85,7 +85,7 @@ let trigger = (function(){ //todo implement "limiter" which allows specifying a 
 			({ trigger: true, value });
 	}
 	return function(source, ...args){
-		let name = trigger.name + "~" + source.name;
+		let name = trigger.name + "_" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
 				return pullpush(sink, trigger, source, ...args).trigger;
@@ -105,7 +105,7 @@ let switcher = (function(){
 			({ switcher: true, value });
 	}
 	return function(source, delay, ...args){
-		let name = switcher.name + "~" + source.name;
+		let name = switcher.name + "_" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
 				return pullpush(sink, switcher, delay, source, ...args).switcher;
@@ -120,10 +120,10 @@ let lagger = (function(){
 		return value;
 	}
 	return function(source, delay, ...args){
-		let name = lagger.name + "~" + source.name;
+		let name = lagger.name + "_" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
-				pullpush(sink(lagger.name), true); // declaration to keep the unused source //todo should sinks used by the forcast callabck be checked for reclaim?
+				pullpush(sink(lagger.name)); // declaration to prevent reclaiming the unused sink //todo should sinks used by the forcast callabck be checked for reclaim?
 				let value = pullpush.value(sink);
 				return (pullpush.forcast(sink, undefined, delay, lagger, source, ...args))
 					(value);
@@ -143,7 +143,7 @@ let share = (function(){
 			return cached;
 		}
 		let observers = {};
-		let name = share.name + "~" + id + "~" + source.name;
+		let name = share.name + "_" + id + "_" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
 				let value = pullpush(sink, source, ...args);
@@ -186,7 +186,7 @@ function all(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function earliest(sink){
 		array.reduce(function(unused, source, index){
-			pullpush(sink(index), true); // declaration to keep the unused source
+			pullpush(sink(index)); // declaration to prevent reclaiming the unused sink
 		}, undefined);
 		let value = pullpush.value(sink);
 		let sequences = array.map(function(source, index){
@@ -212,7 +212,7 @@ function all(...sources){
 }
 function curry(source, arg){
 	// curry :: source (a b) c -> a -> source b (source (a b) c)
-	let name = curry.name + "~" + source.name;
+	let name = curry.name + "_" + source.name;
 	let named = {
 		[name]: function(sink, ...args){
 			return source(sink, arg, ...args);
@@ -236,7 +236,7 @@ function unit(value){ //todo unit :: function a b -> source a b????
 }
 function mapl(fAB, sBC){
 	// mapl :: (a -> b) -> source b c -> source a c
-	let name = mapl.name + "~" + fAB.name + "~" + sBC.name;
+	let name = mapl.name + "_" + fAB.name + "_" + sBC.name;
 	let named = {
 		[name]: function(sink, ...a){
 			let b = fAB(...a);
@@ -248,7 +248,7 @@ function mapl(fAB, sBC){
 }
 function mapr(sAB, fBC){
 	// mapr :: source a b -> (b -> c) -> source a c
-	let name = mapr.name + "~" + sAB.name + "~" + fBC.name;
+	let name = mapr.name + "_" + sAB.name + "_" + fBC.name;
 	let named = {
 		[name]: function(sink, ...a){
 			let b = pullpush(sink, sAB, ...a);
@@ -260,7 +260,7 @@ function mapr(sAB, fBC){
 }
 function apl(sAfBC, sCD, ...a){
 	// apl :: source a (b -> c) -> source c d -> source b d
-	let name = apl.name + "~" + sAfBC.name + "~" + sCD.name;
+	let name = apl.name + "_" + sAfBC.name + "_" + sCD.name;
 	let name1 = sAfBC.name; 
 	let name2 = sCD.name !== sAfBC.name? sCD.name: "apl" + sCD.name; 
 	let named = {
@@ -275,7 +275,7 @@ function apl(sAfBC, sCD, ...a){
 }
 function apr(sAB, sCfBD, ...c){
 	// apr :: source a b -> source c (b -> d) -> source b d
-	let name = apr.name + "~" + sAB.name + "~" + sCfBD.name;
+	let name = apr.name + "_" + sAB.name + "_" + sCfBD.name;
 	let name1 = sAB.name; 
 	let name2 = sCfBD.name !== sAB.name? sCfBD.name: "apr" + sCfBD.name; 
 	let named = {
@@ -291,7 +291,7 @@ function apr(sAB, sCfBD, ...c){
 function composition(...sources){
 	// composition :: (source y z) (source x y) ... (source b c) (source a b) -> source a z
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
-	let name = composition.name + "~" + array.map(source => source.name).join("_");
+	let name = composition.name + "_" + array.map(source => source.name).join("_");
 	let named = {
 		[name]: function(sink, value){
 			return array.slice().reverse().reduce(function(value, source, index){
@@ -306,7 +306,7 @@ function chain(source, ...args){
 	let sources = [ { source, args } ];
 	return function link(source, ...args){
 		if(source === undefined){
-			let name = chain.name + "~" + sources.map(item => item.source.name).join("_");
+			let name = chain.name + "_" + sources.map(item => item.source.name).join("_");
 			let named = {
 				[name]: function(sink, value){
 					return sources.reduce(function(value, item, index){
@@ -322,7 +322,7 @@ function chain(source, ...args){
 }
 function shuffle(sBC, fAB){
 	// shuffle :: source (b) c -> ((a) -> (b)) -> source (a) c
-	let name = shuffle.name + "~" + sBC.name + "~" + fAB.name;
+	let name = shuffle.name + "_" + sBC.name + "_" + fAB.name;
 	let named = {
 		[name]: function(sink, ...a){
 			let b = fAB(...a);
@@ -342,7 +342,7 @@ function shell(source1, source2){
 	if(source2 === undefined){
 		return source1;
 	}
-	let name = shell.name + "~" + source1.name + "~" + source2.name;
+	let name = shell.name + "_" + source1.name + "_" + source2.name;
 	let names = {
 		[name]: function(sink, ...args){
 			return pullpush(sink, source2, source1, ...args);
@@ -355,7 +355,7 @@ function shield(source1, source2){
 	if(source2 === undefined){
 		return source1;
 	}
-	let name = shield.name + "~" + source1.name + "~" + source2.name;
+	let name = shield.name + "_" + source1.name + "_" + source2.name;
 	let names = {
 		[name]: function(sink, ...args){
 			try{
