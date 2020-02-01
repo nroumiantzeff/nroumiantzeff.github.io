@@ -163,6 +163,15 @@ let pullpush = (function(){
 	function event(event, observers, value){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
 		checkEvent(event);
+		if(event.isTrusted){
+			// user generated event (handled in its own javascript event queue tick)
+			return eventCallback(event, observers, value);
+		}
+		// script generated event (force a new javascript event queue tick)
+		setTimeout(eventCallback, 0, event, observers, value);
+		return value;
+	}
+	function eventCallback(event, observers, value){
 		$$time = Date.now();
 		$$ticks++;
 		$$pulls = 0;
@@ -190,7 +199,7 @@ let pullpush = (function(){
 				warning('5: stale programmatic event argument in pullpush.event call');
 			}
 		}
-		//todo check that a previous real-event nor pseudo-event has not been checked yet in the same javascript event queue tick
+		//todo check that a previous event has not been checked yet in the same javascript event queue tick
 		//todo check that pullpush has not been called yet in the same javascript event queue tick
 	}
 	function pushSourcesInTopologicalOrder($sinks){

@@ -46,7 +46,7 @@ function spreadsheet(sink){
 	}
 	function formulaEvaluation(sink, id){
 		let formula = pullpush(sink, input("$" + id));
-		let delay = formulaRecursion(id, formula)? 10: 0; // slowdown recursive formulas (to let other cells update)
+		let delay = formulaRecursion(id, formula)? 10: 0; // slowdown recursive formulas (to let other cells update) //todo analyze further why this is necessary (implement a roundrobin among observers in pullpush.event and pullpush.broadcast?)
 		let substitution = formulaSubstitution(formula);
 		try{
 			let evaluation = substitution === ""? "": eval(substitution);
