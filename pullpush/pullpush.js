@@ -477,7 +477,7 @@ let pullpush = (function(){
 		return $nonce;
 	}
 	function forcastCallback(sink, value, source, args){
-		tick();
+		tick(); //todo remove: tick() should only be called in the public API functions to limit the numbers of setTimeout to the minimum
 		let $sink = sink(nonce());
 		$sink.timer = undefined;
 		if(source !== undefined){
