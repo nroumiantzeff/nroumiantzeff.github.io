@@ -14,25 +14,20 @@ function spreadsheet(sink){
 		return formulaSubstitution(substitution);
 	}
 	function formulaEvaluation(sink, id){
+		<span style="color: white; background-color: blue">let declaration = pullpush(sink, false) // declaration to not keep unused sources</span>
 		let formula = pullpush(sink, input("$" + id));
 		let substitution = formulaSubstitution(formula);
-		<span style="color: white; background-color: blue">try</span>{
-			let evaluation = substitution === ""? "": eval(substitution);
-			return <span style="color: white; background-color: blue">pullpush(sink, false) // declaration to not keep unused sources
-				||</span> pullpush(sink, input(id), evaluation);
-		}
-		<span style="color: white; background-color: blue">catch(exception){
-			console.log("spreadsheet error in $" + id + ": " + formula);
-		}
-		return pullpush(sink, formulaError, id, formula);</span>
+		let evaluation = substitution === ""? "": eval(substitution);
+		return <span style="color: white; background-color: blue">declaration ||</span> pullpush(sink, input(id), evaluation);
 	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), formulaEvaluation, id);
+			return pullpush(sink(id), <span style="color: white; background-color: blue">shield(</span>formulaEvaluation<span style="color: white; background-color: blue">, formulaError, id)</span>, id);
 		}, undefined);
 	}
-	<span style="color: white; background-color: blue">function formulaError(sink, id, formula){
-		return pullpush(sink, input(id), "formula error: " + formula, 0);
+	<span style="color: white; background-color: blue">function formulaError(sink, exception, id){
+		let formula = pullpush(sink, input("$" + id));
+		return pullpush(sink, input(id), "formula error: " + formula);
 	}</span>
 	<span style="color: white; background-color: blue">function formulaTooltips(sink, id){
 		cells.reduce(function(unused, id){
@@ -60,6 +55,7 @@ function spreadsheet(sink){
 			if(focused && displayed && enabled){
 				return pullpush(sink, focus("$" + id), true, delay);
 			}
+			return pullpush(sink, false); // declaration to not keep unused sources
 		}, undefined);
 		return displayed;
 	}</span>
