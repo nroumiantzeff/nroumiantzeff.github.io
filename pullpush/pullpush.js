@@ -37,12 +37,12 @@ let pullpush = (function(){
 		return pullpushEpilog1($sink);
 	}
 	function pull($sink, source, ...args){
-		let variables = pullProlog($sink); // variables[0]: safe sink, variables[1]: value, ... 
+		let variables = pullProlog($sink); // variables[0]: safe sink, variables[1]: value, variables[2]: exception, ... 
 		try{
 			variables[1] = source(variables[0], ...args);
 		}
 		catch(exception){
-			$sink.error = exception;
+			variables[2]= exception;
 		}
 		return pullEpilog($sink, variables);
 	}
@@ -133,33 +133,45 @@ let pullpush = (function(){
 	}
 	function pullProlog($sink){
 		let value;
+		let exception;
 		$sink.nonce = { handlers: 0 };
 		$sink.error = $$none; 
 		let current = $$sink;
 		$$sink = $sink;
 		let $safe = $$safe($sink); // immutability: $$safe($sink) ensures that the first argument passed to $sink.source is different from previous calls
-		return [ $safe, value, current ]; // returning an array so that stepping over pullProlog under the debugger takes only one click
+		return [ $safe, value, exception, current ]; // returning an array so that stepping over pullProlog under the debugger takes only one click
 	}
 	function pullEpilog($sink, variables){
-		$$sink = variables[2];
-		if($sink.error === $$none){
-			reclaimSources($sink); // do not reclaim resource when an exception occured
-		}
-		let result = handlerValue($sink.nonce, variables[1]);
-		if($sink.nonce.handlers > 0){
-			warning('17: pullpush.forcast and pullpush.register should not be called outside the return chain. Consider using the following syntax: return (pullpush.forcast(sink, 0))(value)', $sink);
-
-		}
-		if(result === $sink.nonce){
-			warning('18: no value specified in the returned chain. Note: even an undefined value must be explicitly specified in this case, for example: return (pullpush.forcast(sink, 0))()', $sink);
-			return;
-		}
-		if($sink.error !== $$none){
+		let value = variables[1];
+		let exception = variables[2];
+		let current = variables[3];
+		$$sink = current;
+		if(exception){
+			$sink.error = exception;
 			if($$pulls > 0){
 				throw $sink.error;
 			}
 		}
-		return result;
+		else{
+			if($sink.error === $$none){
+				reclaimSources($sink); // do not reclaim resource when an exception occured
+			}
+			let result = handlerValue($sink.nonce, value);
+			if($sink.nonce.handlers > 0){
+				warning('17: pullpush.forcast and pullpush.register should not be called outside the return chain. Consider using the following syntax: return (pullpush.forcast(sink, 0))(value)', $sink);
+
+			}
+			if(result === $sink.nonce){
+				warning('18: no value specified in the returned chain. Note: even an undefined value must be explicitly specified in this case, for example: return (pullpush.forcast(sink, 0))()', $sink);
+				return;
+			}
+			if($sink.error !== $$none){
+				if($$pulls > 0){
+					throw $sink.error;
+				}
+			}
+			return result;
+		}
 	}
 	function event(event, observers, value){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)

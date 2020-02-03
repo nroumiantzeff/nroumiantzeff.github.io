@@ -350,19 +350,20 @@ function shell(source1, source2){
 	};
 	return names[name];
 }
-function shield(source1, source2){
-	// shield :: source a b -> source error b -> source a b
+function shield(source1, source2, ...args2){
+	// shield :: source a b -> source error b -> source a b :: source a b -> source (error c) b -> c -> source a b
 	if(source2 === undefined){
 		return source1;
 	}
 	let name = shield.name + "~" + source1.name + "~" + source2.name;
 	let names = {
-		[name]: function(sink, ...args){
+		[name]: function(sink, ...args1){
+			pullpush(sink("handler"), false); // declaration to not keep unused source
 			try{
-				return pullpush(sink("handled"), source1, ...args);
+				return pullpush(sink("handled"), source1, ...args1);
 			}
 			catch(exception){
-				return pullpush(sink("handler"), source2, exception);
+				return pullpush(sink("handler"), source2, exception, ...args2);
 			}
 		},
 	};

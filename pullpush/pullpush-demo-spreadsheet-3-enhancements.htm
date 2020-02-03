@@ -41,25 +41,20 @@ function spreadsheet(sink){
 		return formulaSubstitution(substitution);
 	}
 	function formulaEvaluation(sink, id){
+		let declaration = pullpush(sink, false) // declaration to not keep unused sources
 		let formula = pullpush(sink, input("$" + id));
 		let substitution = formulaSubstitution(formula);
-		try{
-			let evaluation = substitution === ""? "": eval(substitution);
-			return pullpush(sink, false) // declaration to not keep unused sources
-				|| pullpush(sink, input(id), evaluation);
-		}
-		catch(exception){
-			console.log("spreadsheet error in $" + id + ": " + formula);
-		}
-		return pullpush(sink, formulaError, id, formula);
+		let evaluation = substitution === ""? "": eval(substitution);
+		return declaration|| pullpush(sink, input(id), evaluation);
 	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), formulaEvaluation, id);
+			return pullpush(sink(id), shield(formulaEvaluation, formulaError, id), id);
 		}, undefined);
 	}
-	function formulaError(sink, id, formula){
-		return pullpush(sink, input(id), "formula error: " + formula, 0);
+	function formulaError(sink, exception, id){
+		let formula = pullpush(sink, input("$" + id));
+		return pullpush(sink, input(id), "formula error: " + formula);
 	}
 	function formulaTest(sink){
 		let test = pullpush(sink, input("A9"));

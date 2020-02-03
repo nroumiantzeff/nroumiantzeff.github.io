@@ -42,37 +42,32 @@ function spreadsheet(sink){
 		return formulaSubstitution(substitution);
 	}
 	function formulaEvaluation(sink, id){
+		let declaration = pullpush(sink, false) // declaration to not keep unused sources
 		let formula = pullpush(sink, input("$" + id));
 		let substitution = formulaSubstitution(formula);
-		try{
-			let evaluation = substitution === ""? "": eval(substitution);
-			return pullpush(sink, false) // declaration to not keep unused sources
-				|| pullpush(sink, input(id), evaluation);
-		}
-		catch(exception){
-			console.log("spreadsheet error in $" + id + ": " + formula);
-		}
-		return pullpush(sink, formulaError, id, formula);
+		let evaluation = substitution === ""? "": eval(substitution);
+		return declaration|| pullpush(sink, input(id), evaluation);
 	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), formulaEvaluation, id);
+			return pullpush(sink(id), shield(formulaEvaluation, formulaError, id), id);
 		}, undefined);
 	}
-	function formulaError(sink, id, formula){
-		return pullpush(sink, input(id), "formula error: " + formula, 0);
+	function formulaError(sink, exception, id){
+		let formula = pullpush(sink, input("$" + id));
+		return pullpush(sink, input(id), "formula error: " + formula);
 	}
 	function formulaTooltips(sink, id){
 		cells.reduce(function(unused, id){
 			let tooltip = id + ": " +  pullpush(sink, input("$" + id));
-			return pullpush(sink, title(id), tooltip, 0);
+			return pullpush(sink, title(id), tooltip);
 		}, undefined);
 	}
 	function formulaSelection(sink, id){
 		cells.reduce(function(unused, id){
 			let selected = pullpush(sink, trigger(dblclick(id)));
 			if(selected){
-				return pullpush(sink, select(id), selected, 0);
+				return pullpush(sink, select(id), selected);
 			}
 		}, undefined);
 	}
@@ -88,13 +83,14 @@ function spreadsheet(sink){
 			if(focused && displayed && enabled){
 				return pullpush(sink, focus("$" + id), true, delay);
 			}
+			return pullpush(sink, false); // declaration to not keep unused sources
 		}, undefined);
 		return displayed;
 	}
 	function formulaTest(sink){
 		let test = pullpush(sink, input("A9"));
 		let passes = (test === "TEST: PASSES");
-		return pullpush(sink, disabled("spreadsheet-test-fails"), passes, 0);
+		return pullpush(sink, disabled("spreadsheet-test-fails"), passes);
 	}
 	return pullpush(sink, formulaTest) && false ||
 		pullpush(sink, formulaSelection) && false ||
