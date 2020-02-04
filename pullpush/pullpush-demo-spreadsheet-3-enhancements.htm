@@ -52,10 +52,13 @@ function spreadsheet(sink){
 		let formula = pullpush(sink, input("$" + id));
 		return "invalid formula: " + formula;
 	}
+	function formulaValue(sink, id){
+			let value = pullpush(sink, shield(formulaEvaluation, formulaError, id), id);
+			return pullpush(sink, input(id), "" + value);
+	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
-			let value = pullpush(sink(id), shield(formulaEvaluation, formulaError, id), id);
-			return pullpush(sink, input(id), "" + value);
+			return pullpush(sink(id), formulaValue, id);
 		}, undefined);
 	}
 	function formulaTest(sink){

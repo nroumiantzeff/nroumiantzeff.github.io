@@ -46,10 +46,13 @@ function spreadsheet(sink){
 		let evaluation = substitution === ""? "": eval(substitution);
 		return evaluation;
 	}
+	function formulaValue(sink, id){
+		let value = pullpush(sink, formulaEvaluation, id);
+		return pullpush(sink, input(id), "" + value);
+	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
-			let value = pullpush(sink(id), formulaEvaluation, id);
-			return pullpush(sink, input(id), value);
+			return pullpush(sink(id), formulaValue, id);
 		}, undefined);
 	}
 	return pullpush(sink, formulaValues);
