@@ -20,15 +20,16 @@ function spreadsheet(sink){
 		let evaluation = substitution === ""? "": eval(substitution);
 		return <span style="color: white; background-color: blue">declaration ||</span> pullpush(sink, input(id), evaluation);
 	}
-	function formulaValues(sink, id){
-		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), <span style="color: white; background-color: blue">shield(</span>formulaEvaluation<span style="color: white; background-color: blue">, formulaError, id)</span>, id);
-		}, undefined);
-	}
 	<span style="color: white; background-color: blue">function formulaError(sink, exception, id){
 		let formula = pullpush(sink, input("$" + id));
-		return pullpush(sink, input(id), "formula error: " + formula);
+		return "invalid formula: " + formula;
 	}</span>
+	function formulaValues(sink, id){
+		return cells.reduce(function(unused, id){
+			let value = pullpush(sink(id), <span style="color: white; background-color: blue">shield(</span>formulaEvaluation<span style="color: white; background-color: blue">, formulaError, id)</span>, id);
+			return pullpush(sink, input(id), value);
+		}, undefined);
+	}
 	<span style="color: white; background-color: blue">function formulaTooltips(sink, id){
 		cells.reduce(function(unused, id){
 			let tooltip = id + ": " +  pullpush(sink, input("$" + id));
