@@ -210,6 +210,7 @@ function all(...sources){
 		}
 	};
 }
+//todo once, twice, thrice (compose twice with once and twice)
 function curry(source, arg){
 	// curry :: source (a b) c -> a -> source b (source (a b) c)
 	let name = curry.name + "~" + source.name;

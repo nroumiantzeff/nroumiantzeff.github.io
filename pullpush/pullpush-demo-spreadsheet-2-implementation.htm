@@ -44,11 +44,12 @@ function spreadsheet(sink){
 		let formula = pullpush(sink, input("$" + id));
 		let substitution = formulaSubstitution(formula);
 		let evaluation = substitution === ""? "": eval(substitution);
-		return pullpush(sink, input(id), evaluation);
+		return evaluation;
 	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), formulaEvaluation, id);
+			let value = pullpush(sink(id), formulaEvaluation, id);
+			return pullpush(sink, input(id), value);
 		}, undefined);
 	}
 	return pullpush(sink, formulaValues);

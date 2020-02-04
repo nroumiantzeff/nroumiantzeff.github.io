@@ -75,6 +75,7 @@
 <input id="sink53" readonly style="width:800px"/> div26 inner HTML <input id="button25" value="use input1 as div26 inner HTML" type="button"/><div id="div26" style="background:yellow">div26</div><br/>
 <input id="sink54" readonly/> chain (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27 <input id="input27" value="2"/> input27<br/>
 <input id="sink55" readonly/> composition (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27<br/>
+<input id="sink56" readonly/> eval invalid expression input29 <input id="button28" value="fix invalid expression input29" type="button"/> <input id="input29" value="NaN()"/> input29<br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -252,6 +253,9 @@ function sink54(sink){
 }
 function sink55(sink){
 	document.getElementById("sink55").value = pullpush(sink, composition55);
+}
+function sink56(sink){
+	document.getElementById("sink56").value = pullpush(sink, shield(eval56, error56));
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -683,7 +687,6 @@ function html53(sink){
 	let clicks = pullpush(sink, click("button25"));
 	return pullpush(sink, html("div26"), clicks? input1: undefined);
 }
-
 function sum54(sink, a, b){
 	let x = typeof a === "function"? pullpush(sink("a"), a): a;
 	let y = typeof b === "function"? pullpush(sink("b"), b): b;
@@ -701,6 +704,17 @@ function chain54(sink){
 function composition55(sink){
 	// (2 * (3 + (input27 * (1 + (2 * input27))))
 	return pullpush(sink, composition(curry(product54, 2), curry(sum54, 3), curry(product54, input("input27")), curry(sum54, 1), curry(product54, input("input27"))), 2);
+}
+function eval56(sink){
+	let triggered = pullpush(sink, trigger(click("button28")));
+	let expression = pullpush(sink, input("input29"), triggered? "NaN": undefined);
+	let value = eval(expression);
+	return value;
+}
+function error56(sink, exception){
+	let expression = pullpush(sink, input("input29"));
+	let value = "invalid expression: " + expression;
+	return value;
 }
 pullpush(sink, sink1);
 pullpush(sink, sink2);
@@ -757,6 +771,7 @@ pullpush(sink, sink52);
 pullpush(sink, sink53);
 pullpush(sink, sink54);
 pullpush(sink, sink55);
+pullpush(sink, sink56);
 </script>
 </body>
 </html>

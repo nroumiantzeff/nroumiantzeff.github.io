@@ -46,16 +46,17 @@ function spreadsheet(sink){
 		let formula = pullpush(sink, input("$" + id));
 		let substitution = formulaSubstitution(formula);
 		let evaluation = substitution === ""? "": eval(substitution);
-		return declaration|| pullpush(sink, input(id), evaluation);
-	}
-	function formulaValues(sink, id){
-		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), shield(formulaEvaluation, formulaError, id), id);
-		}, undefined);
+		return declaration || evaluation;
 	}
 	function formulaError(sink, exception, id){
 		let formula = pullpush(sink, input("$" + id));
-		return pullpush(sink, input(id), "formula error: " + formula);
+		return "invalid formula: " + formula;
+	}
+	function formulaValues(sink, id){
+		return cells.reduce(function(unused, id){
+			let value = pullpush(sink(id), shield(formulaEvaluation, formulaError, id), id);
+			return pullpush(sink, input(id), value);
+		}, undefined);
 	}
 	function formulaTooltips(sink, id){
 		cells.reduce(function(unused, id){
