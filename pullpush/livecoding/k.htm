@@ -24,10 +24,13 @@ function spreadsheet(sink){
 		let formula = pullpush(sink, input("$" + id));
 		return "invalid formula: " + formula;
 	}</span>
+	function formulaValue(sink, id){
+		let value = pullpush(sink, <span style="color: white; background-color: blue">shield(</span>formulaEvaluation<span style="color: white; background-color: blue">, formulaError, id)</span>, id);
+		return pullpush(sink, input(id), <span style="color: white; background-color: blue">"" + </span>value);
+	}
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
-			let value = pullpush(sink(id), <span style="color: white; background-color: blue">shield(</span>formulaEvaluation<span style="color: white; background-color: blue">, formulaError, id)</span>, id);
-			return pullpush(sink, input(id), <span style="color: white; background-color: blue">"" + </span>value);
+			return pullpush(sink(id), formulaValue, id);
 		}, undefined);
 	}
 	<span style="color: white; background-color: blue">function formulaTooltips(sink, id){
