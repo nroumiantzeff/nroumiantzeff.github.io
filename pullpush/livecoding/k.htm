@@ -18,7 +18,7 @@ function spreadsheet(sink){
 		let formula = pullpush(sink, input("$" + id));
 		let substitution = formulaSubstitution(formula);
 		let evaluation = substitution === ""? "": eval(substitution);
-		return <span style="color: white; background-color: blue">declaration ||</span> pullpush(sink, input(id), evaluation);
+		return <span style="color: white; background-color: blue">declaration || </span>pullpush(sink, input(id), evaluation);
 	}
 	<span style="color: white; background-color: blue">function formulaError(sink, exception, id){
 		let formula = pullpush(sink, input("$" + id));
@@ -27,7 +27,7 @@ function spreadsheet(sink){
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
 			let value = pullpush(sink(id), <span style="color: white; background-color: blue">shield(</span>formulaEvaluation<span style="color: white; background-color: blue">, formulaError, id)</span>, id);
-			return pullpush(sink, input(id), value);
+			return pullpush(sink, input(id), <span style="color: white; background-color: blue">"" + </span>value);
 		}, undefined);
 	}
 	<span style="color: white; background-color: blue">function formulaTooltips(sink, id){
