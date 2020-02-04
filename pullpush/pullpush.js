@@ -61,7 +61,6 @@ let pullpush = (function(){
 		return value;
 	}
 	function $pullpushProlog1(sink, source){
-		$tick();
 		let $sink = sink($nonce());
 		let declaration = source === true? $$keepalive: source === false? $$reclaimable: false;
 		if(declaration){
@@ -187,7 +186,6 @@ let pullpush = (function(){
 		return value;
 	}
 	function $eventCallback(event, observers, value){
-		$tick();
 		let $sinks = [];
 		for(let index in observers){
 			let $sink = observers[index]($nonce());
@@ -373,6 +371,7 @@ let pullpush = (function(){
 		return overriden;
 	}
 	function sink(){ // universal sink (top level)
+		$tick();
 		if($$sink0 == undefined){
 			$$sink0 = $generateSink(undefined, "")($nonce());
 		}
@@ -503,7 +502,6 @@ let pullpush = (function(){
 		return nonce;
 	}
 	function $forcastCallback(sink, value, source, args){
-		$tick(); //todo remove: $tick() should only be called in the public API functions to limit the numbers of setTimeout to the minimum
 		let $sink = sink($nonce());
 		$sink.timer = undefined;
 		if(source !== undefined){
@@ -691,7 +689,6 @@ let pullpush = (function(){
 		throw error;
 	}
 	function onwarning(handler){
-		$tick();
 		if(typeof handler === "function"){
 			if($$onwarning === undefined){
 				$$onwarning = handler;
