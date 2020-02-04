@@ -55,7 +55,7 @@ function spreadsheet(sink){
 	function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
 			let value = pullpush(sink(id), shield(formulaEvaluation, formulaError, id), id);
-			return pullpush(sink, input(id), value);
+			return pullpush(sink, input(id), "" + value);
 		}, undefined);
 	}
 	function formulaTooltips(sink, id){
