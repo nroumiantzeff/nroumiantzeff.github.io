@@ -221,7 +221,8 @@ function times(source, n){
 	};
 	return named[name];
 }
-let once = partial(curry(namer, "once", ""), curry(times, 1), undefined);
+//debug let once = partial(curry(namer, "once", ""), curry(times, 1), undefined);
+let once = append(times, 1);
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
@@ -267,6 +268,7 @@ function all(...sources){
 		}
 	};
 }
+/* //debug
 function partial(...sources){
 	return function(source){
 		let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
@@ -293,6 +295,27 @@ function partial(...sources){
 		}
 		return partial(...array2);
 	};
+}
+*/ //debug
+function append(source, ...args){
+	// append :: source (a b) c -> a -> source b c
+	let name = append.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args2){
+			return source(sink, ...args2, ...args);
+		},
+	};
+	return named[name];
+}
+function insert(source, ...args){
+	// insert :: source (a b) c -> b -> source a c
+	let name = insert.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args2){
+			return source(sink, ...args, ...args2);
+		},
+	};
+	return named[name];
 }
 function curry(source, arg){
 	// curry :: source (a b) c -> a -> source b (source (a b) c)
