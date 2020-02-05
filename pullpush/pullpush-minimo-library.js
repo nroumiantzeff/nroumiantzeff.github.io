@@ -159,6 +159,7 @@ function namer(source, ...names){
 	let name = names.map(name => name || source.name).join("~"); 
 	let named = {
 		[name]: function(sink, ...args){
+			console.log("namer: " + name); //debug
 			return source(sink, ...args);
 		},
 	};
@@ -221,8 +222,7 @@ function times(source, n){
 	};
 	return named[name];
 }
-//debug let once = partial(curry(namer, "once", ""), curry(times, 1), undefined);
-let once = append(times, 1);
+let once = composer(appender(namer, "once", ""), appender(times, 1)); //debug
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
@@ -268,7 +268,6 @@ function all(...sources){
 		}
 	};
 }
-/* //debug
 function partial(...sources){
 	return function(source){
 		let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
@@ -296,23 +295,33 @@ function partial(...sources){
 		return partial(...array2);
 	};
 }
-*/ //debug
-function append(source, ...args){
-	// append :: source (a b) c -> a -> source b c
-	let name = append.name + "~" + source.name;
+function appender(dozer, ...args){
+	// appender :: (source a b -> c -> d -> source a b) -> d -> (source a b -> c -> source a b) 
+	let name = appender.name + "~" + dozer.name;
 	let named = {
-		[name]: function(...args2){
-			return source(...args2, ...args);
+		[name]: function(source, ...args2){
+			return dozer(source, ...args2, ...args);
 		},
 	};
 	return named[name];
 }
-function insert(source, ...args){
-	// insert :: source (a b) c -> b -> source a c
-	let name = insert.name + "~" + source.name;
+function inserter(dozer, ...args){
+	// inserter :: (source a b -> c -> d -> source a b) -> c -> (source a b -> d -> source a b) 
+	let name = inserter.name + "~" + dozer.name;
 	let named = {
-		[name]: function(...args2){
-			return source(...args, ...args2);
+		[name]: function(source, ...args2){
+			return dozer(source, ...args, ...args2);
+		},
+	};
+	return named[name];
+}
+function composer(dozer1, dozer2){
+	//todo array of dozers
+	// composer :: ??? //todo
+	let name = composer.name + "~" + dozer1.name + "~" + dozer2.name;
+	let named = {
+		[name]: function(source){
+			return dozer1(dozer2(source));
 		},
 	};
 	return named[name];

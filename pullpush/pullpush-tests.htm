@@ -79,10 +79,10 @@
 <input id="sink57" readonly/> fibonacci series <input id="button34" value="four times" type="button"/><input id="button33" value="thrice" type="button"/><input id="button32" value="twice" type="button"/><input id="button31" value="once" type="button"/><input id="button38" value="fourth" type="button"/><input id="button37" value="third" type="button"/><input id="button36" value="second" type="button"/><input id="button35" value="first" type="button"/><input id="button30" value="none" type="button"/><br/>
 <script>
 function sink1(sink){
-	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
+	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
 }
 function sink2(sink){
-	document.getElementById("sink2").value = pullpush(sink, insert, "-test2-"); 
+	document.getElementById("sink2").value = pullpush(sink, insert1, "-test2-"); 
 }
 function sink3(sink){
 	document.getElementById("sink3").value = pullpush(sink, sum); 
@@ -261,7 +261,7 @@ function sink56(sink){
 function sink57(sink){
 	document.getElementById("sink57").value = pullpush(sink, series57);
 }
-function insert(sink, prefix){
+function insert1(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
 }
 function sum(sink){
@@ -273,7 +273,7 @@ function fork(sink, condition){
 	return condition? pullpush(sink("input4"), input("input4")): pullpush(sink("input5"), input("input5"));
 }
 function merge(sink, condition){
-	return pullpush(sink("test1"), insert, "-test1-") + pullpush(sink, insert, "-test2-");
+	return pullpush(sink("test1"), insert1, "-test1-") + pullpush(sink, insert1, "-test2-");
 }
 function message7(sink, table, filter){
 	// simulate an asynchronous query with window.postMessage
