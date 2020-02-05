@@ -76,6 +76,7 @@
 <input id="sink54" readonly/> chain (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27 <input id="input27" value="2"/> input27<br/>
 <input id="sink55" readonly/> composition (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27<br/>
 <input id="sink56" readonly/> eval invalid expression input29 <input id="button28" value="fix invalid expression input29" type="button"/> <input id="input29" value="NaN()"/> input29<br/>
+<input id="sink57" readonly/> fibonacci series <input id="button30" value="none" type="button"/><input id="button31" value="once" type="button"/><input id="button32" value="twice" type="button"/><input id="button33" value="thrice" type="button"/><input id="button34" value="four times" type="button"/><input id="button35" value="first" type="button"/><input id="button36" value="second" type="button"/><input id="button37" value="third" type="button"/><input id="button38" value="fourth" type="button"/><br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert, "-test1-"); 
@@ -256,6 +257,9 @@ function sink55(sink){
 }
 function sink56(sink){
 	document.getElementById("sink56").value = pullpush(sink, shield(eval56, error56));
+}
+function sink57(sink){
+	document.getElementById("sink57").value = pullpush(sink, series57);
 }
 function insert(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -716,6 +720,32 @@ function error56(sink, exception){
 	let value = "invalid expression: " + expression;
 	return value;
 }
+function fibonacci57(sink){
+	let triggered = pullpush(sink, trigger(counter), 1000);
+	if(triggered){
+		let value2a = pullpush(sink(2), local, 1);
+		let value1a = pullpush(sink(1), local, 1, value2a);
+		let value0a = pullpush(sink(0), local, 0, value1a);
+		return value0a + value1a;
+	}
+	let value1b = pullpush(sink(1), local, 1);
+	let value0b = pullpush(sink(0), local, 0);
+	return pullpush(sink(2), local, 1, value0b + value1b);
+}
+function series57(sink){
+	pullpush(sink, false); // declaration to not keep unused sources
+	let triggered30 = pullpush(sink, trigger(click("button30")));
+	let triggered31 = pullpush(sink, trigger(click("button31")));
+	let triggered32 = pullpush(sink, trigger(click("button32")));
+	let triggered33 = pullpush(sink, trigger(click("button33")));
+	let triggered34 = pullpush(sink, trigger(click("button34")));
+	let triggered35 = pullpush(sink, trigger(click("button35")));
+	let triggered36 = pullpush(sink, trigger(click("button36")));
+	let triggered37 = pullpush(sink, trigger(click("button37")));
+	let triggered38 = pullpush(sink, trigger(click("button38")));
+	let source = pullpush(sink, local, undefined, triggered30 && namer(none(fibonacci57), "0") || triggered31 && namer(once(fibonacci57), "...1") || triggered32 && namer(twice(fibonacci57), "...2") || triggered33 && namer(nice(fibonacci57, 3), "...3") || triggered34 && namer(nice(fibonacci57, 4), "...4") || triggered35 && namer(first(fibonacci57), "1") || triggered36 && namer(second(fibonacci57), "2") || triggered37 && namer(nth(fibonacci57, 3), "3") || triggered38 && namer(nth(fibonacci57, 4), "4") || undefined);
+	return source && pullpush(sink, source) || "";
+}
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -772,6 +802,7 @@ pullpush(sink, sink53);
 pullpush(sink, sink54);
 pullpush(sink, sink55);
 pullpush(sink, sink56);
+pullpush(sink, sink57);
 </script>
 </body>
 </html>

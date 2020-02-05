@@ -155,6 +155,14 @@ let share = (function(){
 		return cache[id] = named[name];
 	};
 })();
+function namer(source, name){
+	let named = {
+		[name]: function(sink, ...args){
+			return source(sink, ...args);
+		},
+	};
+	return named[name];
+}
 function local(sink, initial, value, delay){
 	if(value === undefined){
 		return pullpush.value(sink, initial);
@@ -165,6 +173,131 @@ function local(sink, initial, value, delay){
 let global = function(id){
 	return share(id, local);
 };
+
+let none = (function(){
+	function none(){
+	}
+	return function(source){
+		return none;
+	}
+})();
+function once(source){
+	let count = 1;
+	let value = undefined;
+	let name = once.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(count > 0){
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					value = current;
+					count--;
+				}
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
+function twice(source){
+	let count = 2;
+	let value = undefined;
+	let name = twice.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(count > 0){
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					value = current;
+					count--;
+				}
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
+function nice(source, n){
+	let count = n;
+	let value = undefined;
+	let name = nice.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(count > 0){
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					value = current;
+					count--;
+				}
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
+function first(source){
+	let count = 1;
+	let value = undefined;
+	let name = first.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(count > 0){
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					value = current;
+					count--;
+				}
+				return undefined;
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
+function second(source){
+	let count = 2;
+	let value = undefined;
+	let name = second.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(count > 0){
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					value = current;
+					count--;
+				}
+				return undefined;
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
+function nth(source, n){
+	let count = n;
+	let value = undefined;
+	let name = nth.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(count > 0){
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					value = current;
+					count--;
+				}
+				return undefined;
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){

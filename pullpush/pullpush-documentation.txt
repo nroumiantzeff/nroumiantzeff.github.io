@@ -9,6 +9,8 @@ What is pullpush.js and what it is not:
 - pullpush.js is not a transpiler, every thing is plain JavaScript and the engine does its things at runtime (note that you may use any JavaScript transpiler if you whish)
 - pullpush.js is not a framwork but it comes with the "minimo" demo framework and other frameworks may be developed (framworks interact with the DOM)
 - pullpush.js is not a JavaScript library but it comes with the "minimo" demo library and other libraries may be developed (libraries do not interact with the DOM)
+- pullpush.js is not a super-set of the DOM, it does not more than the DOM but it does differently (the pullpush framework actually does less than the DOM but it provides an easy way to add missing pieces)
+- pullpush.js is not a cross-browser compatibility tool, it actually runs on a limited number of browser versions (ES6)
 - pullpush.js is not an architecture (such as the two-way-binding architecture or the Elm architecture), it is a new way of programming (such as structured programming or object-oriented programming)
 - pullpush.js is not an API, it exposes a single function, "pullpush" for writing applications (and a dozen other functions to develop libraries and frameworks)
 - pullpush.js is not about new concepts, it is based on two existing simple concepts, "source" and "sink" (and a third concept for libraries and frameworks, "observers")
@@ -90,9 +92,17 @@ List of functions currently provided by the minimo library:
 - trigger: a source which value is true when the specified source value changes and false afterwards
 - switcher: a source which value is true when the specified source value changes and false after a specified delay
 - lagger: a source which value is the value of the specified source with a lag of the specified delay
+- namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sink)
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
 - global: a source which value is specified globaly (the source is accessed by specifying an id)
+- first: a source which value is the first value of the specified source
+- second: a source which value is the second value of the specified source
+- nth: a source which value is the nth value of the specified source
+- none: a source which value is the value of the specified source taking into account no change
+- once: a source which value is the value of the specified source taking into account one change
+- twice: a source which value is the value of the specified source taking into account two changes
+- nice: a source which value is the value of the specified source taking into account n changes
 - latest: a source which value is the the latest value among the specified sources
 - all: a source whitch value changes once all the specified sources value have changed
 - series: a source which value is the sum of n previous values
