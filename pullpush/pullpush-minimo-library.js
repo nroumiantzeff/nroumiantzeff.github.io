@@ -155,7 +155,8 @@ let share = (function(){
 		return cache[id] = named[name];
 	};
 })();
-function namer(source, name){
+function namer(source, ...names){
+	let name = names.map(name => name || source.name).join("~"); 
 	let named = {
 		[name]: function(sink, ...args){
 			return source(sink, ...args);
@@ -181,103 +182,6 @@ let none = (function(){
 		return none;
 	}
 })();
-function once(source){
-	let count = 1;
-	let value = undefined;
-	let name = once.name + "~" + source.name;
-	let named = {
-		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
-			if(count > 0){
-				let current = pullpush(sink, source, ...args);
-				if(current !== value){
-					value = current;
-					count--;
-				}
-			}
-			return value;
-		},
-	};
-	return named[name];
-}
-function twice(source){
-	let count = 2;
-	let value = undefined;
-	let name = twice.name + "~" + source.name;
-	let named = {
-		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
-			if(count > 0){
-				let current = pullpush(sink, source, ...args);
-				if(current !== value){
-					value = current;
-					count--;
-				}
-			}
-			return value;
-		},
-	};
-	return named[name];
-}
-function nice(source, n){
-	let count = n;
-	let value = undefined;
-	let name = nice.name + "~" + source.name;
-	let named = {
-		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
-			if(count > 0){
-				let current = pullpush(sink, source, ...args);
-				if(current !== value){
-					value = current;
-					count--;
-				}
-			}
-			return value;
-		},
-	};
-	return named[name];
-}
-function first(source){
-	let count = 1;
-	let value = undefined;
-	let name = first.name + "~" + source.name;
-	let named = {
-		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
-			if(count > 0){
-				let current = pullpush(sink, source, ...args);
-				if(current !== value){
-					value = current;
-					count--;
-				}
-				return undefined;
-			}
-			return value;
-		},
-	};
-	return named[name];
-}
-function second(source){
-	let count = 2;
-	let value = undefined;
-	let name = second.name + "~" + source.name;
-	let named = {
-		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
-			if(count > 0){
-				let current = pullpush(sink, source, ...args);
-				if(current !== value){
-					value = current;
-					count--;
-				}
-				return undefined;
-			}
-			return value;
-		},
-	};
-	return named[name];
-}
 function nth(source, n){
 	let count = n;
 	let value = undefined;
@@ -298,6 +202,26 @@ function nth(source, n){
 	};
 	return named[name];
 }
+function times(source, n){
+	let count = n;
+	let value = undefined;
+	let name = times.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(count > 0){
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					value = current;
+					count--;
+				}
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
+//todo let once = partial(composition(cury(namer, "once", ""), cury(times, 1)));
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
@@ -343,7 +267,6 @@ function all(...sources){
 		}
 	};
 }
-//todo once, twice, thrice (compose twice with once and twice)
 function curry(source, arg){
 	// curry :: source (a b) c -> a -> source b (source (a b) c)
 	let name = curry.name + "~" + source.name;

@@ -96,13 +96,8 @@ List of functions currently provided by the minimo library:
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
 - global: a source which value is specified globaly (the source is accessed by specifying an id)
-- first: a source which value is the first value of the specified source
-- second: a source which value is the second value of the specified source
 - nth: a source which value is the nth value of the specified source
-- none: a source which value is the value of the specified source taking into account no change
-- once: a source which value is the value of the specified source taking into account one change
-- twice: a source which value is the value of the specified source taking into account two changes
-- nice: a source which value is the value of the specified source taking into account n changes
+- times: a source which value is the value of the specified source taking into account n changes
 - latest: a source which value is the the latest value among the specified sources
 - all: a source whitch value changes once all the specified sources value have changed
 - series: a source which value is the sum of n previous values

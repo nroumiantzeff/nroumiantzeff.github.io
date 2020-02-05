@@ -743,7 +743,7 @@ function series57(sink){
 	let triggered36 = pullpush(sink, trigger(click("button36")));
 	let triggered37 = pullpush(sink, trigger(click("button37")));
 	let triggered38 = pullpush(sink, trigger(click("button38")));
-	let source = pullpush(sink, local, undefined, triggered30 && namer(none(fibonacci57), "0") || triggered31 && namer(once(fibonacci57), "...1") || triggered32 && namer(twice(fibonacci57), "...2") || triggered33 && namer(nice(fibonacci57, 3), "...3") || triggered34 && namer(nice(fibonacci57, 4), "...4") || triggered35 && namer(first(fibonacci57), "1") || triggered36 && namer(second(fibonacci57), "2") || triggered37 && namer(nth(fibonacci57, 3), "3") || triggered38 && namer(nth(fibonacci57, 4), "4") || undefined);
+	let source = pullpush(sink, local, undefined, triggered30 && namer(times(fibonacci57, 0), "0times") || triggered31 && namer(times(fibonacci57, 1), "1times") || triggered32 && namer(times(fibonacci57, 2), "2times") || triggered33 && namer(times(fibonacci57, 3), "3times") || triggered34 && namer(times(fibonacci57, 4), "4times") || triggered35 && namer(nth(fibonacci57, 1), "1st") || triggered36 && namer(nth(fibonacci57, 2), "2nd") || triggered37 && namer(nth(fibonacci57, 3), "3rd") || triggered38 && namer(nth(fibonacci57, 4), "4th") || undefined);
 	return source && pullpush(sink, source) || "";
 }
 pullpush(sink, sink1);
