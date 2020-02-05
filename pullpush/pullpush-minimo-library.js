@@ -301,8 +301,8 @@ function append(source, ...args){
 	// append :: source (a b) c -> a -> source b c
 	let name = append.name + "~" + source.name;
 	let named = {
-		[name]: function(sink, ...args2){
-			return source(sink, ...args2, ...args);
+		[name]: function(...args2){
+			return source(...args2, ...args);
 		},
 	};
 	return named[name];
@@ -311,8 +311,8 @@ function insert(source, ...args){
 	// insert :: source (a b) c -> b -> source a c
 	let name = insert.name + "~" + source.name;
 	let named = {
-		[name]: function(sink, ...args2){
-			return source(sink, ...args, ...args2);
+		[name]: function(...args2){
+			return source(...args, ...args2);
 		},
 	};
 	return named[name];
