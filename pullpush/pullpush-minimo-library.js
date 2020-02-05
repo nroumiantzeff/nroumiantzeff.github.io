@@ -221,7 +221,7 @@ function times(source, n){
 	};
 	return named[name];
 }
-//todo let once = partial(composition(cury(namer, "once", ""), cury(times, 1)));
+let once = partial(curry(namer, "once", ""), curry(times, 1), undefined);
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
@@ -265,6 +265,33 @@ function all(...sources){
 			let value = pullpush(sink, earliest);
 			return value.values;
 		}
+	};
+}
+function partial(...sources){
+	return function(source){
+		let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
+		let array2 = [];
+		let total = true;
+		let done = false;
+		for(let index = 0; index < array.length; index++){
+			if(!array[index]){
+				if(done){
+					array2.push(array[index]);
+					total = false;
+				}
+				else{
+					array2.push(source);
+					done = true;
+				}
+			}
+			else{
+				array2.push(array[index]);
+			}
+		}
+		if(total){
+			return composition(...array2);
+		}
+		return partial(...array2);
 	};
 }
 function curry(source, arg){
