@@ -92,15 +92,15 @@ List of functions currently provided by the minimo library:
 - trigger: a source which value is true when the specified source value changes and false afterwards
 - switcher: a source which value is true when the specified source value changes and false after a specified delay
 - lagger: a source which value is the value of the specified source with a lag of the specified delay
+- once: a source which value is the value of the specified source taking into the first value only
+- times: a source which value is the value of the specified source taking into the first values only
+- nth: a source which value is the nth value of the specified source
+- skipper: a source which value is the value of the specified source skipping the first values
+- clipper: a source which value is the value of the specified source skipping the first values and ignoring the last values
 - namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sink)
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
 - global: a source which value is specified globaly (the source is accessed by specifying an id)
-- nth: a source which value is the nth value of the specified source
-- once: a source which value is the value of the specified source taking into account 1 change only
-- times: a source which value is the value of the specified source taking into account n changes
-- skipper: a source which value is the value of the specified source skipping n changes
-- clipper: a source which value is the value of the specified source taking into account changes n to m
 - latest: a source which value is the the latest value among the specified sources
 - all: a source whitch value changes once all the specified sources value have changed
 - series: a source which value is the sum of n previous values
@@ -113,7 +113,6 @@ List of functions currently provided by the minimo library:
 - superapposition: defines a source definer from a specified source definer with the specified arguments at the end  // superapposition :: (source a b -> c -> d -> source a b) -> d -> (source a b -> c -> source a b)
 - imposition: defines a source from a specified source with the specified arguments at the beginning // imposition :: source a b c -> a -> source b c
 - superimposition: defines a source definer from a specified source definer with the specified arguments at the beginning // superimposition :: (source a b -> c -> d -> source a b) -> c -> (source a b -> d -> source a b)
-- composer: defines a source by composing the specified source definers //todo // composer::
 - curry: a source with the last argument value fixed // curry :: source (a b) c -> a -> source b (source (a b) c)
 - identity: a source which value is the first argument // identity :: source a a
 - unit: defines a source with a constant value // unit :: a -> source () a

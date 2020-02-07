@@ -175,41 +175,72 @@ let global = function(id){
 	return share(id, local);
 };
 function nth(source, n){
-	let count = n;
-	let value = undefined;
+	let values = 0;
+	let value = {}; // nonce
 	let name = nth.name + "~" + source.name + "~" + n;
 	let named = {
 		[name]: function(sink, ...args){
 			pullpush(sink, false); // declaration to not keep unused sources
-			if(count > 0){
+			if(n > 0){
+				if(values >= n){
+					return value;
+				}
 				let current = pullpush(sink, source, ...args);
 				if(current !== value){
+					values++;
 					value = current;
-					count--;
 				}
-				return undefined;
+				if (values >= n){
+					return value;
+				}
 			}
-			return value;
 		},
 	};
 	return named[name];
 }
 let once = supercomposition(superapposition(namer, "once", ""), superapposition(times, 1));
 function times(source, n){
-	let count = n;
-	let value = undefined;
+	let values = 0;
+	let value = {}; // nonce
 	let name = times.name + "~" + source.name + "~" + n;
 	let named = {
 		[name]: function(sink, ...args){
 			pullpush(sink, false); // declaration to not keep unused sources
-			if(count > 0){
+			if(n > 0){
+				if(values >= n){
+					return value;
+				}
+				let current = pullpush(sink, source, ...args);
+				if(current !== value){
+					values++;
+					value = current;
+				}
+				return current;
+			}
+		},
+	};
+	return named[name];
+}
+function clipper(source, n, m){
+	let values = 0;
+	let value = {}; // nonce
+	let name = clipper.name + "~" + source.name + "~" + n + "~" + m;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(m > 0 && m >= n){
+				if(values >= m){
+					return value;
+				}
 				let current = pullpush(sink, source, ...args);
 				if(current !== value){
 					value = current;
-					count--;
+					values++;
+				}
+				if(values > n){
+					return current;
 				}
 			}
-			return value;
 		},
 	};
 	return named[name];
@@ -227,28 +258,6 @@ function skipper(source, n){
 			if(current !== value){
 				value = current;
 				values++;
-			}
-		},
-	};
-	return named[name];
-}
-function clipper(source, n, m){
-	let values = 1;
-	let value = undefined;
-	let name = clipper.name + "~" + source.name + "~" + n + "~" + m;
-	let named = {
-		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
-			if(values >= m){
-				return value;
-			}
-			let current = pullpush(sink, source, ...args);
-			if(current !== value){
-				value = current;
-				values++;
-			}
-			if(values >= n){
-				return current;
 			}
 		},
 	};
