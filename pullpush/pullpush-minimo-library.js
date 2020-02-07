@@ -74,7 +74,7 @@ let toggle = (function(){
 		return named[name];
 	};
 })();
-let trigger = (function(){ //todo implement "limiter" which allows specifying a limite on the number of triggers
+let trigger = (function(){
 	function trigger(sink, source, ...args){
 		let value = pullpush(sink, source, ...args);
 		let current = pullpush.value(sink);
@@ -123,7 +123,7 @@ let lagger = (function(){
 		let name = lagger.name + "~" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
-				pullpush(sink(lagger.name), true); // declaration to keep the unused source //todo should sinks used by the forcast callabck be checked for reclaim?
+				pullpush(sink(lagger.name), true); // declaration to keep the unused source //todo should sinks used by the forcast callaback be checked for reclaim?
 				let value = pullpush.value(sink);
 				return (pullpush.forcast(sink, undefined, delay, lagger, source, ...args))
 					(value);
@@ -159,7 +159,6 @@ function namer(source, ...names){
 	let name = names.map(name => name || source.name).join("~"); 
 	let named = {
 		[name]: function(sink, ...args){
-			console.log("namer: " + name); //debug
 			return source(sink, ...args);
 		},
 	};
@@ -175,18 +174,10 @@ function local(sink, initial, value, delay){
 let global = function(id){
 	return share(id, local);
 };
-
-let none = (function(){
-	function none(){
-	}
-	return function(source){
-		return none;
-	}
-})();
 function nth(source, n){
 	let count = n;
 	let value = undefined;
-	let name = nth.name + "~" + source.name;
+	let name = nth.name + "~" + source.name + "~" + n;
 	let named = {
 		[name]: function(sink, ...args){
 			pullpush(sink, false); // declaration to not keep unused sources
@@ -203,10 +194,11 @@ function nth(source, n){
 	};
 	return named[name];
 }
+let once = supercomposition(superapposition(namer, "once", ""), superapposition(times, 1));
 function times(source, n){
 	let count = n;
 	let value = undefined;
-	let name = times.name + "~" + source.name;
+	let name = times.name + "~" + source.name + "~" + n;
 	let named = {
 		[name]: function(sink, ...args){
 			pullpush(sink, false); // declaration to not keep unused sources
@@ -222,7 +214,46 @@ function times(source, n){
 	};
 	return named[name];
 }
-let once = supercomposition(superapposition(namer, "once", ""), superapposition(times, 1));
+function skipper(source, n){
+	let values = 1;
+	let value = undefined;
+	let name = skipper.name + "~" + source.name + "~" + n;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(values > n){
+				return current;
+			}
+			if(current !== value){
+				value = current;
+				values++;
+			}
+		},
+	};
+	return named[name];
+}
+function clipper(source, n, m){
+	let values = 1;
+	let value = undefined;
+	let name = clipper.name + "~" + source.name + "~" + n + "~" + m;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(values >= m){
+				return value;
+			}
+			let current = pullpush(sink, source, ...args);
+			if(current !== value){
+				value = current;
+				values++;
+			}
+			if(values >= n){
+				return current;
+			}
+		},
+	};
+	return named[name];
+}
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){

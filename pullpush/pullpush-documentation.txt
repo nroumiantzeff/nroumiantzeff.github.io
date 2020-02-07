@@ -99,6 +99,8 @@ List of functions currently provided by the minimo library:
 - nth: a source which value is the nth value of the specified source
 - once: a source which value is the value of the specified source taking into account 1 change only
 - times: a source which value is the value of the specified source taking into account n changes
+- skipper: a source which value is the value of the specified source skipping n changes
+- clipper: a source which value is the value of the specified source taking into account changes n to m
 - latest: a source which value is the the latest value among the specified sources
 - all: a source whitch value changes once all the specified sources value have changed
 - series: a source which value is the sum of n previous values

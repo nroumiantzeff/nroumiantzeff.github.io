@@ -76,7 +76,7 @@
 <input id="sink54" readonly/> chain (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27 <input id="input27" value="2"/> input27<br/>
 <input id="sink55" readonly/> composition (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27<br/>
 <input id="sink56" readonly/> eval invalid expression input29 <input id="button28" value="fix invalid expression input29" type="button"/> <input id="input29" value="NaN()"/> input29<br/>
-<input id="sink57" readonly/> fibonacci series <input id="button34" value="four times" type="button"/><input id="button33" value="thrice" type="button"/><input id="button32" value="twice" type="button"/><input id="button31" value="once" type="button"/><input id="button38" value="fourth" type="button"/><input id="button37" value="third" type="button"/><input id="button36" value="second" type="button"/><input id="button35" value="first" type="button"/><input id="button30" value="none" type="button"/><br/>
+<input id="sink57" readonly/> fibonacci series <input id="button34" value="four times" type="button"/><input id="button33" value="thrice" type="button"/><input id="button32" value="twice" type="button"/><input id="button31" value="once" type="button"/><input id="button38" value="fourth" type="button"/><input id="button37" value="third" type="button"/><input id="button36" value="second" type="button"/><input id="button35" value="first" type="button"/><input id="button30" value="none" type="button"/><input id="button39" value="clip 4-7: 3, 5, 8, 13" type="button"/><input id="button40" value="skip 7: 34, 55..." type="button"/><br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
@@ -743,7 +743,9 @@ function series57(sink){
 	let triggered36 = pullpush(sink, trigger(click("button36")));
 	let triggered37 = pullpush(sink, trigger(click("button37")));
 	let triggered38 = pullpush(sink, trigger(click("button38")));
-	let source = pullpush(sink, local, undefined, triggered30 && namer(times(fibonacci57, 0), "0times") || triggered31 && once(fibonacci57) || triggered32 && namer(times(fibonacci57, 2), "2times") || triggered33 && namer(times(fibonacci57, 3), "3times") || triggered34 && namer(times(fibonacci57, 4), "4times") || triggered35 && namer(nth(fibonacci57, 1), "1st") || triggered36 && namer(nth(fibonacci57, 2), "2nd") || triggered37 && namer(nth(fibonacci57, 3), "3rd") || triggered38 && namer(nth(fibonacci57, 4), "4th") || undefined);
+	let triggered39 = pullpush(sink, trigger(click("button39")));
+	let triggered40 = pullpush(sink, trigger(click("button40")));
+	let source = pullpush(sink, local, undefined, triggered30 && times(fibonacci57, 0) || triggered31 && once(fibonacci57) || triggered32 && times(fibonacci57, 2) || triggered33 && times(fibonacci57, 3) || triggered34 && times(fibonacci57, 4) || triggered35 && nth(fibonacci57, 1) || triggered36 && nth(fibonacci57, 2) || triggered37 && nth(fibonacci57, 3) || triggered38 && nth(fibonacci57, 4) || triggered39 && clipper(fibonacci57, 4, 7) || triggered40 && skipper(fibonacci57, 7) || undefined);
 	return source && pullpush(sink, source) || "";
 }
 pullpush(sink, sink1);
