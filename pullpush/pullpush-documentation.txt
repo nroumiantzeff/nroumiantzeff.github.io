@@ -104,10 +104,13 @@ List of functions currently provided by the minimo library:
 - series: a source which value is the sum of n previous values
 - reverse: defines a source from a source with reversed arguments (except the sink argument)
 - shuffle: defines a source from a source and a function which suffles the source arguments (except the sink argument)
-- composition: defines a source by composing sources (pointless) // composition :: (source y z) (source x y) ... (source b c) (source a b) -> source a z
 - chain: defines a source by chaining sources (pointfull) // chain :: source a ((source (b a) c) -> ((source (d c) e) -> ... ((source (y x) z) -> (() -> z))))
-- appender: defines a source from a specified source definer with the specified arguments at the end  // appender :: (source a b -> c -> d -> source a b) -> d -> (source a b -> c -> source a b)
-- inserter: defines a source from a specified source definer with the specified arguments at the beginning // inserter :: (source a b -> c -> d -> source a b) -> c -> (source a b -> d -> source a b)
+- composition: defines a source by composing sources (pointless) // composition :: (source y z) -> (source x y) ... (source b c) -> (source a b) -> source a z
+- supercomposition: defines a source definer by composing source definers // supercomposition :: (source w x -> source y z) -> (source u v -> source w x) ... (source c d -> source e f) -> (source a b -> source c d) -> (source a b -> source y z)
+- apposition: defines a source from a specified source with the specified arguments at the end  // apposition :: source a b c -> b -> source a c
+- superapposition: defines a source definer from a specified source definer with the specified arguments at the end  // superapposition :: (source a b -> c -> d -> source a b) -> d -> (source a b -> c -> source a b)
+- imposition: defines a source from a specified source with the specified arguments at the beginning // imposition :: source a b c -> a -> source b c
+- superimposition: defines a source definer from a specified source definer with the specified arguments at the beginning // superimposition :: (source a b -> c -> d -> source a b) -> c -> (source a b -> d -> source a b)
 - composer: defines a source by composing the specified source definers //todo // composer::
 - curry: a source with the last argument value fixed // curry :: source (a b) c -> a -> source b (source (a b) c)
 - identity: a source which value is the first argument // identity :: source a a

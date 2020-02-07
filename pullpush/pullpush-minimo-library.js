@@ -222,7 +222,7 @@ function times(source, n){
 	};
 	return named[name];
 }
-let once = composer(appender(namer, "once", ""), appender(times, 1)); //debug
+let once = supercomposition(superapposition(namer, "once", ""), superapposition(times, 1));
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
@@ -294,37 +294,6 @@ function partial(...sources){
 		}
 		return partial(...array2);
 	};
-}
-function appender(dozer, ...args){
-	// appender :: (source a b -> c -> d -> source a b) -> d -> (source a b -> c -> source a b) 
-	let name = appender.name + "~" + dozer.name;
-	let named = {
-		[name]: function(source, ...args2){
-			return dozer(source, ...args2, ...args);
-		},
-	};
-	return named[name];
-}
-function inserter(dozer, ...args){
-	// inserter :: (source a b -> c -> d -> source a b) -> c -> (source a b -> d -> source a b) 
-	let name = inserter.name + "~" + dozer.name;
-	let named = {
-		[name]: function(source, ...args2){
-			return dozer(source, ...args, ...args2);
-		},
-	};
-	return named[name];
-}
-function composer(dozer1, dozer2){
-	//todo array of dozers
-	// composer :: ??? //todo
-	let name = composer.name + "~" + dozer1.name + "~" + dozer2.name;
-	let named = {
-		[name]: function(source){
-			return dozer1(dozer2(source));
-		},
-	};
-	return named[name];
 }
 function curry(source, arg){
 	// curry :: source (a b) c -> a -> source b (source (a b) c)
@@ -404,8 +373,48 @@ function apr(sAB, sCfBD, ...c){
 	};
 	return named[name];
 }
+function superimposition(dozer, ...args){
+	// superimposition :: (source a b -> c -> d -> source a b) -> c -> (source a b -> d -> source a b)
+	let name = superimposition.name + "~" + dozer.name;
+	let named = {
+		[name]: function(source, ...args2){
+			return dozer(source, ...args, ...args2);
+		},
+	};
+	return named[name];
+}
+function imposition(source, ...args){
+	// imposition :: source a b c -> a -> source b c
+	let name = imposition.name + "~" + dozer.name;
+	let named = {
+		[name]: function(sink, ...args2){
+			return pullpush(sink,  ...args, ...args2);
+		},
+	};
+	return named[name];
+}
+function apposition(source, ...args){
+	// apposition :: source a b c -> b -> source a c
+	let name = superapposition.name + "~" + dozer.name;
+	let named = {
+		[name]: function(sink, ...args2){
+			return pullpush(sink, ...args2,  ...args);
+		},
+	};
+	return named[name];
+}
+function superapposition(dozer, ...args){
+	// superapposition :: (source a b -> c -> d -> source a b) -> d -> (source a b -> c -> source a b) 
+	let name = superapposition.name + "~" + dozer.name;
+	let named = {
+		[name]: function(source, ...args2){
+			return dozer(source, ...args2, ...args);
+		},
+	};
+	return named[name];
+}
 function composition(...sources){
-	// composition :: (source y z) (source x y) ... (source b c) (source a b) -> source a z
+	// composition :: (source y z) -> (source x y) ... (source b c) -> (source a b) -> source a z
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	let name = composition.name + "~" + array.map(source => source.name).join("~");
 	let named = {
@@ -413,6 +422,19 @@ function composition(...sources){
 			return array.slice().reverse().reduce(function(value, source, index){
 				return pullpush(sink(index), source, value);
 			}, value);
+		},
+	};
+	return named[name];
+}
+function supercomposition(...dozers){
+	// supercomposition :: (source w x -> source y z) -> (source u v -> source w x) ... (source c d -> source e f) -> (source a b -> source c d) -> (source a b -> source y z)
+	let array = (dozers.length === 1 && typeof dozers[0] !== "function")? dozers[0]: dozers;
+	let name = supercomposition.name + "~" + array.map(item => item.name).join("~");
+	let named = {
+		[name]: function(source){
+			return array.slice().reverse().reduce(function(source, dozer){
+				return dozer(source);
+			}, source);
 		},
 	};
 	return named[name];
