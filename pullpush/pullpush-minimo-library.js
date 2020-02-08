@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 // pullpush minimo library (no interaction with the DOM)
 
-let stepper = (function(){
+let stepper = (function(){ //todo rename "counter"
 	let observers = {};
 	function callback(sink, delay, begining, end){
 		if(pullpush.registered(sink, observers)){
@@ -21,7 +21,7 @@ let stepper = (function(){
 			(steps);
 	};
 })();
-let series = (function(){
+let series = (function(){ //todo is it more performant that "deduce" to compute series?
 	function next(sink, index, f, ...args){
 		let value = f(index, pullpush.value(sink), ...args);
 		return { index, value };
@@ -43,7 +43,7 @@ function timer(sink, delay, begining, end){
 	pullpush(sink(stepper.name), stepper, delay);
 	return time;
 }
-function counter(sink, delay, begining, end){
+function counter(sink, delay, begining, end){ //todo remove (duplicate of "stepper")
 	let count = pullpush.value(sink, begining || 0);
 	if(count >= end){
 		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
@@ -177,7 +177,7 @@ let global = function(id){
 function nth(source, n){
 	let values = 0;
 	let value = {}; // nonce
-	let name = nth.name + "~" + source.name + "~" + n;
+	let name = nth.name + "~" + n + "~" + source.name;
 	let named = {
 		[name]: function(sink, ...args){
 			pullpush(sink, false); // declaration to not keep unused sources
@@ -198,11 +198,11 @@ function nth(source, n){
 	};
 	return named[name];
 }
-let once = supercomposition(superapposition(namer, "once", ""), superapposition(times, 1));
+let once = supercomposition(superapposition(namer, "once", ""), superapposition(times, 1)); //todo move to test or reemplement with simpler name
 function times(source, n){
 	let values = 0;
 	let value = {}; // nonce
-	let name = times.name + "~" + source.name + "~" + n;
+	let name = times.name + "~" + n + "~" + source.name;
 	let named = {
 		[name]: function(sink, ...args){
 			pullpush(sink, false); // declaration to not keep unused sources
@@ -224,7 +224,7 @@ function times(source, n){
 function clipper(source, n, m){
 	let values = 0;
 	let value = {}; // nonce
-	let name = clipper.name + "~" + source.name + "~" + n + "~" + m;
+	let name = clipper.name + "~" + n + "~" + m + "~" + source.name;
 	let named = {
 		[name]: function(sink, ...args){
 			pullpush(sink, false); // declaration to not keep unused sources
@@ -245,10 +245,10 @@ function clipper(source, n, m){
 	};
 	return named[name];
 }
-function skipper(source, n){
+function skipper(source, n){ //todo use nonce (see "clippper")
 	let values = 1;
 	let value = undefined;
-	let name = skipper.name + "~" + source.name + "~" + n;
+	let name = skipper.name + "~" + n + "~" + source.name;
 	let named = {
 		[name]: function(sink, ...args){
 			let current = pullpush(sink, source, ...args);
@@ -263,6 +263,104 @@ function skipper(source, n){
 	};
 	return named[name];
 }
+function filter(source, f){
+	let last;
+	let values = 0;
+	let value = {}; // nonce
+	let name = filter.name + "~" + source.name + "~" + f.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== value){
+				value = current;
+				values++;
+			}
+			if(f(current, values)){
+				last = current;
+				return current;
+			}
+			return last;
+		},
+	};
+	return named[name];
+}
+function filterer(source1, source2, ...args2){
+	let last;
+	let values = 0;
+	let value = {}; // nonce
+	let name = filterer.name + "~" + source1.name + "~" + source2.name;
+	let named = {
+		[name]: function(sink, ...args1){
+			let current = pullpush(sink("filtered"), source1, ...args1);
+			if(current !== value){
+				value = current;
+				values++;
+			}
+			if(pullpush(sink("filter"), source2, current, values, ...args2)){
+				last = current;
+				return current;
+			}
+			return last;
+		},
+	};
+	return named[name];
+}
+function reduce(source, f, accumulator){
+	let values = 0;
+	let value = {}; // nonce
+	let name = reduce.name + "~" + source.name + "~" + f.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== value){
+				value = current;
+				values++;
+			}
+			accumulator = f(accumulator, current, values);
+			return accumulator;
+		},
+	};
+	return named[name];
+}
+function reducer(source1, source2, accumulator, ...args2){
+	let values = 0;
+	let value = {}; // nonce
+	let name = reducer.name + "~" + source1.name + "~" + source2.name;
+	let named = {
+		[name]: function(sink, ...args1){
+			let current = pullpush(sink("reduced"), source1, ...args1);
+			if(current !== value){
+				value = current;
+				values++;
+			}
+			accumulator = pullpush(sink("reducer"), source2, accumulator, current, values, ...args2);
+			return accumulator;
+		},
+	};
+	return named[name];
+}
+function deduce(source, f, ...accumulators){
+	//todo array of accumulators
+	let values = accumulators.slice();
+	let index = 0;
+	let last = {}; // nonce
+	let name = deduce.name + "~" + accumulators.length + "~" + source.name + "~" + f.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== last){
+				last = current;
+				index++;
+			}
+			let value = f(...values, current, index);
+			values.push(value);
+			values.shift();
+			return value;
+		},
+	};
+	return named[name];
+}
+//todo deducer (see deduce)
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
@@ -359,7 +457,7 @@ function unit(f){
 	};
 	return named[name];
 }
-function mapl(fAB, sBC){
+function mapl(fAB, sBC){ //todo rename "premap"
 	// mapl :: (a -> b) -> source b c -> source a c
 	let name = mapl.name + "~" + fAB.name + "~" + sBC.name;
 	let named = {
@@ -371,7 +469,7 @@ function mapl(fAB, sBC){
 	};
 	return named[name];
 }
-function mapr(sAB, fBC){
+function mapr(sAB, fBC){ //todo rename "map"
 	// mapr :: source a b -> (b -> c) -> source a c
 	let name = mapr.name + "~" + sAB.name + "~" + fBC.name;
 	let named = {
@@ -383,7 +481,19 @@ function mapr(sAB, fBC){
 	};
 	return named[name];
 }
-function apl(sAfBC, sCD, ...a){
+function mapper(sAB, sBC){
+	// mapper :: source a b -> source b c -> source a c
+	let name = mapper.name + "~" + sAB.name + "~" + sBC.name;
+	let named = {
+		[name]: function(sink, ...a){
+			let b = pullpush(sink, sAB, ...a);
+			let c = pullpush(sink, sBC, b);
+			return c;
+		},
+	};
+	return named[name];
+}
+function apl(sAfBC, sCD, ...a){ //todo rename "preap"
 	// apl :: source a (b -> c) -> source c d -> source b d
 	let name = apl.name + "~" + sAfBC.name + "~" + sCD.name;
 	let name1 = sAfBC.name; 
@@ -398,7 +508,7 @@ function apl(sAfBC, sCD, ...a){
 	};
 	return named[name];
 }
-function apr(sAB, sCfBD, ...c){
+function apr(sAB, sCfBD, ...c){ //todo rename "ap"
 	// apr :: source a b -> source c (b -> d) -> source b d
 	let name = apr.name + "~" + sAB.name + "~" + sCfBD.name;
 	let name1 = sAB.name; 
@@ -413,19 +523,19 @@ function apr(sAB, sCfBD, ...c){
 	};
 	return named[name];
 }
-function superimposition(dozer, ...args){
+function superimposition(definer, ...args){
 	// superimposition :: (source a b -> c -> d -> source a b) -> c -> (source a b -> d -> source a b)
-	let name = superimposition.name + "~" + dozer.name;
+	let name = superimposition.name + "~" + definer.name;
 	let named = {
 		[name]: function(source, ...args2){
-			return dozer(source, ...args, ...args2);
+			return definer(source, ...args, ...args2);
 		},
 	};
 	return named[name];
 }
 function imposition(source, ...args){
 	// imposition :: source a b c -> a -> source b c
-	let name = imposition.name + "~" + dozer.name;
+	let name = imposition.name + "~" + definer.name;
 	let named = {
 		[name]: function(sink, ...args2){
 			return pullpush(sink,  ...args, ...args2);
@@ -435,7 +545,7 @@ function imposition(source, ...args){
 }
 function apposition(source, ...args){
 	// apposition :: source a b c -> b -> source a c
-	let name = superapposition.name + "~" + dozer.name;
+	let name = superapposition.name + "~" + definer.name;
 	let named = {
 		[name]: function(sink, ...args2){
 			return pullpush(sink, ...args2,  ...args);
@@ -443,12 +553,12 @@ function apposition(source, ...args){
 	};
 	return named[name];
 }
-function superapposition(dozer, ...args){
+function superapposition(definer, ...args){
 	// superapposition :: (source a b -> c -> d -> source a b) -> d -> (source a b -> c -> source a b) 
-	let name = superapposition.name + "~" + dozer.name;
+	let name = superapposition.name + "~" + definer.name;
 	let named = {
 		[name]: function(source, ...args2){
-			return dozer(source, ...args2, ...args);
+			return definer(source, ...args2, ...args);
 		},
 	};
 	return named[name];
@@ -466,14 +576,14 @@ function composition(...sources){
 	};
 	return named[name];
 }
-function supercomposition(...dozers){
+function supercomposition(...definers){
 	// supercomposition :: (source w x -> source y z) -> (source u v -> source w x) ... (source c d -> source e f) -> (source a b -> source c d) -> (source a b -> source y z)
-	let array = (dozers.length === 1 && typeof dozers[0] !== "function")? dozers[0]: dozers;
+	let array = (definers.length === 1 && typeof definers[0] !== "function")? definers[0]: definers;
 	let name = supercomposition.name + "~" + array.map(item => item.name).join("~");
 	let named = {
 		[name]: function(source){
-			return array.slice().reverse().reduce(function(source, dozer){
-				return dozer(source);
+			return array.slice().reverse().reduce(function(source, definer){
+				return definer(source);
 			}, source);
 		},
 	};
