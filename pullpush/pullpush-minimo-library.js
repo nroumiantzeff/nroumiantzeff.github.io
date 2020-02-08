@@ -21,7 +21,7 @@ let stepper = (function(){ //todo rename "counter"
 			(steps);
 	};
 })();
-let series = (function(){ //todo is it more performant or handier than "deduce" to compute series?
+let series = (function(){ //todo remove (use "reduce" instead) because passing an index argument other than 1 then 2, then 3... does not work 
 	function next(sink, index, f, ...args){
 		let value = f(index, pullpush.value(sink), ...args);
 		return { index, value };
@@ -366,7 +366,7 @@ function deducer(source1, source2, ...accumulators){
 	let name = deduce.name + "~" + accumulators.length + "~" + source1.name + "~" + source2.name;
 	let named = {
 		[name]: function(sink, ...args){
-			let current = pullpush(sink("deduced", source1, ...args);
+			let current = pullpush(sink("deduced"), source1, ...args);
 			if(current !== last){
 				last = current;
 				index++;
@@ -406,12 +406,12 @@ function inducer(source1, source2, accumulators, ...args2){
 	let name = induce.name + "~" + accumulators.length + "~" + source1.name + "~" + source2.name;
 	let named = {
 		[name]: function(sink, ...args1){
-			let current = pullpush(sink, source1, ...args1);
+			let current = pullpush(sink("induced"), source1, ...args1);
 			if(current !== last){
 				last = current;
 				index++;
 			}
-			let value = pullpush(sink, source2, values, current, index, ...args2);
+			let value = pullpush(sink("inducer"), source2, values, current, index, ...args2);
 			values.push(value);
 			values.shift();
 			return value;
