@@ -21,7 +21,7 @@ let stepper = (function(){ //todo rename "counter"
 			(steps);
 	};
 })();
-let series = (function(){ //todo is it more performant that "deduce" to compute series?
+let series = (function(){ //todo is it more performant or handier than "deduce" to compute series?
 	function next(sink, index, f, ...args){
 		let value = f(index, pullpush.value(sink), ...args);
 		return { index, value };
@@ -340,7 +340,6 @@ function reducer(source1, source2, accumulator, ...args2){
 	return named[name];
 }
 function deduce(source, f, ...accumulators){
-	//todo array of accumulators
 	let values = accumulators.slice();
 	let index = 0;
 	let last = {}; // nonce
@@ -360,7 +359,66 @@ function deduce(source, f, ...accumulators){
 	};
 	return named[name];
 }
-//todo deducer (see deduce)
+function deducer(source1, source2, ...accumulators){
+	let values = accumulators.slice();
+	let index = 0;
+	let last = {}; // nonce
+	let name = deduce.name + "~" + accumulators.length + "~" + source1.name + "~" + source2.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink("deduced", source1, ...args);
+			if(current !== last){
+				last = current;
+				index++;
+			}
+			let value = pullpush(sink("deducer"), source2, ...values, current, index);
+			values.push(value);
+			values.shift();
+			return value;
+		},
+	};
+	return named[name];
+}
+function induce(source, f, accumulators){
+	let values = accumulators.slice();
+	let index = 0;
+	let last = {}; // nonce
+	let name = induce.name + "~" + accumulators.length + "~" + source.name + "~" + f.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== last){
+				last = current;
+				index++;
+			}
+			let value = f(values, current, index);
+			values.push(value);
+			values.shift();
+			return value;
+		},
+	};
+	return named[name];
+}
+function inducer(source1, source2, accumulators, ...args2){
+	let values = accumulators.slice();
+	let index = 0;
+	let last = {}; // nonce
+	let name = induce.name + "~" + accumulators.length + "~" + source1.name + "~" + source2.name;
+	let named = {
+		[name]: function(sink, ...args1){
+			let current = pullpush(sink, source1, ...args1);
+			if(current !== last){
+				last = current;
+				index++;
+			}
+			let value = pullpush(sink, source2, values, current, index, ...args2);
+			values.push(value);
+			values.shift();
+			return value;
+		},
+	};
+	return named[name];
+}
 function latest(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function latest(sink){
