@@ -139,13 +139,13 @@ function sink15(sink){
 	document.getElementById("sink15").value = pullpush(sink, timer, 2000, 10000000, 10009999); 
 }
 function sink16(sink){
-	document.getElementById("sink16").value = pullpush(sink, latest16);
+	document.getElementById("sink16").value = pullpush(sink, any16);
 }
 function sink17(sink){
-	document.getElementById("sink17").value = pullpush(sink, all17);
+	document.getElementById("sink17").value = pullpush(sink, each17);
 }
 function sink18(sink){
-	document.getElementById("sink18").value = pullpush(sink, all18);
+	document.getElementById("sink18").value = pullpush(sink, each18);
 }
 function sink19(sink){
 	document.getElementById("sink19").value = pullpush(sink, implicit19);
@@ -392,17 +392,17 @@ function divide10(sink){
 	}
 	return value;
 }
-let latest1011 = latest([input("input10"), input("input11")]);
-function latest16(sink){
-	return pullpush(sink, latest1011);
+let any1011 = any([input("input10"), input("input11")]);
+function any16(sink){
+	return pullpush(sink, any1011);
 }
-let allValues17 = all([input("input10"), input("input11")]);
-function all17(sink){
-	let values = pullpush(sink, allValues17);
+let eachValues17 = each([input("input10"), input("input11")]);
+function each17(sink){
+	let values = pullpush(sink, eachValues17);
 	return Number(values[0]) + Number(values[1]);
 }
-function all18(sink){
-	let values = pullpush(sink, allValues17);
+function each18(sink){
+	let values = pullpush(sink, eachValues17);
 	return Number(values[0]) + Number(values[1]);
 }
 function implicit19(sink){
@@ -415,7 +415,7 @@ function combinator20(source1, sourcer1, sourcer2, source2){
 function warning20(sink){
 	return pullpush(sink, combinator20(function duplicate(sink){
 			// throws an exception because pullpush cannot be called with the same sink
-			Number(pullpush(sink, allValues17)[0]) + Number(pullpush(sink, allValues17)[1]);
+			Number(pullpush(sink, eachValues17)[0]) + Number(pullpush(sink, eachValues17)[1]);
 			return "error: an exception should have occured because pullpush cannot be called with the same sink";
 		},
 		shell,
@@ -736,7 +736,7 @@ function error49(sink){
 function img50(sink){
 	let clicks = pullpush(sink, click("button20")) % 4;
 	pullpush(sink, src("img21"), clicks === 0? "pullpush-tests-img21a.png": clicks === 1? "pullpush-tests-img21x.png": clicks === 2? "pullpush-tests-img21b.png": "pullpush-tests-img21y.png");
-	return pullpush(sink, latest([load("img21"), error("img21")])) || "";
+	return pullpush(sink, any([load("img21"), error("img21")])) || "";
 }
 function lagger51(sink){
 	return pullpush(sink, lagger(click("button22"), 3000)) || "";

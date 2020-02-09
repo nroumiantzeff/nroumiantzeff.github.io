@@ -419,24 +419,27 @@ function inducer(source1, source2, accumulators, ...args2){
 	};
 	return named[name];
 }
-function latest(...sources){
+function any(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
-	function latest(sink){
-		if(array.length > 0){
-			let values = array.map(function(source, index){
-				let subsink = sink(index);
-				let value = pullpush(subsink, source);
-				return { sink: subsink, value };
-			});
-			values.sort(function(item1, item2){
-				return pullpush.sequence(item1.sink, item2.sink);
-			});
-			return values[values.length - 1].value;
-		}
-	}
-	return latest;
+	let name = any.name + "~" + array.map(source => source.name).join("~");
+	let named = {
+		[name]: function(sink, ...args){
+			if(array.length > 0){
+				let values = array.map(function(source, index){
+					let subsink = sink(index);
+					let value = pullpush(subsink, source, ...args);
+					return { sink: subsink, value };
+				});
+				values.sort(function(item1, item2){
+					return pullpush.sequence(item1.sink, item2.sink);
+				});
+				return values[values.length - 1].value;
+			}
+		},
+	};
+	return named[name];
 }
-function all(...sources){
+function each(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
 	function earliest(sink){
 		array.reduce(function(unused, source, index){
@@ -457,12 +460,16 @@ function all(...sources){
 		});
 		return { latest: sequences[sequences.length - 1], values: values };
 	};
-	return function all(sink){
-		if(array.length > 0){
-			let value = pullpush(sink, earliest);
-			return value.values;
-		}
+	let name = each.name + "~" + array.map(source => source.name).join("~");
+	let named = {
+		[name]: function(sink, ...args){
+			if(array.length > 0){
+				let value = pullpush(sink, earliest, ...args);
+				return value.values;
+			}
+		},
 	};
+	return named[name];
 }
 function partial(...sources){
 	return function(source){

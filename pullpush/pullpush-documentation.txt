@@ -100,8 +100,8 @@ List of functions currently provided by the minimo library:
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
 - global: a source which value is specified globaly (the source is accessed by specifying an id)
-- latest: a source which value is the the latest value among the specified sources
-- all: a source whitch value changes once all the specified sources value have changed
+- any: a source which value is the the latest value among the specified sources
+- each: a source whitch value changes when all the specified sources value have changed
 - series: a source which value is the sum of n previous values
 - reverse: defines a source from a source with reversed arguments (except the sink argument)
 - shuffle: defines a source from a source and a function which suffles the source arguments (except the sink argument)
