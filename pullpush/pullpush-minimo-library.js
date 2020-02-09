@@ -245,19 +245,19 @@ function clipper(source, n, m){
 	};
 	return named[name];
 }
-function skipper(source, n){ //todo use nonce (see "clippper")
-	let values = 1;
-	let value = undefined;
+function skipper(source, n){
+	let values = 0;
+	let value = {}; // nonce
 	let name = skipper.name + "~" + n + "~" + source.name;
 	let named = {
 		[name]: function(sink, ...args){
 			let current = pullpush(sink, source, ...args);
-			if(values > n){
-				return current;
-			}
 			if(current !== value){
 				value = current;
 				values++;
+			}
+			if(values > n){
+				return current;
 			}
 		},
 	};
