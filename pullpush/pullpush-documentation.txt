@@ -96,6 +96,7 @@ List of functions currently provided by the minimo library:
 - nth: a source which value is the nth value of the specified source
 - skipper: a source which value is the value of the specified source skipping the first values
 - clipper: a source which value is the value of the specified source skipping the first values and ignoring the last values
+- tracker: a source which value an array containing the value of the specified source (deleting the first values from the array) 
 - namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sink)
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)

@@ -263,6 +263,25 @@ function skipper(source, n){
 	};
 	return named[name];
 }
+function tracker(source, n){
+	let values = [];
+	let value = {}; // nonce
+	let name = tracker.name + "~" + n + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== value){
+				value = current;
+				values.push(current);
+				if(values.length > n){
+					delete values[values.length - n - 1];
+				}
+			}
+			return values;
+		},
+	};
+	return named[name];
+}
 //todo tracker (return an array with the last n elements)
 //todo chronicler (array of times and values with the last n elements)
 //todo sampler (array of values for given times with the last n elements)
