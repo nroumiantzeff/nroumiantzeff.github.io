@@ -263,6 +263,9 @@ function skipper(source, n){
 	};
 	return named[name];
 }
+//todo tracker (return an array with the last n elements)
+//todo chronicler (array of times and values with the last n elements)
+//todo sampler (array of values for given times with the last n elements)
 function filter(source, f){
 	let last;
 	let values = 0;
@@ -305,45 +308,11 @@ function filterer(source1, source2, ...args2){
 	};
 	return named[name];
 }
-function reduce(source, f, accumulator){
-	let values = 0;
-	let value = {}; // nonce
-	let name = reduce.name + "~" + source.name + "~" + f.name;
-	let named = {
-		[name]: function(sink, ...args){
-			let current = pullpush(sink, source, ...args);
-			if(current !== value){
-				value = current;
-				values++;
-			}
-			accumulator = f(accumulator, current, values);
-			return accumulator;
-		},
-	};
-	return named[name];
-}
-function reducer(source1, source2, accumulator, ...args2){
-	let values = 0;
-	let value = {}; // nonce
-	let name = reducer.name + "~" + source1.name + "~" + source2.name;
-	let named = {
-		[name]: function(sink, ...args1){
-			let current = pullpush(sink("reduced"), source1, ...args1);
-			if(current !== value){
-				value = current;
-				values++;
-			}
-			accumulator = pullpush(sink("reducer"), source2, accumulator, current, values, ...args2);
-			return accumulator;
-		},
-	};
-	return named[name];
-}
-function deduce(source, f, ...accumulators){
+function reduce(source, f, ...accumulators){
 	let values = accumulators.slice();
 	let index = 0;
 	let last = {}; // nonce
-	let name = deduce.name + "~" + accumulators.length + "~" + source.name + "~" + f.name;
+	let name = reduce.name + (accumulators.length === 1? "": accumulators.length) + "~" + source.name + "~" + f.name;
 	let named = {
 		[name]: function(sink, ...args){
 			let current = pullpush(sink, source, ...args);
@@ -359,11 +328,11 @@ function deduce(source, f, ...accumulators){
 	};
 	return named[name];
 }
-function deducer(source1, source2, ...accumulators){
+function reducer(source1, source2, ...accumulators){
 	let values = accumulators.slice();
 	let index = 0;
 	let last = {}; // nonce
-	let name = deduce.name + "~" + accumulators.length + "~" + source1.name + "~" + source2.name;
+	let name = reduce.name + (accumulators.length === 1? "": accumulators.length) + "~" + source1.name + "~" + source2.name;
 	let named = {
 		[name]: function(sink, ...args){
 			let current = pullpush(sink("deduced"), source1, ...args);

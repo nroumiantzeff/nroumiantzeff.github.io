@@ -122,10 +122,8 @@ List of functions currently provided by the minimo library:
 - map: maps a source to a source // map :: source a b -> source b c -> source a c
 - filter: defines a fitered source from a source and a filter function // filter :: source a b -> (b -> boolean) -> source a b
 - filterer: defines a fitered source from a source and a filter source // filterer :: source a b -> (source b boolean) -> source a b
-- reduce: defines a source with values equal to the reduction of a source by a reducer function // reduce :: source a b -> (c -> b -> c) -> c -> source a c
-- reducer: defines a source with values equal to the reduction of a source by a reducer source // reducer :: source a b -> source c b c -> c -> source a c
-- deduce: reduce with several accumulators // deduce :: source a b -> (c -> ... -> c -> b -> c) -> c -> source a c
-- deducer: reducer with several accumulators // deducer :: source a b -> source c ... c b c -> c -> source a c
+- reduce: defines a source with values equal to the reduction of a source by a reducer function (with optionaly several accumulators) // reduce :: source a b -> (c -> ... -> c -> b -> c) -> c -> source a c
+- reducer: defines a source with values equal to the reduction of a source by a reducer source (with optionaly several accumulators) // reducer :: source a b -> source c ... c b c -> c -> source a c
 - induce: reduce with an array of accumulators // induce :: source a b -> ([c] -> b -> c) -> c -> source a c
 - inducer: reducer with an array of accumulators // inducer :: source a b -> source [c] b c -> c -> source a c
 - shell: source which value is the reslt of applying the second specified source on the value of the first specified source // shell :: source a b -> source ((source a b) a) c -> source a c
