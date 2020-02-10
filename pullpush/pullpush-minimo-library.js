@@ -272,6 +272,7 @@ function tracker(source, n){
 			let current = pullpush(sink, source, ...args);
 			if(current !== value){
 				value = current;
+				values = values.slice();
 				values.push(current);
 				if(values.length > n){
 					delete values[values.length - n - 1];

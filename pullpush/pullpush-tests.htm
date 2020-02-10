@@ -92,7 +92,7 @@
 <input id="sink70" readonly/> filter: odd + tenths </br>
 <input id="sink71" readonly/> reduce: sum of integers </br>
 <input id="sink72" readonly/> reduce: fibonacci series </br>
-<input id="sink73" readonly/> tracker of the last 3 fibonacci numbers </br>
+<input id="sink73" readonly/> tracker of 8th, 9th and 10th fibonacci numbers </br>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
@@ -323,7 +323,7 @@ function sink72(sink){
 	document.getElementById("sink72").value = pullpush(sink, reduce(counter, (value1, value2) => value1 + value2, 0, 1), 1000);
 }
 function sink73(sink){
-	document.getElementById("sink73").value = pullpush(sink, tracker(reduce(counter, (value1, value2) => value1 + value2, 0, 1), 3).toString(), 1000);
+	document.getElementById("sink73").value = pullpush(sink, times(tracker(reduce(counter, (value1, value2) => value1 + value2, 0, 1), 3), 10), 1000);
 }
 function insert1(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
