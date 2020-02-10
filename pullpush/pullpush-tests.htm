@@ -93,6 +93,7 @@
 <input id="sink71" readonly/> reduce: sum of integers </br>
 <input id="sink72" readonly/> reduce: fibonacci series </br>
 <input id="sink73" readonly/> tracker of 8th, 9th and 10th fibonacci numbers </br>
+<input id="sink74" readonly/> chronicler of 8th, 9th and 10th fibonacci numbers with their relative time of computation </br>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
@@ -278,40 +279,40 @@ function sink57(sink){
 	document.getElementById("sink57").value = pullpush(sink, series57);
 }
 function sink58(sink){
-	document.getElementById("sink58").value = pullpush(sink, nth((onceuponatime58), 0)); //todo remove unnecessary parenthesis
+	document.getElementById("sink58").value = pullpush(sink, nth(0, onceuponatime58));
 }
 function sink59(sink){
-	document.getElementById("sink59").value = pullpush(sink, nth((onceuponatime58), 1)); //todo remove unnecessary parenthesis
+	document.getElementById("sink59").value = pullpush(sink, nth(1, onceuponatime58));
 }
 function sink60(sink){
-	document.getElementById("sink60").value = pullpush(sink, nth((onceuponatime58), 2)); //todo remove unnecessary parenthesis
+	document.getElementById("sink60").value = pullpush(sink, nth(2, onceuponatime58));
 }
 function sink61(sink){
-	document.getElementById("sink61").value = pullpush(sink, times((onceuponatime58), 0)); //todo remove unnecessary parenthesis
+	document.getElementById("sink61").value = pullpush(sink, times(0, onceuponatime58));
 }
 function sink62(sink){
-	document.getElementById("sink62").value = pullpush(sink, times((onceuponatime58), 1)); //todo remove unnecessary parenthesis
+	document.getElementById("sink62").value = pullpush(sink, times(1, onceuponatime58));
 }
 function sink63(sink){
-	document.getElementById("sink63").value = pullpush(sink, times((onceuponatime58), 2)); //todo remove unnecessary parenthesis
+	document.getElementById("sink63").value = pullpush(sink, times(2, onceuponatime58));
 }
 function sink64(sink){
-	document.getElementById("sink64").value = pullpush(sink, clipper((onceuponatime58), 0, 0)); //todo remove unnecessary parenthesis
+	document.getElementById("sink64").value = pullpush(sink, clipper(0, 0, onceuponatime58));
 }
 function sink65(sink){
-	document.getElementById("sink65").value = pullpush(sink, clipper((onceuponatime58), 0, 1)); //todo remove unnecessary parenthesis
+	document.getElementById("sink65").value = pullpush(sink, clipper(0, 1, onceuponatime58));
 }
 function sink66(sink){
-	document.getElementById("sink66").value = pullpush(sink, clipper((onceuponatime58), 0, 2)); //todo remove unnecessary parenthesis
+	document.getElementById("sink66").value = pullpush(sink, clipper(0, 2, onceuponatime58));
 }
 function sink67(sink){
-	document.getElementById("sink67").value = pullpush(sink, clipper((onceuponatime58), 1, 1)); //todo remove unnecessary parenthesis
+	document.getElementById("sink67").value = pullpush(sink, clipper(1, 1, onceuponatime58));
 }
 function sink68(sink){
-	document.getElementById("sink68").value = pullpush(sink, clipper((onceuponatime58), 1, 2)); //todo remove unnecessary parenthesis
+	document.getElementById("sink68").value = pullpush(sink, clipper(1, 2, onceuponatime58));
 }
 function sink69(sink){
-	document.getElementById("sink69").value = pullpush(sink, clipper((onceuponatime58), 1, 3)); //todo remove unnecessary parenthesis
+	document.getElementById("sink69").value = pullpush(sink, clipper(1, 3, onceuponatime58));
 }
 function sink70(sink){
 	document.getElementById("sink70").value = pullpush(sink, filter(counter, (value, index) => value % 2 === 1 || index % 10 === 0), 200);
@@ -323,7 +324,10 @@ function sink72(sink){
 	document.getElementById("sink72").value = pullpush(sink, reduce(counter, (value1, value2) => value1 + value2, 0, 1), 1000);
 }
 function sink73(sink){
-	document.getElementById("sink73").value = pullpush(sink, times(tracker(reduce(counter, (value1, value2) => value1 + value2, 0, 1), 3), 10), 1000);
+	document.getElementById("sink73").value = pullpush(sink, times(10, tracker(3, reduce(counter, (value1, value2) => value1 + value2, 0, 1))), 1000);
+}
+function sink74(sink){
+	document.getElementById("sink74").value = pullpush(sink, times(10, chonicler(3, reduce(counter, (value1, value2) => value1 + value2, 0, 1))), 1000);
 }
 function insert1(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -809,7 +813,7 @@ function series57(sink){
 	let triggered38 = pullpush(sink, trigger(click("button38")));
 	let triggered39 = pullpush(sink, trigger(click("button39")));
 	let triggered40 = pullpush(sink, trigger(click("button40")));
-	let source = pullpush(sink, local, undefined, triggered30 && times(fibonacci57, 0) || triggered31 && once(fibonacci57) || triggered32 && times(fibonacci57, 2) || triggered33 && times(fibonacci57, 3) || triggered34 && times(fibonacci57, 4) || triggered35 && nth(fibonacci57, 1) || triggered36 && nth(fibonacci57, 2) || triggered37 && nth(fibonacci57, 3) || triggered38 && nth(fibonacci57, 4) || triggered39 && clipper(fibonacci57, 4, 7) || triggered40 && skipper(fibonacci57, 7) || undefined);
+	let source = pullpush(sink, local, undefined, triggered30 && times(0, fibonacci57) || triggered31 && once(fibonacci57) || triggered32 && times(2, fibonacci57) || triggered33 && times(3, fibonacci57) || triggered34 && times(4, fibonacci57) || triggered35 && nth(1, fibonacci57) || triggered36 && nth(2, fibonacci57) || triggered37 && nth(3, fibonacci57) || triggered38 && nth(4, fibonacci57) || triggered39 && clipper(4, 7, fibonacci57) || triggered40 && skipper(7, fibonacci57) || undefined);
 	return source && pullpush(sink, source) || "";
 }
 function onceuponatime58(sink){
@@ -888,6 +892,7 @@ pullpush(sink, sink70);
 pullpush(sink, sink71);
 pullpush(sink, sink72);
 pullpush(sink, sink73);
+pullpush(sink, sink74);
 </script>
 </body>
 </html>

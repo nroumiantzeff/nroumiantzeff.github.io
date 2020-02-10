@@ -174,7 +174,7 @@ function local(sink, initial, value, delay){
 let global = function(id){
 	return share(id, local);
 };
-function nth(source, n){
+function nth(n, source){
 	let values = 0;
 	let value = {}; // nonce
 	let name = nth.name + "~" + n + "~" + source.name;
@@ -198,8 +198,8 @@ function nth(source, n){
 	};
 	return named[name];
 }
-let once = supercomposition(superapposition(namer, "once", ""), superapposition(times, 1)); //todo move to test or reemplement with simpler name
-function times(source, n){
+let once = supercomposition(superapposition(namer, "once", ""), superpreposition(times, 1)); //todo move to test or reemplement with simpler name
+function times(n, source){
 	let values = 0;
 	let value = {}; // nonce
 	let name = times.name + "~" + n + "~" + source.name;
@@ -221,7 +221,7 @@ function times(source, n){
 	};
 	return named[name];
 }
-function clipper(source, n, m){
+function clipper(n, m, source){
 	let values = 0;
 	let value = {}; // nonce
 	let name = clipper.name + "~" + n + "~" + m + "~" + source.name;
@@ -245,7 +245,7 @@ function clipper(source, n, m){
 	};
 	return named[name];
 }
-function skipper(source, n){
+function skipper(n, source){
 	let values = 0;
 	let value = {}; // nonce
 	let name = skipper.name + "~" + n + "~" + source.name;
@@ -263,8 +263,8 @@ function skipper(source, n){
 	};
 	return named[name];
 }
-function tracker(source, n){
-	let values = [];
+function tracker(n, source){
+	let result = [];
 	let value = {}; // nonce
 	let name = tracker.name + "~" + n + "~" + source.name;
 	let named = {
@@ -272,8 +272,29 @@ function tracker(source, n){
 			let current = pullpush(sink, source, ...args);
 			if(current !== value){
 				value = current;
+				result = result.slice();
+				result.push(current);
+				if(result.length > n){
+					delete result[result.length - n - 1];
+				}
+			}
+			return result;
+		},
+	};
+	return named[name];
+}
+function chonicler(n, source){
+	let values = [];
+	let value = {}; // nonce
+	let name = chonicler.name + "~" + n + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== value){
+				value = current;
+				let time = pullpush.time(sink);
 				values = values.slice();
-				values.push(current);
+				values.push([time, current]);
 				if(values.length > n){
 					delete values[values.length - n - 1];
 				}
@@ -283,8 +304,6 @@ function tracker(source, n){
 	};
 	return named[name];
 }
-//todo tracker (return an array with the last n elements)
-//todo chronicler (array of times and values with the last n elements)
 //todo sampler (array of values for given times with the last n elements)
 function filter(source, f){
 	let last;
@@ -613,6 +632,16 @@ function superapposition(definer, ...args){
 	let named = {
 		[name]: function(source, ...args2){
 			return definer(source, ...args2, ...args);
+		},
+	};
+	return named[name];
+}
+function superpreposition(definer, ...args){
+	// superpreposition :: (c -> source a b -> d -> source a b) -> c -> (source a b -> d -> source a b)
+	let name = superpreposition.name + "~" + definer.name;
+	let named = {
+		[name]: function(source, ...args2){
+			return definer(...args, source, ...args2);
 		},
 	};
 	return named[name];
