@@ -293,7 +293,10 @@ function chonicler(n, source){
 	};
 	return named[name];
 }
-//todo sampler (array of values for given times with the last n elements)
+//todo mixer
+//todo appender?
+//todo duplicator? (using pullpush.broadcast?)
+//todo sampler? (array of values for given times with the last n elements)
 function filter(source, f){
 	let last;
 	let values = 0;
@@ -519,9 +522,9 @@ function unit(f){
 	};
 	return named[name];
 }
-function mapl(fAB, sBC){ //todo rename "premap"
-	// mapl :: (a -> b) -> source b c -> source a c
-	let name = mapl.name + "~" + fAB.name + "~" + sBC.name;
+function premap(fAB, sBC){
+	// premap :: (a -> b) -> source b c -> source a c
+	let name = premap.name + "~" + fAB.name + "~" + sBC.name;
 	let named = {
 		[name]: function(sink, ...a){
 			let b = fAB(...a);
@@ -531,9 +534,9 @@ function mapl(fAB, sBC){ //todo rename "premap"
 	};
 	return named[name];
 }
-function mapr(sAB, fBC){ //todo rename "map"
-	// mapr :: source a b -> (b -> c) -> source a c
-	let name = mapr.name + "~" + sAB.name + "~" + fBC.name;
+function map(sAB, fBC){
+	// map :: source a b -> (b -> c) -> source a c
+	let name = map.name + "~" + sAB.name + "~" + fBC.name;
 	let named = {
 		[name]: function(sink, ...a){
 			let b = pullpush(sink, sAB, ...a);
@@ -555,9 +558,9 @@ function mapper(sAB, sBC){
 	};
 	return named[name];
 }
-function apl(sAfBC, sCD, ...a){ //todo rename "preap"
+function preap(sAfBC, sCD, ...a){
 	// apl :: source a (b -> c) -> source c d -> source b d
-	let name = apl.name + "~" + sAfBC.name + "~" + sCD.name;
+	let name = preap.name + "~" + sAfBC.name + "~" + sCD.name;
 	let name1 = sAfBC.name; 
 	let name2 = sCD.name !== sAfBC.name? sCD.name: "apl" + sCD.name; 
 	let named = {
@@ -570,11 +573,11 @@ function apl(sAfBC, sCD, ...a){ //todo rename "preap"
 	};
 	return named[name];
 }
-function apr(sAB, sCfBD, ...c){ //todo rename "ap"
-	// apr :: source a b -> source c (b -> d) -> source b d
-	let name = apr.name + "~" + sAB.name + "~" + sCfBD.name;
+function ap(sAB, sCfBD, ...c){
+	// ap :: source a b -> source c (b -> d) -> source b d
+	let name = ap.name + "~" + sAB.name + "~" + sCfBD.name;
 	let name1 = sAB.name; 
-	let name2 = sCfBD.name !== sAB.name? sCfBD.name: "apr" + sCfBD.name; 
+	let name2 = sCfBD.name !== sAB.name? sCfBD.name: ap.name + sCfBD.name; 
 	let named = {
 		[name]: function(sink, ...a){
 			let b = pullpush(sink(name1), sAB, ...a);

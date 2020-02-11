@@ -41,11 +41,11 @@
 <input id="sink19" readonly/> implicit sink id<br/>
 <input id="sink20" readonly/> warning 1<br/>
 <input id="sink21" readonly/> immutable sink argument<br/>
-<input id="sink22" readonly/> map double on timer<br/>
+<input id="sink22" readonly/> premap double on timer<br/>
 <input id="sink23" readonly/> input11 identity<br/>
 <input id="sink24" readonly/> input11 unit<br/>
-<input id="sink25" readonly/> apl double on timer<br/>
-<input id="sink26" readonly/> apr double on timer<br/>
+<input id="sink25" readonly/> preap double on timer<br/>
+<input id="sink26" readonly/> ap double on timer<br/>
 <input id="sink27" readonly/> step every second<br/>
 <input id="sink28" readonly/> step time every second<br/>
 <input id="sink29" readonly/> step double time every other second<br/>
@@ -96,6 +96,7 @@
 <input id="sink74" readonly/> chronicler of 8th, 9th and 10th fibonacci numbers with their relative time of computation <br/>
 <input id="sink75" readonly/> fibonacci series clipped (4-7) with decay: "", 8, 13, 21, "done" <br/>
 <input id="sink76" readonly/> fibonacci series clipped (4-7) with decay: "", 8, 13, 21, "" <br/>
+<input id="sink77" readonly/> fibonacci series clipped (4-7) and mapped: "out of bound", 8, 13, 21, "out of bound" <br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
@@ -161,7 +162,7 @@ function sink21(sink){
 	document.getElementById("sink21").value = pullpush(sink, immutability21);
 }
 function sink22(sink){
-	document.getElementById("sink22").value = pullpush(sink, mapl22, 1000); 
+	document.getElementById("sink22").value = pullpush(sink, premap22, 1000); 
 }
 function sink23(sink){
 	document.getElementById("sink23").value = pullpush(sink, identity, pullpush(sink, input("input11"))); 
@@ -179,13 +180,13 @@ function sink24(sink){
 	document.getElementById("sink24").value = pullpush(sink, unit(source));
 }
 function sink25(sink){
-	document.getElementById("sink25").value = pullpush(sink, apl25, 1000); 
+	document.getElementById("sink25").value = pullpush(sink, preap25, 1000); 
 }
 function sink26(sink){
-	document.getElementById("sink26").value = pullpush(sink, apr26, 1000);
+	document.getElementById("sink26").value = pullpush(sink, ap26, 1000);
 }
 function sink26(sink){
-	document.getElementById("sink26").value = pullpush(sink, apr26, 1000);
+	document.getElementById("sink26").value = pullpush(sink, ap26, 1000);
 }
 function sink27(sink){
 	document.getElementById("sink27").value = pullpush(sink, counter, 1000);
@@ -337,6 +338,9 @@ function sink75(sink){
 function sink76(sink){
 	document.getElementById("sink76").value = pullpush(sink, clipper(4, 7, reduce(counter, (value1, value2) => value1 + value2, 0, 1), true), 1000) || "";
 }
+function sink77(sink){
+	document.getElementById("sink77").value = pullpush(sink, map(clipper(4, 7, reduce(counter, (value1, value2) => value1 + value2, 0, 1), true), value => value === undefined? "out of bound": value), 1000);
+}
 function insert1(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
 }
@@ -458,19 +462,19 @@ function immutability21(sink){
 	pullpush(sink, counter, 1000, 0, 10);
 	return "success: sink is immutable"
 }
-let mapl22 = mapl(x => 2 * x, timer);
+let premap22 = premap(x => 2 * x, timer);
 let double = function double(x){
 	return 2 * x;
 }
 let double25 = function(sink){
 	return double;
 }
-let apl25 = apl(double25, timer);
+let preap25 = preap(double25, timer);
 let double26 = function(sink){
 	return double;
 }
-let apl26 = apl(double26, timer);
-let apr26 = apr(timer, double26);
+let preap26 = preap(double26, timer);
+let ap26 = ap(timer, double26);
 function steptime28(sink, delay){
 	let time = pullpush.time(sink);
 	pullpush(sink, counter, delay);
@@ -896,6 +900,7 @@ pullpush(sink, sink73);
 pullpush(sink, sink74);
 pullpush(sink, sink75);
 pullpush(sink, sink76);
+pullpush(sink, sink77);
 </script>
 </body>
 </html>
