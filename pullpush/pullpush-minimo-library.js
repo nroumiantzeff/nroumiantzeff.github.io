@@ -198,14 +198,14 @@ function nth(n, source){
 	};
 	return named[name];
 }
-let once = supercomposition(superapposition(namer, "once", ""), superpreposition(times, 1)); //todo move to test or reimplement with simpler name
-function times(n, source, decay, ...decayArgs){
+let once = supercomposition(superapposition(namer, "once", ""), superpreposition(limiter, 1)); //todo move to test or reimplement with simpler name
+function limiter(n, source, decay, ...decayArgs){
 	let values = 0;
 	let value = {}; // nonce
-	let name = times.name + "~" + n + "~" + source.name + (typeof decay === "function"? "~" + decay.name: (decay || "~"));
+	let name = limiter.name + "~" + n + "~" + source.name + (typeof decay === "function"? "~" + decay.name: (decay || "~"));
 	let named = {
 		[name]: function(sink, ...args){
-			pullpush(sink("times"), false); // declaration to not keep unused source
+			pullpush(sink(limiter.name), false); // declaration to not keep unused source
 			if(n > 0){
 				if(values >= n){
 					if(typeof decay === "function"){
@@ -216,7 +216,7 @@ function times(n, source, decay, ...decayArgs){
 					}
 					return value;
 				}
-				let current = pullpush(sink("times"), source, ...args);
+				let current = pullpush(sink(limiter.name), source, ...args);
 				if(current !== value){
 					values++;
 					value = current;
@@ -350,7 +350,7 @@ function filterer(source1, source2, ...args2){
 				value = current;
 				values++;
 			}
-			if(pullpush(sink("filter"), source2, current, values, ...args2)){
+			if(pullpush(sink(filterer.name), source2, current, values, ...args2)){
 				last = current;
 				return current;
 			}
@@ -383,15 +383,15 @@ function reducer(source1, source2, ...accumulators){
 	let values = accumulators.slice();
 	let index = 0;
 	let last = {}; // nonce
-	let name = reduce.name + (accumulators.length === 1? "": accumulators.length) + "~" + source1.name + "~" + source2.name;
+	let name = reducer.name + (accumulators.length === 1? "": accumulators.length) + "~" + source1.name + "~" + source2.name;
 	let named = {
 		[name]: function(sink, ...args){
-			let current = pullpush(sink("deduced"), source1, ...args);
+			let current = pullpush(sink("reduced"), source1, ...args);
 			if(current !== last){
 				last = current;
 				index++;
 			}
-			let value = pullpush(sink("deducer"), source2, ...values, current, index);
+			let value = pullpush(sink(reducer.name), source2, ...values, current, index);
 			values.push(value);
 			values.shift();
 			return value;
@@ -423,7 +423,7 @@ function inducer(source1, source2, accumulators, ...args2){
 	let values = accumulators.slice();
 	let index = 0;
 	let last = {}; // nonce
-	let name = induce.name + "~" + accumulators.length + "~" + source1.name + "~" + source2.name;
+	let name = inducer.name + "~" + accumulators.length + "~" + source1.name + "~" + source2.name;
 	let named = {
 		[name]: function(sink, ...args1){
 			let current = pullpush(sink("induced"), source1, ...args1);
@@ -431,7 +431,7 @@ function inducer(source1, source2, accumulators, ...args2){
 				last = current;
 				index++;
 			}
-			let value = pullpush(sink("inducer"), source2, values, current, index, ...args2);
+			let value = pullpush(sink(inducer.name), source2, values, current, index, ...args2);
 			values.push(value);
 			values.shift();
 			return value;
@@ -741,12 +741,12 @@ function shield(source1, source2, ...args2){
 	let name = shield.name + "~" + source1.name + "~" + source2.name;
 	let names = {
 		[name]: function(sink, ...args1){
-			pullpush(sink("handler"), false); // declaration to not keep unused source
+			pullpush(sink(shield.name), false); // declaration to not keep unused source
 			try{
-				return pullpush(sink("handled"), source1, ...args1);
+				return pullpush(sink("shielded"), source1, ...args1);
 			}
 			catch(exception){
-				return pullpush(sink("handler"), source2, exception, ...args2);
+				return pullpush(sink(shield.name), source2, exception, ...args2);
 			}
 		},
 	};
