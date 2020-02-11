@@ -21,19 +21,6 @@ let counter = (function(){
 			(steps);
 	};
 })();
-let series = (function(){ //todo remove (use "reduce" instead) because passing an index argument other than 1 then 2, then 3... does not work 
-	function next(sink, index, f, ...args){
-		let value = f(index, pullpush.value(sink), ...args);
-		return { index, value };
-	};
-	return function series(sink, index, f, ...args){
-		let value = pullpush(sink, next, index, f, ...args).value;
-		if(Array.isArray(value)){
-			return value[value.length - 1];
-		}
-		return value;
-	};
-})();
 function timer(sink, delay, begining, end){
 	let time = pullpush.time(sink) + (begining || 0);
 	if(time > end){

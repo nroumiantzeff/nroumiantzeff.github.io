@@ -200,13 +200,13 @@ function sink30(sink){
 	document.getElementById("sink30").value = pullpush(sink, steptime30, 2000);
 }
 function sink31(sink){
-	document.getElementById("sink31").value = pullpush(sink, series31, 1000);
+	document.getElementById("sink31").value = pullpush(sink, fibonacci31, 1000);
 }
 function sink32(sink){
-	document.getElementById("sink32").value = pullpush(sink, series32, 1000);
+	document.getElementById("sink32").value = pullpush(sink, fibonacci32, 1000);
 }
 function sink33(sink){
-	document.getElementById("sink33").value = pullpush(sink, series33, 1000);
+	document.getElementById("sink33").value = pullpush(sink, fibonacci33, 1000);
 }
 function sink34(sink){
 	document.getElementById("sink34").value = pullpush(sink, warning34);
@@ -278,7 +278,7 @@ function sink56(sink){
 	document.getElementById("sink56").value = pullpush(sink, shield(eval56, error56));
 }
 function sink57(sink){
-	document.getElementById("sink57").value = pullpush(sink, series57);
+	document.getElementById("sink57").value = pullpush(sink, clipper57);
 }
 function sink58(sink){
 	document.getElementById("sink58").value = pullpush(sink, nth(0, onceuponatime58));
@@ -491,33 +491,25 @@ function steptime30(sink, delay){
 	pullpush(sink("counter"), counter, delay);
 	return time * 2;
 }
-function fibonacci(index, values, value0, value1){
-	if(index === 0){
-		return [value1, value0 + value1];
-	}
-	return [values.value[1], values.value[0] + values.value[1]];
-}
-function series31(sink, delay){
-	pullpush(sink("series"), false);  // declaration to not keep the unused source
-	pullpush(sink("counter"), false); // declaration to not keep the unused source
+function fibonacci31(sink, delay){
+	pullpush(sink, false);  // declaration to not keep the unused sources
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
-	return pullpush(sink("series"), series, pullpush(sink("counter"), counter, delay), fibonacci, 0, 1);
+	return pullpush(sink, reduce(counter, (value1, value2) => value1 + value2, 0, 1), 1000);
 }
-function series32(sink, delay){
-	pullpush(sink(counter.name), true); // declaration to keep the unused source
-	pullpush(sink(series.name), true); // declaration to keep the unused source
+function fibonacci32(sink, delay){
+	pullpush(sink, true); // declaration to keep the unused sources
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
-	return pullpush(sink(series.name), series, pullpush(sink(counter.name), counter, delay), fibonacci, 0, 1);
+	return pullpush(sink, reduce(counter, (value1, value2) => value1 + value2, 0, 1), 1000);
 }
-function series33(sink, delay){
+function fibonacci33(sink, delay){
 	let period = pullpush(sink, input("input1"));
-	return pullpush(sink, series, pullpush(sink, counter, parseInt(period) * 1000), fibonacci, 0, 1);
+	return pullpush(sink, reduce(counter, (value1, value2) => value1 + value2, 0, 1), parseInt(period) * 1000);
 }
 let warnings34 = {};
 function warning34(sink){
@@ -809,7 +801,7 @@ function fibonacci57(sink){
 	return pullpush(sink(2), local, 1, value0b + value1b);
 }
 let once57 = supercomposition(superapposition(namer, "once", ""), superpreposition(limiter, 1));
-function series57(sink){
+function clipper57(sink){
 	pullpush(sink, false); // declaration to not keep unused sources
 	let triggered30 = pullpush(sink, trigger(click("button30")));
 	let triggered31 = pullpush(sink, trigger(click("button31")));
