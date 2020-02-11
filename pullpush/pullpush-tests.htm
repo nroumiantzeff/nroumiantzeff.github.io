@@ -188,7 +188,7 @@ function sink26(sink){
 	document.getElementById("sink26").value = pullpush(sink, apr26, 1000);
 }
 function sink27(sink){
-	document.getElementById("sink27").value = pullpush(sink, stepper, 1000);
+	document.getElementById("sink27").value = pullpush(sink, counter, 1000);
 }
 function sink28(sink){
 	document.getElementById("sink28").value = pullpush(sink, steptime28, 1000);
@@ -473,22 +473,22 @@ let apl26 = apl(double26, timer);
 let apr26 = apr(timer, double26);
 function steptime28(sink, delay){
 	let time = pullpush.time(sink);
-	pullpush(sink, stepper, delay);
+	pullpush(sink, counter, delay);
 	return time;
 }
 function steptime29(sink, delay){
 	let time = pullpush.time(sink);
-	pullpush(sink, stepper, delay);
+	pullpush(sink, counter, delay);
 	return time * 2;
 }
 function steptime30(sink, delay){
-	pullpush(sink("stepper"), false); // declaration to not keep the unused source
+	pullpush(sink("counter"), false); // declaration to not keep the unused source
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
 	let time = pullpush.time(sink);
-	pullpush(sink("stepper"), stepper, delay);
+	pullpush(sink("counter"), counter, delay);
 	return time * 2;
 }
 function fibonacci(index, values, value0, value1){
@@ -499,25 +499,25 @@ function fibonacci(index, values, value0, value1){
 }
 function series31(sink, delay){
 	pullpush(sink("series"), false);  // declaration to not keep the unused source
-	pullpush(sink("stepper"), false); // declaration to not keep the unused source
+	pullpush(sink("counter"), false); // declaration to not keep the unused source
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
-	return pullpush(sink("series"), series, pullpush(sink("stepper"), stepper, delay), fibonacci, 0, 1);
+	return pullpush(sink("series"), series, pullpush(sink("counter"), counter, delay), fibonacci, 0, 1);
 }
 function series32(sink, delay){
-	pullpush(sink(stepper.name), true); // declaration to keep the unused source
+	pullpush(sink(counter.name), true); // declaration to keep the unused source
 	pullpush(sink(series.name), true); // declaration to keep the unused source
 	let value = pullpush(sink, input("input1"));
 	if(!value){
 		return "";
 	}
-	return pullpush(sink(series.name), series, pullpush(sink(stepper.name), stepper, delay), fibonacci, 0, 1);
+	return pullpush(sink(series.name), series, pullpush(sink(counter.name), counter, delay), fibonacci, 0, 1);
 }
 function series33(sink, delay){
 	let period = pullpush(sink, input("input1"));
-	return pullpush(sink, series, pullpush(sink, stepper, parseInt(period) * 1000), fibonacci, 0, 1);
+	return pullpush(sink, series, pullpush(sink, counter, parseInt(period) * 1000), fibonacci, 0, 1);
 }
 let warnings34 = {};
 function warning34(sink){

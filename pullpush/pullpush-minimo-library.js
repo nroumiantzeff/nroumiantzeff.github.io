@@ -1,23 +1,23 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 // pullpush minimo library (no interaction with the DOM)
 
-let stepper = (function(){ //todo rename "counter"
+let counter = (function(){
 	let observers = {};
-	function callback(sink, delay, begining, end){
+	function callback(sink, delay, begining, end, increment){
 		if(pullpush.registered(sink, observers)){
-			return stepper(sink, delay, begining, end);
+			return counter(sink, delay, begining, end, increment);
 		}
 		else{
 			return pullpush.value(sink);
 		}
 	};
-	return function stepper(sink, delay, begining, end){
-		let steps = pullpush.value(sink, (begining || 0) - 1) + 1;
+	return function counter(sink, delay, begining, end, increment){
+		let steps = pullpush.value(sink, (begining || 0) - 1) + (increment || 1);
 		if(delay === undefined || steps >= end){
 			return steps;
 		}
 		return (pullpush.register(sink, observers))
-			(pullpush.forcast(sink, undefined, delay, callback, delay, begining, end))
+			(pullpush.forcast(sink, undefined, delay, callback, delay, begining, end, increment))
 			(steps);
 	};
 })();
@@ -37,22 +37,13 @@ let series = (function(){ //todo remove (use "reduce" instead) because passing a
 function timer(sink, delay, begining, end){
 	let time = pullpush.time(sink) + (begining || 0);
 	if(time > end){
-		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
+		pullpush(sink(counter.name), false); // declaration to not keep the unused source
 		return pullpush.value(sink, begining || 0);
 	}
-	pullpush(sink(stepper.name), stepper, delay);
+	pullpush(sink(counter.name), counter, delay);
 	return time;
 }
-function counter(sink, delay, begining, end){ //todo remove (duplicate of "stepper")
-	let count = pullpush.value(sink, begining || 0);
-	if(count >= end){
-		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
-		return end;
-	}
-	pullpush(sink(stepper.name), stepper, delay);
-	return count + 1;
-}
-let toggle = (function(){
+let toggle = (function(){ //todo rename toggler
 	function toggle(sink, source, ...args){
 		let value = pullpush(sink, source, ...args);
 		let current = pullpush.value(sink);
