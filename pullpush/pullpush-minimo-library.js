@@ -198,7 +198,6 @@ function nth(n, source){
 	};
 	return named[name];
 }
-let once = supercomposition(superapposition(namer, "once", ""), superpreposition(limiter, 1)); //todo move to test or reimplement with simpler name
 function limiter(n, source, decay, ...decayArgs){
 	let values = 0;
 	let value = {}; // nonce

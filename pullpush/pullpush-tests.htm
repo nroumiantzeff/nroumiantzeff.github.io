@@ -808,6 +808,7 @@ function fibonacci57(sink){
 	let value0b = pullpush(sink(0), local, 0);
 	return pullpush(sink(2), local, 1, value0b + value1b);
 }
+let once57 = supercomposition(superapposition(namer, "once", ""), superpreposition(limiter, 1));
 function series57(sink){
 	pullpush(sink, false); // declaration to not keep unused sources
 	let triggered30 = pullpush(sink, trigger(click("button30")));
@@ -821,7 +822,7 @@ function series57(sink){
 	let triggered38 = pullpush(sink, trigger(click("button38")));
 	let triggered39 = pullpush(sink, trigger(click("button39")));
 	let triggered40 = pullpush(sink, trigger(click("button40")));
-	let source = pullpush(sink, local, undefined, triggered30 && limiter(0, fibonacci57) || triggered31 && once(fibonacci57) || triggered32 && limiter(2, fibonacci57) || triggered33 && limiter(3, fibonacci57) || triggered34 && limiter(4, fibonacci57) || triggered35 && nth(1, fibonacci57) || triggered36 && nth(2, fibonacci57) || triggered37 && nth(3, fibonacci57) || triggered38 && nth(4, fibonacci57) || triggered39 && clipper(4, 7, fibonacci57) || triggered40 && skipper(7, fibonacci57) || undefined);
+	let source = pullpush(sink, local, undefined, triggered30 && limiter(0, fibonacci57) || triggered31 && once57(fibonacci57) || triggered32 && limiter(2, fibonacci57) || triggered33 && limiter(3, fibonacci57) || triggered34 && limiter(4, fibonacci57) || triggered35 && nth(1, fibonacci57) || triggered36 && nth(2, fibonacci57) || triggered37 && nth(3, fibonacci57) || triggered38 && nth(4, fibonacci57) || triggered39 && clipper(4, 7, fibonacci57) || triggered40 && skipper(7, fibonacci57) || undefined);
 	return source && pullpush(sink, source) || "";
 }
 function onceuponatime58(sink){
