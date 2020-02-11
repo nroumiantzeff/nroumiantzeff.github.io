@@ -198,19 +198,25 @@ function nth(n, source){
 	};
 	return named[name];
 }
-let once = supercomposition(superapposition(namer, "once", ""), superpreposition(times, 1)); //todo move to test or reemplement with simpler name
-function times(n, source){
+let once = supercomposition(superapposition(namer, "once", ""), superpreposition(times, 1)); //todo move to test or reimplement with simpler name
+function times(n, source, decay, ...decayArgs){
 	let values = 0;
 	let value = {}; // nonce
-	let name = times.name + "~" + n + "~" + source.name;
+	let name = times.name + "~" + n + "~" + source.name + (typeof decay === "function"? "~" + decay.name: (decay || "~"));
 	let named = {
 		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
+			pullpush(sink("times"), false); // declaration to not keep unused source
 			if(n > 0){
 				if(values >= n){
+					if(typeof decay === "function"){
+						return pullpush(sink("decay"), decay, ...decayArgs);
+					}
+					if(decay){
+						return;
+					}
 					return value;
 				}
-				let current = pullpush(sink, source, ...args);
+				let current = pullpush(sink("times"), source, ...args);
 				if(current !== value){
 					values++;
 					value = current;
@@ -221,18 +227,24 @@ function times(n, source){
 	};
 	return named[name];
 }
-function clipper(n, m, source){
+function clipper(n, m, source, decay, ...decayArgs){
 	let values = 0;
 	let value = {}; // nonce
-	let name = clipper.name + "~" + n + "~" + m + "~" + source.name;
+	let name = clipper.name + "~" + n + "~" + m + "~" + source.name + (typeof decay === "function"? "~" + decay.name: (decay || "~"));
 	let named = {
 		[name]: function(sink, ...args){
-			pullpush(sink, false); // declaration to not keep unused sources
+			pullpush(sink("clipped"), false); // declaration to not keep unused source
 			if(m > 0 && m >= n){
 				if(values >= m){
+					if(typeof decay === "function"){
+						return pullpush(sink("decay"), decay, ...decayArgs);
+					}
+					if(decay){
+						return;
+					}
 					return value;
 				}
-				let current = pullpush(sink, source, ...args);
+				let current = pullpush(sink("clipped"), source, ...args);
 				if(current !== value){
 					value = current;
 					values++;
