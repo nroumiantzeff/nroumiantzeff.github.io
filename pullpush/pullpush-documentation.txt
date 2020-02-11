@@ -87,7 +87,7 @@ List of functions available from pullpush.js to build libraries and frameworks:
 List of functions currently provided by the minimo library:
 - counter: a source which counts with the specified delay
 - timer: a source which value is the (relative) time
-- toggle: a source which value toggles between false and true each time the specified source value changes
+- toggler: a source which value toggles between false and true each time the specified source value changes
 - trigger: a source which value is true when the specified source value changes and false afterwards
 - switcher: a source which value is true when the specified source value changes and false after a specified delay
 - lagger: a source which value is the value of the specified source with a lag of the specified delay
@@ -116,11 +116,11 @@ List of functions currently provided by the minimo library:
 - curry: a source with the last argument value fixed // curry :: source (a b) c -> a -> source b (source (a b) c)
 - identity: a source which value is the first argument // identity :: source a a
 - unit: defines a source with a constant value // unit :: a -> source () a
-- apl: applies a source to a function // apl :: source a (b -> c) -> source c d -> source b d
-- apr: applies a function to a source // apr :: source a b -> source c (b -> d) -> source b d
-- mapl: maps a source to a function // mapl :: (a -> b) -> source b c -> source a c
-- mapr: maps a function to a source // mapr :: source a b -> (b -> c) -> source a c
-- map: maps a source to a source // map :: source a b -> source b c -> source a c
+- ap: applies a source to a source // ap :: source a b -> source c (b -> d) -> source b d
+- preap: applies a source to a function // preap :: source a (b -> c) -> source c d -> source b d
+- map: maps a function to a source // map :: source a b -> (b -> c) -> source a c
+- premap: maps a source to a function // premap :: (a -> b) -> source b c -> source a c
+- mapper: maps a source to a source // mapper :: source a b -> source b c -> source a c
 - filter: defines a fitered source from a source and a filter function // filter :: source a b -> (b -> boolean) -> source a b
 - filterer: defines a fitered source from a source and a filter source // filterer :: source a b -> (source b boolean) -> source a b
 - reduce: defines a source with values equal to the reduction of a source by a reducer function (with optionaly several accumulators) // reduce :: source a b -> (c -> ... -> c -> b -> c) -> c -> source a c

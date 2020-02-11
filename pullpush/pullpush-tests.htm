@@ -592,7 +592,7 @@ function clicks38(sink){
 	return pullpush(sink, switcher(click("button12"), 500));
 }
 function style39(sink){
-	let disable = pullpush(sink, toggle(click("button12")));
+	let disable = pullpush(sink, toggler(click("button12")));
 	return pullpush(sink, disabled("style13"), disable, 0);
 }
 function style40(sink){

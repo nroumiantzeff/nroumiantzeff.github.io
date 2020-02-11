@@ -43,23 +43,23 @@ function timer(sink, delay, begining, end){
 	pullpush(sink(counter.name), counter, delay);
 	return time;
 }
-let toggle = (function(){ //todo rename toggler
-	function toggle(sink, source, ...args){
+let toggler = (function(){
+	function toggler(sink, source, ...args){
 		let value = pullpush(sink, source, ...args);
 		let current = pullpush.value(sink);
 		if(current === undefined){
-			return { toggle: false, value };
+			return { toggler: false, value };
 		}
 		if(value === current.value){
 			return current;
 		}
-		return { toggle: !current.toggle, value };
+		return { toggler: !current.toggler, value };
 	}
 	return function(source, ...args){
-		let name = toggle.name + "~" + source.name;
+		let name = toggler.name + "~" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
-				return pullpush(sink, toggle, source, ...args).toggle;
+				return pullpush(sink, toggler, source, ...args).toggler;
 			},
 		};
 		return named[name];
