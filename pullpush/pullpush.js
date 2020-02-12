@@ -174,14 +174,10 @@ let pullpush = (function(){
 	}
 	function event(event, observers, value){
 		// observers is an object (maybe a static function) registered using pullpush.register (a keys is a sink index and the associated value is the corresponding sink)
+		$tick();
 		if(!(event instanceof Event)){
 			$warning('3: invalid event argument in pullpush.event call');
 		}
-		if($tick()){
-			// new javascript event queue tick: synchronous handling is OK
-			return $eventCallback(event, observers, value);
-		}
-		// same javascript event queue tick: asynchronous handling is necessary
 		setTimeout($eventCallback, 0, event, observers, value);
 		return value;
 	}
