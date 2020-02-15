@@ -114,7 +114,7 @@ function sink5(sink){
 	document.getElementById("sink5").value = pullpush(sink, fork, pullpush(sink("input2"), input("input2"))? true: false);
 }
 function sink6(sink){
-	document.getElementById("sink6").value = pullpush(sink, merge); 
+	document.getElementById("sink6").value = pullpush(sink, merge6); 
 }
 function sink7(sink){
 	document.getElementById("sink7").value = pullpush(sink, query7); 
@@ -144,7 +144,7 @@ function sink15(sink){
 	document.getElementById("sink15").value = pullpush(sink, timer, 2000, 10000000, 10009999); 
 }
 function sink16(sink){
-	document.getElementById("sink16").value = pullpush(sink, any16);
+	document.getElementById("sink16").value = pullpush(sink, merge16);
 }
 function sink17(sink){
 	document.getElementById("sink17").value = pullpush(sink, each17);
@@ -291,13 +291,13 @@ function sink60(sink){
 	document.getElementById("sink60").value = pullpush(sink, nth(2, onceuponatime58));
 }
 function sink61(sink){
-	document.getElementById("sink61").value = pullpush(sink, limiter(0, onceuponatime58));
+	document.getElementById("sink61").value = pullpush(sink, sustainer(0, onceuponatime58));
 }
 function sink62(sink){
-	document.getElementById("sink62").value = pullpush(sink, limiter(1, onceuponatime58));
+	document.getElementById("sink62").value = pullpush(sink, sustainer(1, onceuponatime58));
 }
 function sink63(sink){
-	document.getElementById("sink63").value = pullpush(sink, limiter(2, onceuponatime58));
+	document.getElementById("sink63").value = pullpush(sink, sustainer(2, onceuponatime58));
 }
 function sink64(sink){
 	document.getElementById("sink64").value = pullpush(sink, clipper(0, 0, onceuponatime58));
@@ -327,10 +327,10 @@ function sink72(sink){
 	document.getElementById("sink72").value = pullpush(sink, reduce(counter, (value1, value2) => value1 + value2, 0, 1), 1000);
 }
 function sink73(sink){
-	document.getElementById("sink73").value = pullpush(sink, limiter(10, tracker(3, reduce(counter, (value1, value2) => value1 + value2, 0, 1))), 1000);
+	document.getElementById("sink73").value = pullpush(sink, sustainer(10, tracker(3, reduce(counter, (value1, value2) => value1 + value2, 0, 1))), 1000);
 }
 function sink74(sink){
-	document.getElementById("sink74").value = pullpush(sink, limiter(10, chonicler(3, reduce(counter, (value1, value2) => value1 + value2, 0, 1))), 1000);
+	document.getElementById("sink74").value = pullpush(sink, sustainer(10, chonicler(3, reduce(counter, (value1, value2) => value1 + value2, 0, 1))), 1000);
 }
 function sink75(sink){
 	document.getElementById("sink75").value = pullpush(sink, clipper(4, 7, reduce(counter, (value1, value2) => value1 + value2, 0, 1), unit(() => "done")), 1000) || "";
@@ -352,7 +352,7 @@ function fork(sink, condition){
 	pullpush(sink("input5"), true); // declaration to keep the unused source
 	return condition? pullpush(sink("input4"), input("input4")): pullpush(sink("input5"), input("input5"));
 }
-function merge(sink, condition){
+function merge6(sink, condition){
 	return pullpush(sink("test1"), insert1, "-test1-") + pullpush(sink, insert1, "-test2-");
 }
 function message7(sink, table, filter){
@@ -412,9 +412,9 @@ function divide10(sink){
 	}
 	return value;
 }
-let any1011 = any([input("input10"), input("input11")]);
-function any16(sink){
-	return pullpush(sink, any1011);
+let merge1011 = merge([input("input10"), input("input11")]);
+function merge16(sink){
+	return pullpush(sink, merge1011);
 }
 let eachValues17 = each([input("input10"), input("input11")]);
 function each17(sink){
@@ -748,7 +748,7 @@ function error49(sink){
 function img50(sink){
 	let clicks = pullpush(sink, click("button20")) % 4;
 	pullpush(sink, src("img21"), clicks === 0? "pullpush-tests-img21a.png": clicks === 1? "pullpush-tests-img21x.png": clicks === 2? "pullpush-tests-img21b.png": "pullpush-tests-img21y.png");
-	return pullpush(sink, any([load("img21"), error("img21")])) || "";
+	return pullpush(sink, merge([load("img21"), error("img21")])) || "";
 }
 function lagger51(sink){
 	return pullpush(sink, lagger(click("button22"), 3000)) || "";
@@ -804,7 +804,7 @@ function fibonacci57(sink){
 	let value0b = pullpush(sink(0), local, 0);
 	return pullpush(sink(2), local, 1, value0b + value1b);
 }
-let once57 = supercomposition(superapposition(namer, "once", ""), superpreposition(limiter, 1));
+let once57 = supercomposition(superapposition(namer, "once", ""), superpreposition(sustainer, 1));
 function clipper57(sink){
 	pullpush(sink, false); // declaration to not keep unused sources
 	let triggered30 = pullpush(sink, trigger(click("button30")));
@@ -818,7 +818,7 @@ function clipper57(sink){
 	let triggered38 = pullpush(sink, trigger(click("button38")));
 	let triggered39 = pullpush(sink, trigger(click("button39")));
 	let triggered40 = pullpush(sink, trigger(click("button40")));
-	let source = pullpush(sink, local, undefined, triggered30 && limiter(0, fibonacci57) || triggered31 && once57(fibonacci57) || triggered32 && limiter(2, fibonacci57) || triggered33 && limiter(3, fibonacci57) || triggered34 && limiter(4, fibonacci57) || triggered35 && nth(1, fibonacci57) || triggered36 && nth(2, fibonacci57) || triggered37 && nth(3, fibonacci57) || triggered38 && nth(4, fibonacci57) || triggered39 && clipper(4, 7, fibonacci57) || triggered40 && skipper(7, fibonacci57) || undefined);
+	let source = pullpush(sink, local, undefined, triggered30 && sustainer(0, fibonacci57) || triggered31 && once57(fibonacci57) || triggered32 && sustainer(2, fibonacci57) || triggered33 && sustainer(3, fibonacci57) || triggered34 && sustainer(4, fibonacci57) || triggered35 && nth(1, fibonacci57) || triggered36 && nth(2, fibonacci57) || triggered37 && nth(3, fibonacci57) || triggered38 && nth(4, fibonacci57) || triggered39 && clipper(4, 7, fibonacci57) || triggered40 && skipper(7, fibonacci57) || undefined);
 	return source && pullpush(sink, source) || "";
 }
 function onceuponatime58(sink){

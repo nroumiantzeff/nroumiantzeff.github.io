@@ -176,13 +176,13 @@ function nth(n, source){
 	};
 	return named[name];
 }
-function limiter(n, source, decay, ...decayArgs){
+function sustainer(n, source, decay, ...decayArgs){
 	let values = 0;
 	let value = {}; // nonce
-	let name = limiter.name + "~" + n + "~" + source.name + (typeof decay === "function"? "~" + decay.name: (decay || "~"));
+	let name = sustainer.name + "~" + n + "~" + source.name + (typeof decay === "function"? "~" + decay.name: (decay || "~"));
 	let named = {
 		[name]: function(sink, ...args){
-			pullpush(sink(limiter.name), false); // declaration to not keep unused source
+			pullpush(sink(sustainer.name), false); // declaration to not keep unused source
 			if(n > 0){
 				if(values >= n){
 					if(typeof decay === "function"){
@@ -193,7 +193,7 @@ function limiter(n, source, decay, ...decayArgs){
 					}
 					return value;
 				}
-				let current = pullpush(sink(limiter.name), source, ...args);
+				let current = pullpush(sink(sustainer.name), source, ...args);
 				if(current !== value){
 					values++;
 					value = current;
@@ -272,6 +272,27 @@ function tracker(n, source){
 	};
 	return named[name];
 }
+function sequencer(n, source){
+	let values = [];
+	let value = {}; // nonce
+	let name = sequencer.name + "~" + n + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== value){
+				value = current;
+				let sequence = pullpush.sequence(sink);
+				values = values.slice();
+				values.push([sequence, current]);
+				if(values.length > n){
+					delete values[values.length - n - 1];
+				}
+			}
+			return values;
+		},
+	};
+	return named[name];
+}
 function chonicler(n, source){
 	let values = [];
 	let value = {}; // nonce
@@ -293,9 +314,9 @@ function chonicler(n, source){
 	};
 	return named[name];
 }
-//todo mixer
-//todo appender?
-//todo duplicator? (using pullpush.broadcast?)
+//todo mixer? (using map)
+//todo appender? (using sustainer)
+//todo duplicator? (using global or share)
 //todo sampler? (array of values for given times with the last n elements)
 function filter(source, f){
 	let last;
@@ -419,9 +440,9 @@ function inducer(source1, source2, accumulators, ...args2){
 	};
 	return named[name];
 }
-function any(...sources){
+function merge(...sources){
 	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
-	let name = any.name + "~" + array.map(source => source.name).join("~");
+	let name = merge.name + "~" + array.map(source => source.name).join("~");
 	let named = {
 		[name]: function(sink, ...args){
 			if(array.length > 0){
@@ -434,6 +455,21 @@ function any(...sources){
 					return pullpush.sequence(item1.sink, item2.sink);
 				});
 				return values[values.length - 1].value;
+			}
+		},
+	};
+	return named[name];
+}
+function any(...sources){
+	let array = (sources.length === 1 && typeof sources[0] !== "function")? sources[0]: sources;
+	let name = any.name + "~" + array.map(source => source.name).join("~");
+	let named = {
+		[name]: function(sink, ...args){
+			if(array.length > 0){
+				let values = array.map(function(source, index){
+					let value = pullpush(sink(index), source, ...args);
+				});
+				return values;
 			}
 		},
 	};

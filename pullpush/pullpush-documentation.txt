@@ -92,16 +92,19 @@ List of functions currently provided by the minimo library:
 - switcher: a source which value is true when the specified source value changes and false after a specified delay
 - lagger: a source which value is the value of the specified source with a lag of the specified delay
 - nth: a source which value is the nth value of the specified source
-- limiter: a source which value is the value of the specified source taking into the first values only
+- sustainer: a source which value is the value of the specified source taking into account the first values only
 - skipper: a source which value is the value of the specified source skipping the first values
 - clipper: a source which value is the value of the specified source skipping the first values and ignoring the last values
-- tracker: a source which value an array containing the value of the specified source (deleting the first values from the array) 
+- tracker: a source which value is an array containing the value of the specified source (deleting the first values from the array)
+- chronicler: a source which value is an array containing the value of the specified source and corresponding time (deleting the first values from the array)
+- sequencer: a source which value is an array containing the value of the specified source and a sequence number (deleting the first values from the array)
 - namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sink)
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
 - global: a source which value is specified globaly (the source is accessed by specifying an id)
-- any: a source which value is the the latest value among the specified sources
-- each: a source whitch value changes when all the specified sources value have changed
+- merge: a source which value is the the latest value among the specified sources
+- any: a source which value is an array of the the latest values of the specified sources when any specified source has changed
+- each: a source whitch value is an array of the latest values of the specified sources when each sepcified source has changed
 - series: a source which value is the sum of n previous values
 - reverse: defines a source from a source with reversed arguments (except the sink argument)
 - shuffle: defines a source from a source and a function which suffles the source arguments (except the sink argument)
