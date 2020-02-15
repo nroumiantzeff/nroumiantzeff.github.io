@@ -26,12 +26,16 @@ What is pullpush.js and what it is not:
 - pullpush.js is not about async vs callbacks, you program as sources where synchronous although they are typically asynchronous
 - pullpush.js is not radioactive.js, although the approach is the closest you can find on the net when searching for Functional Reactive Programming, the implementation and formalism are quite different
 
-function pullpush(sink, source, ...args): connects a source to a sink
+Basic usage:
+function pullpush(sink, source, ...args): defines a reactive value
 - sink: a sink typically provided by the framework or by the source caller
-	it is a function that you may call with an id as single argument to explicitely generate a sub-sink (note that most of the time pullpush automatically generates sub-sinks)
-- source: implements a source typically provided by the framework or implemented as part of the application
-	it is a function taking a sink as first argument and the spread args as other arguments
-	alternatively, the source argument may be of a type other than "function" for declaration purpose, in that case it is converted to boolean (true/false to allow/prevent the automatic deletion of the corresponding sub-sink in case it is not used during the current javascript event queue tick)
+- source: function implementing the source
+	the function is either provided by the framework or implemented as part of the application
+	the source function takes a sink as first argument and the spread args as other arguments
+	the source function may use other reactive values in its implementation
+	the source function returns a value (any javascript value) 
+	the source function must be pure in the functional sense (notably contextual transparency)
+	the source function may be specified using source combinators (implemented by a library or by the application)
 
 Example:
 	function functionalReactiveFibonacci(sink){
@@ -69,6 +73,13 @@ Example:
 			document.getElementById("v3").value = v2 + v3;
 		}
 	}
+
+Advance usges:
+function pullpush(sink(id), source, ...args): defines a reactive value using an explicite sub-sink with the specified id 
+function pullpush(sink, true): declaration to keep sub-sinks even in case they are not used during the current javascript event queue tick 
+function pullpush(sink, false): declaration to reclaim sub-sinks that are not used during the current javascript event queue tick 
+function pullpush(sink(id), true): declaration to keep the explicit sub-sink with the specified id even in case it is not used during the current javascript event queue tick 
+function pullpush(sink(id), false): declaration to reclaimthe explicit sub-sinkwith the specified id in case it is not used during the current javascript event queue tick 
 
 List of functions available from pullpush.js to build libraries and frameworks:
 - pullpush.sink(): the top level sink

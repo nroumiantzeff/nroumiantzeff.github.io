@@ -152,6 +152,50 @@ function local(sink, initial, value, delay){
 let global = function(id){
 	return share(id, local);
 };
+function counter(source, begining, end, increment){
+	let count = begining || 0;
+	let value = {}; // nonce
+	let name = counter.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			pullpush(sink, false); // declaration to not keep unused sources
+			if(end > 0){
+				if (count + increment > end){
+					return count;
+				}
+			}
+			else if(end < 0){
+				if (count + increment < end){
+					return count;
+				}
+			}
+			let current = pullpush(sink, source, ...args);
+			let result = count;
+			if(current !== value){
+				value = current;
+				count += increment || 1;
+			}
+			return result;
+		},
+	};
+	return named[name];
+}
+function stamper(source){
+	let time;
+	let value = {}; // nonce
+	let name = stamper.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let current = pullpush(sink, source, ...args);
+			if(current !== value){
+				value = current;
+				time = pullpush.time(sink);
+			}
+			return time;
+		},
+	};
+	return named[name];
+}
 function nth(n, source){
 	let values = 0;
 	let value = {}; // nonce
