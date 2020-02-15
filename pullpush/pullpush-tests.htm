@@ -97,7 +97,7 @@
 <input id="sink75" readonly/> fibonacci series clipped (4-7) with decay: "", 8, 13, 21, "done" <br/>
 <input id="sink76" readonly/> fibonacci series clipped (4-7) with decay: "", 8, 13, 21, "" <br/>
 <input id="sink77" readonly/> fibonacci series clipped (4-7) and mapped: "out of bound", 8, 13, 21, "out of bound" <br/>
-<input id="sink78" readonly/> multiple-clicks (300 milliseconds) <input id="button41" value="click multiple-times" type="button"/> <br/>
+<input id="sink78" readonly/> triple-clicks (300 milliseconds max between clicks) <input id="button41" value="click multiple-times" type="button"/> <br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
@@ -343,7 +343,7 @@ function sink77(sink){
 	document.getElementById("sink77").value = pullpush(sink, map(clipper(4, 7, reduce(counter, (value1, value2) => value1 + value2, 0, 1), true), value => value === undefined? "out of bound": value), 1000);
 }
 function sink78(sink){
-	document.getElementById("sink78").value = pullpush(sink, map(reduce(chonicler(1, click("button41")), reduce78, [-Infinity, 0]), value => value[1]));
+	document.getElementById("sink78").value = pullpush(sink, map(reduce(chonicler(1, click("button41")), tripleClick78, [-Infinity, 0, 0]), value => value[1]));
 }
 function insert1(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -828,18 +828,18 @@ function clipper57(sink){
 function onceuponatime58(sink){
 	return "once upon a time";
 }
-function reduce78(value, current){
+function tripleClick78(value, current){
 	let currentTime = current[current.length - 1][0];
 	let valueTime = value[0];
 	if(currentTime < valueTime + 300){
-		if(value[2]){
-			return [currentTime, value[1], true];
+		if(value[2] + 1 === 3){
+			return [currentTime, value[1] + 1, value[2] + 1];
 		}
 		else{
-			return [currentTime, value[1] + 1, true];
+			return [currentTime, value[1], value[2] + 1];
 		}
 	}
-	return [currentTime, value[1]];
+	return [currentTime, value[1], current.length === 1? 0: 1];
 }
 pullpush(sink, sink1);
 pullpush(sink, sink2);
