@@ -330,7 +330,7 @@ function filter(source, f){
 				value = current;
 				values++;
 			}
-			if(f(current, values)){
+			if(f(current, values - 1)){
 				last = current;
 				return current;
 			}
