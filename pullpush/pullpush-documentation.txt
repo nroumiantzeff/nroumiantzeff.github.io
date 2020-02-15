@@ -85,12 +85,14 @@ List of functions available from pullpush.js to build libraries and frameworks:
 - pullpush.onwarning(handler): specifies a handler to deal with warnings for debug purpose
 
 List of functions currently provided by the minimo library:
-- counter: a source which counts with the specified delay
-- timer: a source which value is the (relative) time
+- stepper: a source which increments itself at the specified interval
+- timer: a source which value is the (relative) at the specified interval
 - toggler: a source which value toggles between false and true each time the specified source value changes
 - trigger: a source which value is true when the specified source value changes and false afterwards
 - switcher: a source which value is true when the specified source value changes and false after a specified delay
 - lagger: a source which value is the value of the specified source with a lag of the specified delay
+- counter: a source which increments itself at each value of the specified source
+- stamper: a source which value is the time at each value of the specified source
 - nth: a source which value is the nth value of the specified source
 - sustainer: a source which value is the value of the specified source taking into account the first values only
 - skipper: a source which value is the value of the specified source skipping the first values

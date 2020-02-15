@@ -1,17 +1,17 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 // pullpush minimo library (no interaction with the DOM)
 
-let counter = (function(){
+let stepper = (function(){
 	let observers = {};
 	function callback(sink, delay, begining, end, increment){
 		if(pullpush.registered(sink, observers)){
-			return counter(sink, delay, begining, end, increment);
+			return stepper(sink, delay, begining, end, increment);
 		}
 		else{
 			return pullpush.value(sink);
 		}
 	};
-	return function counter(sink, delay, begining, end, increment){
+	return function stepper(sink, delay, begining, end, increment){
 		let steps = pullpush.value(sink, (begining || 0) - 1) + (increment || 1);
 		if(delay === undefined || steps >= end){
 			return steps;
@@ -24,10 +24,10 @@ let counter = (function(){
 function timer(sink, delay, begining, end){
 	let time = pullpush.time(sink) + (begining || 0);
 	if(time > end){
-		pullpush(sink(counter.name), false); // declaration to not keep the unused source
+		pullpush(sink(stepper.name), false); // declaration to not keep the unused source
 		return pullpush.value(sink, begining || 0);
 	}
-	pullpush(sink(counter.name), counter, delay);
+	pullpush(sink(stepper.name), stepper, delay);
 	return time;
 }
 let toggler = (function(){
@@ -314,6 +314,7 @@ function chonicler(n, source){
 	};
 	return named[name];
 }
+//todo compressor (like throttle)
 //todo mixer? (using map)
 //todo appender? (using sustainer)
 //todo duplicator? (using global or share)
