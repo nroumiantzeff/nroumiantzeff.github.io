@@ -18,7 +18,7 @@ What is pullpush.js and what it is not:
 - pullpush.js is not about procedural vs functional programming, as pullpush.js supports both although its intends to promote pure functional programming
 - pullpush.js is not about category theory but libraries build on top of pullpush.js also provide higher-order functions which combine functions (sources) in a "point-less" way independent on function arguments (notably the sink) and function returned value (source value)
 - pullpush.js is not a type system but comments with source argument and value types are recommanded has they help reasoning when combining sources and other functions  (note that you may use any JavaScript type checker if you whish)
-- pullpush.js is not about streams, you typically use a single value, the current value
+- pullpush.js is not about streams, pullpush reactive values are simplier since they may be any javascript value so consequently they may be objects implementing streams
 - pullpush.js is not an immutability library, but you might consider using one when dealing with complex structured data since pullpush.js detects changes based on stric reference equality
 - pullpush.js is not strictly side-effectless, values mutate but you cannot access the modified value (within the same JavaScript event queue tick)
 - pullpush.js is not about pull vs push tradeoff, pullpush.js implements both pull and push in a efficient synergy
@@ -95,6 +95,23 @@ List of functions available from pullpush.js to build libraries and frameworks:
 - pullpush.stack(sink, hierachy, debug): dump of the source call stack (if hierachy is true) for debug purpose  
 - pullpush.onwarning(handler): specifies a handler to deal with warnings for debug purpose
 
+List of functions currently provided by the minimo framework:
+- sink: the framework top level sink
+- input(id): defines a source from a DOM element with a "value" attibute and which triggers "change" events (typically an "input" element)
+- click(id): defines a source from a DOM element which triggers "click" events (typically a "button" element)
+- dblclick(id): defines a source from a DOM element which triggers "dblclick" events (typically a "button" element)
+- focus(id): defines a source from a DOM element which triggers "focus" and "blur" events (typically an "input" element)
+- select(id): defines a source from a DOM element which triggers "select" events (typically an "input" element)
+- disabled(id): defines a source from a DOM element with a "disabled" attribute (typically a "style" element)
+- title(id): defines a source from a DOM element with a "title" attribute (typically an "input" element)
+- src(id): defines a source from a DOM element with an "scr" attribute (typically an "img" element)
+- text(id): defines a source from a DOM element with a "textContent" attribute (typically a "span" element)
+- html(id): defines a source from a DOM element with an "innerHTML" attribute (typically a "div" element)
+- load(id): defines a source from a DOM element which triggers a "load" events (typically an "img" element or the "window" element for an undefined "id" argument)
+- error(id): defines a source from a DOM element which triggers a "error" events (typically an "img" element or the "window" element for an undefined "id" argument)
+- message(id): defines a source from a window DOM element with a postMessge method and which triggers a "message" events (an undefined "id" argument refferes to the current window)
+- sourcer(type, getValue, setValue, register, unregister, dispatch, handler): specifies new type of sources
+
 List of functions currently provided by the minimo library:
 - stepper: a source which increments itself at the specified interval
 - timer: a source which value is the (relative) at the specified interval
@@ -112,6 +129,7 @@ List of functions currently provided by the minimo library:
 - chronicler: a source which value is an array containing the value of the specified source and corresponding time (deleting the first values from the array)
 - sequencer: a source which value is an array containing the value of the specified source and a sequence number (deleting the first values from the array)
 - compressor: a source which value is the value of the specified source within the specified delay (with optional sliding, optional skipping, optional lagging...)
+- starter: a source which value is the value of the specified source starting with the specified value
 - namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sink)
 - share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
 - local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
@@ -135,34 +153,19 @@ List of functions currently provided by the minimo library:
 - unit: defines a source with a constant value // unit :: a -> source () a
 - ap: applies a source to a source // ap :: source a b -> source c (b -> d) -> source b d
 - preap: applies a source to a function // preap :: source a (b -> c) -> source c d -> source b d
-- map: maps a function to a source // map :: source a b -> (b -> c) -> source a c
-- premap: maps a source to a function // premap :: (a -> b) -> source b c -> source a c
-- mapper: maps a source to a source // mapper :: source a b -> source b c -> source a c
+- map: applies a function to the values of a source // map :: source a b -> (b -> c) -> source a c
+- premap: applies a function to the argument of a source // premap :: (a -> b) -> source b c -> source a c
+- mapper: applies a source to the values of a source // mapper :: source a b -> source b c -> source a c
+- mapping: applies the specified source to the values of an array // mapping :: [a] -> source a b -> [b]
 - filter: defines a fitered source from a source and a filter function // filter :: source a b -> (b -> boolean) -> source a b
 - filterer: defines a fitered source from a source and a filter source // filterer :: source a b -> (source b boolean) -> source a b
+- filtering: filters an array of values by applying a source // filtering :: [a] -> source a booelan -> [a] //todo
 - reduce: defines a source with values equal to the reduction of a source by a reducer function (with optionaly several accumulators) // reduce :: source a b -> (c -> ... -> c -> b -> c) -> c -> source a c
 - reducer: defines a source with values equal to the reduction of a source by a reducer source (with optionaly several accumulators) // reducer :: source a b -> source c ... c b c -> c -> source a c
 - induce: reduce with an array of accumulators // induce :: source a b -> ([c] -> b -> c) -> c -> source a c
 - inducer: reducer with an array of accumulators // inducer :: source a b -> source [c] b c -> c -> source a c
 - shell: source which value is the reslt of applying the second specified source on the value of the first specified source // shell :: source a b -> source ((source a b) a) c -> source a c
 - shield: source which value is the value of the first specified source that does not throw an error // shield :: source a b -> source error b -> source a b
-
-List of functions currently provided by the minimo framework:
-- sink: the framework top level sink
-- input(id): defines a source from a DOM element with a "value" attibute and which triggers "change" events (typically an "input" element)
-- click(id): defines a source from a DOM element which triggers "click" events (typically a "button" element)
-- dblclick(id): defines a source from a DOM element which triggers "dblclick" events (typically a "button" element)
-- focus(id): defines a source from a DOM element which triggers "focus" and "blur" events (typically an "input" element)
-- select(id): defines a source from a DOM element which triggers "select" events (typically an "input" element)
-- disabled(id): defines a source from a DOM element with a "disabled" attribute (typically a "style" element)
-- title(id): defines a source from a DOM element with a "title" attribute (typically an "input" element)
-- src(id): defines a source from a DOM element with an "scr" attribute (typically an "img" element)
-- text(id): defines a source from a DOM element with a "textContent" attribute (typically a "span" element)
-- html(id): defines a source from a DOM element with an "innerHTML" attribute (typically a "div" element)
-- load(id): defines a source from a DOM element which triggers a "load" events (typically an "img" element or the "window" element for an undefined "id" argument)
-- error(id): defines a source from a DOM element which triggers a "error" events (typically an "img" element or the "window" element for an undefined "id" argument)
-- message(id): defines a source from a window DOM element with a postMessge method and which triggers a "message" events (an undefined "id" argument refferes to the current window)
-- sourcer(type, getValue, setValue, register, unregister, dispatch, handler): specifies new type of sources
 
 Distribution files:
 pullpush.js: the Functional Reactive Programming pullpush engine

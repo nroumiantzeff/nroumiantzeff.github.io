@@ -56,18 +56,14 @@ function spreadsheet(sink){
 		let value = pullpush(sink, shield(formulaEvaluation, formulaError, id), id);
 		return pullpush(sink, input(id), "" + value);
 	}
-	function formulaValues(sink, id){
-		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), formulaValue, id);
-		}, undefined);
-	}
 	function formulaTest(sink){
 		let test = pullpush(sink, input("A9"));
 		let passes = (test === "TEST: PASSES");
 		return pullpush(sink, disabled("spreadsheet-test-fails"), passes);
 	}
 	return pullpush(sink, formulaTest) && false ||
-		pullpush(sink, formulaValues);
+		pullpush(sink, mapping(formulaValue), cells) && false ||
+		undefined;
 }
 pullpush(sink, spreadsheet);
 </script>

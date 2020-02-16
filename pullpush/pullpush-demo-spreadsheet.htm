@@ -56,11 +56,6 @@ function spreadsheet(sink){
 		let value = pullpush(sink, shield(formulaEvaluation, formulaError, id), id);
 		return pullpush(sink, input(id), "" + value);
 	}
-	function formulaValues(sink, id){
-		return cells.reduce(function(unused, id){
-			return pullpush(sink(id), formulaValue, id);
-		}, undefined);
-	}
 	function formulaTooltips(sink, id){
 		cells.reduce(function(unused, id){
 			let tooltip = id + ": " +  pullpush(sink, input("$" + id));
@@ -100,7 +95,8 @@ function spreadsheet(sink){
 		pullpush(sink, formulaSelection) && false ||
 		pullpush(sink, formulaDisplay) && false ||
 		pullpush(sink, formulaTooltips) && false ||
-		pullpush(sink, formulaValues);
+		pullpush(sink, mapping(formulaValue), cells) && false ||
+		undefined;
 }
 pullpush(sink, spreadsheet);
 </script>

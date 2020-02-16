@@ -396,6 +396,21 @@ function compressor(delay, source, slide, skips, reset, coldstart){
 	};
 	return named[name];
 }
+function starter(value0, source){
+	let start = true;
+	let name = starter.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let value = pullpush(sink, source, ...args);
+			if(start){
+				start = false;
+				return value0;
+			}
+			return value;
+		},
+	};
+	return named[name];
+}
 //todo mixer? (using map)
 //todo appender? (using sustainer)
 //todo duplicator? (using global or share)
@@ -672,6 +687,18 @@ function mapper(sAB, sBC){
 			let b = pullpush(sink, sAB, ...a);
 			let c = pullpush(sink, sBC, b);
 			return c;
+		},
+	};
+	return named[name];
+}
+function mapping(source){
+	// mapping :: [a] -> source a b -> [b]
+	let name = mapping.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, array, ...args){
+			return array.map(function(item, index){
+				return pullpush(sink(index), source, item, ...args);
+			});
 		},
 	};
 	return named[name];
