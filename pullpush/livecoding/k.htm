@@ -28,11 +28,11 @@ function spreadsheet(sink){
 		let value = pullpush(sink, <span style="color: white; background-color: blue">shield(</span>formulaEvaluation<span style="color: white; background-color: blue">, formulaError, id)</span>, id);
 		return pullpush(sink, input(id), <span style="color: white; background-color: blue">"" + </span>value);
 	}
-	function formulaValues(sink, id){
+	<span style="color: white; background-color: red">function formulaValues(sink, id){
 		return cells.reduce(function(unused, id){
 			return pullpush(sink(id), formulaValue, id);
 		}, undefined);
-	}
+	}</span>
 	<span style="color: white; background-color: blue">function formulaTooltips(sink, id){
 		cells.reduce(function(unused, id){
 			let tooltip = id + ": " +  pullpush(sink, input("$" + id));
@@ -72,7 +72,8 @@ function spreadsheet(sink){
 		<span style="color: white; background-color: blue">pullpush(sink, formulaSelection) && false ||
 		pullpush(sink, formulaDisplay) && false ||
 		pullpush(sink, formulaTooltips) && false ||</span>
-		pullpush(sink, formulaValues);
+		<span style="color: white; background-color: blue">pullpush(sink, mapping(formulaValue), cells) && false ||
+		undefined</span>;
 }
 pullpush(sink("demo"), spreadsheet);
 </div>
