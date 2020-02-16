@@ -368,70 +368,29 @@ function compressor(delay, source, slide, skips, reset, coldstart){
 		[name]: function(sink, ...args){
 			let currentValue = pullpush(sink, source, ...args);
 			let currentTime = pullpush.time(sink);
-			if(skips){
-				console.log("debug 0: " + time + ", " + count + ", " + value + ", " + currentValue + "," + currentTime); //debug
-				if(currentTime <= time + delay){
-					if(count === (skips || 0)){
-						console.log("...debug 4"); //debug
-						value = currentValue;
-						if(reset){
-							time = -Infinity;
-							count = 0;
-						}
-						else{
-							count += 1;
-							if(slide){
-								time = currentTime;
-							}
-						}
-					}
-					else{
-						count += 1;
-						if(slide){
-							time = currentTime;
-						}
-					}
-				}
-				else{
-					console.log("...debug 5"); //debug
-					if(warmup){
-						warmup = false;
-					}
-					else{
-						count = 1;
-						if(slide){
-							time = currentTime;
-						}
-					}
-				}
-			}
-			else{
-				console.log("debug count === 0: " + !(currentTime <= time + delay) + ", " + (currentTime - time) + ", " + currentTime + ", " + time); //debug
-				if(count === 0 || !(currentTime <= time + delay)){
-					console.log("...debug 4"); //debug
+			let sliding = false;
+			let warmingup = warmup;
+			warmup = false;
+			if(skips && currentTime <= time + delay || !skips && (count === 0 || !(currentTime <= time + delay))){
+				if(!skips || count === (skips || 0)){
 					value = currentValue;
-					if(warmup){
-						warmup = false;
-					}
-					else{
-						time = currentTime;
-					}
 					if(reset){
 						count = 0;
-					}
-					else{
-						count += 1;
+						time = -Infinity;
 					}
 				}
-				else{
-					console.log("...debug 5"); //debug
+				if(!reset || count !== 0){
 					count += 1;
-					if(slide){
-						time = currentTime;
-					}
+					sliding = slide || !skips;
 				}
 			}
-			console.log("...debug: " + time + ", " + count + ", " + value); //debug
+			else if(!warmingup){
+				count = 1;
+				sliding = slide;
+			}
+			if(sliding || skips && count === 1){
+				time = currentTime;
+			}
 			return value;
 		},
 	};
