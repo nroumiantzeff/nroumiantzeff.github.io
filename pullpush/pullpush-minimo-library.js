@@ -358,7 +358,85 @@ function chonicler(n, source){
 	};
 	return named[name];
 }
-//todo compressor (like throttle)
+function compressor(delay, source, slide, skips, reset, coldstart){
+	let value;
+	let time = -Infinity;
+	let count = 0;
+	let warmup = coldstart? false: true;
+	let name = compressor.name + "~" + delay + "~" + (slide? "sliding": "anchored") + "~" + (skips || 0) + "~" + (reset? "reseting": "lagging") + "~" + (coldstart? "coldstart": "warmup") + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let currentValue = pullpush(sink, source, ...args);
+			let currentTime = pullpush.time(sink);
+			if(skips){
+				console.log("debug 0: " + time + ", " + count + ", " + value + ", " + currentValue + "," + currentTime); //debug
+				if(currentTime <= time + delay){
+					if(count === (skips || 0)){
+						console.log("...debug 4"); //debug
+						value = currentValue;
+						if(reset){
+							time = -Infinity;
+							count = 0;
+						}
+						else{
+							count += 1;
+							if(slide){
+								time = currentTime;
+							}
+						}
+					}
+					else{
+						count += 1;
+						if(slide){
+							time = currentTime;
+						}
+					}
+				}
+				else{
+					console.log("...debug 5"); //debug
+					if(warmup){
+						warmup = false;
+					}
+					else{
+						count = 1;
+						if(slide){
+							time = currentTime;
+						}
+					}
+				}
+			}
+			else{
+				console.log("debug count === 0: " + !(currentTime <= time + delay) + ", " + (currentTime - time) + ", " + currentTime + ", " + time); //debug
+				if(count === 0 || !(currentTime <= time + delay)){
+					console.log("...debug 4"); //debug
+					value = currentValue;
+					if(warmup){
+						warmup = false;
+					}
+					else{
+						time = currentTime;
+					}
+					if(reset){
+						count = 0;
+					}
+					else{
+						count += 1;
+					}
+				}
+				else{
+					console.log("...debug 5"); //debug
+					count += 1;
+					if(slide){
+						time = currentTime;
+					}
+				}
+			}
+			console.log("...debug: " + time + ", " + count + ", " + value); //debug
+			return value;
+		},
+	};
+	return named[name];
+}
 //todo mixer? (using map)
 //todo appender? (using sustainer)
 //todo duplicator? (using global or share)
