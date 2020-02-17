@@ -457,6 +457,18 @@ function filterer(source1, source2, ...args2){
 	};
 	return named[name];
 }
+function filtering(source){
+	// filtering :: source a boolean -> source [a] [a]
+	let name = filtering.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, array, ...args){
+			return array.filter(function(item, index){
+				return pullpush(sink(index), source, item, index, ...args);
+			});
+		},
+	};
+	return named[name];
+}
 function reduce(source, f, ...accumulators){
 	let values = accumulators.slice();
 	let index = 0;
@@ -493,6 +505,18 @@ function reducer(source1, source2, ...accumulators){
 			values.push(value);
 			values.shift();
 			return value;
+		},
+	};
+	return named[name];
+}
+function reducing(source){
+	// reducing :: source a b a -> source a [b] a
+	let name = reducing.name + "~" + source.name;
+	let named = {
+		[name]: function(sink, accumulator, array, ...args){
+			return array.reduce(function(accumulator, item, index){
+				return pullpush(sink(index), source, accumulator, item, index, ...args);
+			}, accumulator);
 		},
 	};
 	return named[name];
@@ -692,12 +716,12 @@ function mapper(sAB, sBC){
 	return named[name];
 }
 function mapping(source){
-	// mapping :: [a] -> source a b -> [b]
+	// mapping :: source a b -> source [a] [b]
 	let name = mapping.name + "~" + source.name;
 	let named = {
 		[name]: function(sink, array, ...args){
 			return array.map(function(item, index){
-				return pullpush(sink(index), source, item, ...args);
+				return pullpush(sink(index), source, item, index, ...args);
 			});
 		},
 	};

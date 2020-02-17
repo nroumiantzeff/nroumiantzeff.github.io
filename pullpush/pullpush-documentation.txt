@@ -156,12 +156,13 @@ List of functions currently provided by the minimo library:
 - map: applies a function to the values of a source // map :: source a b -> (b -> c) -> source a c
 - premap: applies a function to the argument of a source // premap :: (a -> b) -> source b c -> source a c
 - mapper: applies a source to the values of a source // mapper :: source a b -> source b c -> source a c
-- mapping: applies the specified source to the values of an array // mapping :: [a] -> source a b -> [b]
+- mapping: applies the specified source to the values of an array // mapping :: source a b -> source [a] [b]
 - filter: defines a fitered source from a source and a filter function // filter :: source a b -> (b -> boolean) -> source a b
 - filterer: defines a fitered source from a source and a filter source // filterer :: source a b -> (source b boolean) -> source a b
-- filtering: filters an array of values by applying a source // filtering :: [a] -> source a booelan -> [a] //todo
+- filtering: filters an array of values by applying a source // filtering :: source a boolean -> source [a] [a]
 - reduce: defines a source with values equal to the reduction of a source by a reducer function (with optionaly several accumulators) // reduce :: source a b -> (c -> ... -> c -> b -> c) -> c -> source a c
 - reducer: defines a source with values equal to the reduction of a source by a reducer source (with optionaly several accumulators) // reducer :: source a b -> source c ... c b c -> c -> source a c
+- reducing: applies recursively the specified source to an accumulator and the values of an array // reducing :: source a b a -> source a [b] a 
 - induce: reduce with an array of accumulators // induce :: source a b -> ([c] -> b -> c) -> c -> source a c
 - inducer: reducer with an array of accumulators // inducer :: source a b -> source [c] b c -> c -> source a c
 - shell: source which value is the reslt of applying the second specified source on the value of the first specified source // shell :: source a b -> source ((source a b) a) c -> source a c

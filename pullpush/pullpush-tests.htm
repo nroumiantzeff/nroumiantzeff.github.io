@@ -100,6 +100,9 @@
 <input id="sink78" readonly/> triple-clicks (300 milliseconds delay between clicks) <input id="button41" value="click multiple-times" type="button"/> <br/>
 <input id="sink79" readonly/> count of input42 value change <input id="input42" value="initial value"/> input 42 <br/>
 <input id="sink80" readonly/> time of input42 value change <br/>
+<input id="sink81" readonly/> filtering input43, input44 and input 45 with odd values (initialy "input43,input45") <input id="input43" style="width:50px" value="1"/> input43, <input id="input44" style="width:50px" value="2"/> input44, <input id="input45" style="width:50px" value="3"/> input45 <br/>
+<input id="sink82" readonly/> mapping input43, input44 and input45 to their values (initialy "1,2,3") <br/>
+<input id="sink83" readonly/> reducing input43, input44 and input45 to the sum of their values (initialy "6") <br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
@@ -336,7 +339,7 @@ function sink74(sink){
 	document.getElementById("sink74").value = pullpush(sink, sustainer(10, chonicler(3, reduce(stepper, (value1, value2) => value1 + value2, 0, 1))), 1000);
 }
 function sink75(sink){
-	document.getElementById("sink75").value = pullpush(sink, clipper(4, 7, reduce(stepper, (value1, value2) => value1 + value2, 0, 1), unit(() => "done")), 1000) || "";
+	document.getElementById("sink75").value = pullpush(sink, starter("", clipper(4, 7, reduce(stepper, (value1, value2) => value1 + value2, 0, 1), unit(() => "done"))), 1000); //debug || "";
 }
 function sink76(sink){
 	document.getElementById("sink76").value = pullpush(sink, clipper(4, 7, reduce(stepper, (value1, value2) => value1 + value2, 0, 1), true), 1000) || "";
@@ -352,6 +355,15 @@ function sink79(sink){
 }
 function sink80(sink){
 	document.getElementById("sink80").value = pullpush(sink, stamper(input("input42")));
+}
+function sink81(sink){
+	document.getElementById("sink81").value = pullpush(sink, filtering(filtering81), ["input43", "input44", "input45"]);
+}
+function sink82(sink){
+	document.getElementById("sink82").value = pullpush(sink, mapping(mapping82), ["input43", "input44", "input45"]);
+}
+function sink83(sink){
+	document.getElementById("sink83").value = pullpush(sink, reducing(reducing83), 0, ["input43", "input44", "input45"]);
 }
 function insert1(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -836,6 +848,15 @@ function clipper57(sink){
 function onceuponatime58(sink){
 	return "once upon a time";
 }
+function filtering81(sink, item){
+	return Number(pullpush(sink, input(item))) % 2 === 1;
+}
+function mapping82(sink, item){
+	return Number(pullpush(sink, input(item)));
+}
+function reducing83(sink, accumulator, item){
+	return accumulator + Number(pullpush(sink, input(item)));
+}
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -916,6 +937,9 @@ pullpush(sink, sink77);
 pullpush(sink, sink78);
 pullpush(sink, sink79);
 pullpush(sink, sink80);
+pullpush(sink, sink81);
+pullpush(sink, sink82);
+pullpush(sink, sink83);
 </script>
 </body>
 </html>
