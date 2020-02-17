@@ -18,7 +18,7 @@ What is pullpush.js and what it is not:
 - pullpush.js is not about procedural vs functional programming, as pullpush.js supports both although its intends to promote pure functional programming
 - pullpush.js is not about category theory but libraries build on top of pullpush.js also provide higher-order functions which combine functions (sources) in a "point-less" way independent on function arguments (notably the sink) and function returned value (source value)
 - pullpush.js is not a type system but comments with source argument and value types are recommanded has they help reasoning when combining sources and other functions  (note that you may use any JavaScript type checker if you whish)
-- pullpush.js is not about streams, pullpush reactive values are simplier since they may be any javascript value so consequently they may be objects implementing streams
+- pullpush.js is not about streams, pullpush source values are simplier since they may be any javascript value (and consequently they may be a javascript object implementing a stream)
 - pullpush.js is not an immutability library, but you might consider using one when dealing with complex structured data since pullpush.js detects changes based on stric reference equality
 - pullpush.js is not strictly side-effectless, values mutate but you cannot access the modified value (within the same JavaScript event queue tick)
 - pullpush.js is not about pull vs push tradeoff, pullpush.js implements both pull and push in a efficient synergy
@@ -27,13 +27,14 @@ What is pullpush.js and what it is not:
 - pullpush.js is not radioactive.js, although the approach is the closest you can find on the net when searching for Functional Reactive Programming, the implementation and formalism are quite different
 
 Basic usage:
-function pullpush(sink, source, ...args): defines a reactive value
+function pullpush(sink, source, ...args): returns a source value
 - sink: a sink typically provided by the framework or by the source caller
 - source: function implementing the source
 	the function is either provided by the framework or implemented as part of the application
 	the source function takes a sink as first argument and the spread args as other arguments
-	the source function may use other reactive values in its implementation
-	the source function returns a value (any javascript value) 
+	the source function may return any javascript value
+	the source function may use sub-source values (values from other sources) in its implementation
+	the source value is automatically re-evaluated when one of its sub-source value changes
 	the source function must be pure in the functional sense (notably contextual transparency)
 	the source function may be specified using source combinators (implemented by a library or by the application)
 
@@ -75,7 +76,7 @@ Example:
 	}
 
 Advance usges:
-function pullpush(sink(id), source, ...args): defines a reactive value using an explicite sub-sink with the specified id 
+function pullpush(sink(id), source, ...args): defines a source value using an explicite sub-sink with the specified id 
 function pullpush(sink, true): declaration to keep sub-sinks even in case they are not used during the current javascript event queue tick 
 function pullpush(sink, false): declaration to reclaim sub-sinks that are not used during the current javascript event queue tick 
 function pullpush(sink(id), true): declaration to keep the explicit sub-sink with the specified id even in case it is not used during the current javascript event queue tick 
@@ -113,33 +114,32 @@ List of functions currently provided by the minimo framework:
 - sourcer(type, getValue, setValue, register, unregister, dispatch, handler): specifies new type of sources
 
 List of functions currently provided by the minimo library:
-- stepper: a source which increments itself at the specified interval
-- timer: a source which value is the (relative) at the specified interval
-- toggler: a source which value toggles between false and true each time the specified source value changes
-- trigger: a source which value is true when the specified source value changes and false afterwards
-- switcher: a source which value is true when the specified source value changes and false after a specified delay
-- lagger: a source which value is the value of the specified source with a lag of the specified delay
-- counter: a source which increments itself at each value of the specified source
-- stamper: a source which value is the time at each value of the specified source
-- nth: a source which value is the nth value of the specified source
-- sustainer: a source which value is the value of the specified source taking into account the first values only
-- skipper: a source which value is the value of the specified source skipping the first values
-- clipper: a source which value is the value of the specified source skipping the first values and ignoring the last values
-- tracker: a source which value is an array containing the value of the specified source (deleting the first values from the array)
-- chronicler: a source which value is an array containing the value of the specified source and corresponding time (deleting the first values from the array)
-- sequencer: a source which value is an array containing the value of the specified source and a sequence number (deleting the first values from the array)
-- compressor: a source which value is the value of the specified source within the specified delay (with optional sliding, optional skipping, optional lagging...)
-- starter: a source which value is the value of the specified source starting with the specified value
-- namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sink)
-- share: a source which can be shared among ather sources using an id (its value is the value of a specified source without observers)
-- local: a source which value is specified localy (its value used with a single sink and is not shared with other sources)
-- global: a source which value is specified globaly (the source is accessed by specifying an id)
-- merge: a source which value is the the latest value among the specified sources
-- any: a source which value is an array of the the latest values of the specified sources when any specified source has changed
-- each: a source whitch value is an array of the latest values of the specified sources when each sepcified source has changed
-- series: a source which value is the sum of n previous values
-- reverse: defines a source from a source with reversed arguments (except the sink argument)
-- shuffle: defines a source from a source and a function which suffles the source arguments (except the sink argument)
+- stepper: a source which increments itself at the specified interval // stepper :: number -> source () number
+- timer: a source which value is the (relative) time at the specified interval // timer :: number -> source () number
+- trigger: a source which value is true when the specified source value changes and false afterwards // trigger :: source a b -> source a boolean
+- toggler: a source which value toggles between false and true each time the specified source value changes // toggler :: source a b -> source a boolean
+- switcher: a source which value is true when the specified source value changes and false after a specified delay // switcher :: source a b -> number -> source a boolean
+- lagger: a source which value is the value of the specified source with a lag of the specified delay // lagger :: source a b -> number -> source a b
+- counter: a source which increments itself at each value of the specified source // counter :: source a b -> source a number
+- stamper: a source which value is the time at each value of the specified source // stamper :: source a b -> source a number
+- nth: a source which value is the nth value of the specified source // nth ::  source a b -> source a b
+- sustainer: a source which value is the value of the specified source taking into account the first values only // sustainer :: source a b -> source a b
+- skipper: a source which value is the value of the specified source skipping the first values // skipper :: source a b -> source a b
+- clipper: a source which value is the value of the specified source skipping the first values and ignoring the last values // clipper :: source a b -> source a b 
+- tracker: a source which value is an array containing the value of the specified source (deleting the first values from the array) // tracker :: source a b -> source a [b]
+- chronicler: a source which value is an array containing the time and the value of the specified source (deleting the first values from the array) // chronicler :: source a b -> source [[number, b]]
+- sequencer: a source which value is an array containing a sequence number and the value of the specified source (deleting the first values from the array) // sequencer :: source a b -> source [[number, b]]
+- compressor: a source which value is the value of the specified source within the specified delay (with optional sliding, optional skipping, optional lagging...) // compressor :: number -> source a b -> source a b
+- starter: a source which value is the value of the specified source starting with the specified value // starter :: b -> source a b -> source a b 
+- namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sub-sink) // namer :: string -> source a b -> source a b
+- sharer: defines a source which can be accessed by the id from any other source (its value is the value of a specified source without observers) // share :: string -> source a b -> (string -> source a b)
+- local: a source which value is specified localy (its value is used with a single sink and is not shared with other sources) // local :: source a (() | a) a
+- global: a source which value is specified globaly (the source is accessed by specifying an id) // global :: string -> source a (() | a) a
+- merge: a source which value is the the latest value among the specified sources // merge :: [source a b] -> source a b
+- any: a source which value is an array of the the latest values of the specified sources when any specified source has changed // any :: [source a b] -> source a [b]
+- each: a source whitch value is an array of the latest values of the specified sources when each sepcified source has changed // each :: [source a b] -> source a [b]
+- reverse: defines a source from a source with reversed arguments (except the sink argument) // reverse :: source a b ... c d z -> source d c ... b a z
+- shuffle: defines a source from a source and a function which suffles the source arguments (except the sink argument) // shuffle :: source (b) c -> ((a) -> (b)) -> source (a) c
 - chain: defines a source by chaining sources (pointfull) // chain :: source a ((source (b a) c) -> ((source (d c) e) -> ... ((source (y x) z) -> (() -> z))))
 - composition: defines a source by composing sources (pointless) // composition :: (source y z) -> (source x y) ... (source b c) -> (source a b) -> source a z
 - supercomposition: defines a source definer by composing source definers // supercomposition :: (source w x -> source y z) -> (source u v -> source w x) ... (source c d -> source e f) -> (source a b -> source c d) -> (source a b -> source y z)

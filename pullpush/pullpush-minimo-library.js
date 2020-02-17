@@ -110,9 +110,18 @@ let lagger = (function(){
 		return named[name];
 	};
 })();
-let share = (function(){
+function namer(source, ...names){
+	let name = names.map(name => name || source.name).join("~"); 
+	let named = {
+		[name]: function(sink, ...args){
+			return source(sink, ...args);
+		},
+	};
+	return named[name];
+}
+let sharer = (function(){
 	let cache = {};
-	return function share(id, source, register, unregister){
+	return function sharer(id, source, register, unregister){
 		//todo test with a source with observers (for example an input from the framework)
 		//todo check that the source has no observers (local source)
 		//todo take into account the source, register and unregister as key to the cache (to ensure referential transparency for multiple calls with different arguments but the id)
@@ -121,7 +130,7 @@ let share = (function(){
 			return cached;
 		}
 		let observers = {};
-		let name = share.name + "~" + id + "~" + source.name;
+		let name = sharer.name + "~" + id + "~" + source.name;
 		let named = {
 			[name]: function(sink, ...args){
 				let value = pullpush(sink, source, ...args);
@@ -133,15 +142,6 @@ let share = (function(){
 		return cache[id] = named[name];
 	};
 })();
-function namer(source, ...names){
-	let name = names.map(name => name || source.name).join("~"); 
-	let named = {
-		[name]: function(sink, ...args){
-			return source(sink, ...args);
-		},
-	};
-	return named[name];
-}
 function local(sink, initial, value, delay){
 	if(value === undefined){
 		return pullpush.value(sink, initial);
@@ -150,7 +150,7 @@ function local(sink, initial, value, delay){
 		(pullpush.value(sink, initial));
 }
 let global = function(id){
-	return share(id, local);
+	return sharer(id, local);
 };
 function counter(source, begining, end, increment){
 	let count = begining || 0;
@@ -396,6 +396,7 @@ function compressor(delay, source, slide, skips, reset, coldstart){
 	};
 	return named[name];
 }
+//todo implement "echoer" which value is the last value after the delay expires (use a forcast and a declaration forcast to clearTimeout potential past forcast without warning)
 function starter(value0, source){
 	let start = true;
 	let name = starter.name + "~" + source.name;
