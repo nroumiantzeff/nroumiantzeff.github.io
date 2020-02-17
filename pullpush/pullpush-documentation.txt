@@ -129,7 +129,8 @@ List of functions currently provided by the minimo library:
 - tracker: a source which value is an array containing the value of the specified source (deleting the first values from the array) // tracker :: source a b -> source a [b]
 - chronicler: a source which value is an array containing the time and the value of the specified source (deleting the first values from the array) // chronicler :: source a b -> source [[number, b]]
 - sequencer: a source which value is an array containing a sequence number and the value of the specified source (deleting the first values from the array) // sequencer :: source a b -> source [[number, b]]
-- compressor: a source which value is the value of the specified source within the specified delay (with optional sliding, optional skipping, optional lagging...) // compressor :: number -> source a b -> source a b
+- compressor: a source which value is the value of the specified source within the specified delay (with optional sliding, skipping, resetting...) // compressor :: number -> source a b -> source a b
+- deferrer: a source which value is the value of the specified source after the specified delay (with optional sliding, skipping, resetting...) // deferrer :: number -> source a b -> source a b
 - starter: a source which value is the value of the specified source starting with the specified value // starter :: b -> source a b -> source a b 
 - namer: a source with a specified name which value is the value of the specified source (the source name is typically used as the id of the implicit sub-sink) // namer :: string -> source a b -> source a b
 - sharer: defines a source which can be accessed by the id from any other source (its value is the value of a specified source without observers) // share :: string -> source a b -> (string -> source a b)

@@ -396,7 +396,49 @@ function compressor(delay, source, slide, skips, reset, coldstart){
 	};
 	return named[name];
 }
-//todo implement "echoer" which value is the last value after the delay expires (use a forcast and a declaration forcast to clearTimeout potential past forcast without warning)
+function deferrer(delay, source, slide, skips, reset, coldstart){
+	let time = -Infinity;
+	let count = 0;
+	let warmup = coldstart? false: true;
+	let name = deferrer.name + "~" + delay + "~" + (slide? "sliding": "anchored") + "~" + (skips || 0) + "~" + (reset? "reseting": "lagging") + "~" + (coldstart? "coldstart": "warmup") + "~" + source.name;
+	let named = {
+		[name]: function(sink, ...args){
+			let echo = false;
+			let currentValue = pullpush(sink, source, ...args);
+			let currentTime = pullpush.time(sink);
+			let sliding = false;
+			let warmingup = warmup;
+			warmup = false;
+			if(skips && currentTime <= time + delay || !skips && (count === 0 || !(currentTime <= time + delay))){
+				if(!skips || count >= (skips || 0)){
+					echo = true;
+					if(reset){
+						count = 0;
+						time = -Infinity;
+					}
+				}
+				if(!reset || count !== 0){
+					count += 1;
+					sliding = slide || !skips;
+				}
+			}
+			else if(!warmingup){
+				count = 1;
+				sliding = slide;
+			}
+			if(sliding || skips && count === 1){
+				time = currentTime;
+			}
+			if(echo){
+				return (pullpush.forcast(sink, currentValue, false))
+					(pullpush.forcast(sink, currentValue, delay))
+					(pullpush.value(sink));
+			}
+			return pullpush.value(sink);
+		},
+	};
+	return named[name];
+}
 function starter(value0, source){
 	let start = true;
 	let name = starter.name + "~" + source.name;

@@ -298,7 +298,6 @@ let pullpush = (function(){
 				tick: $$ticks,
 				currentTick: undefined,
 				timer: undefined,
-				skips: 0,
 				sources: {},
 				keepalives: {},
 				registers: {},
@@ -461,10 +460,8 @@ let pullpush = (function(){
 		if(delay === undefined){
 			delay = 0;
 		}
-		else{
-			if(typeof delay !== "number"){
-				$warning('20: invalid delay argument ' + delay + ' in pullpush.forcast(sink, value, delay, source, ...args)', $sink);
-			}
+		else if(delay !==  false && typeof delay !== "number"){
+			$warning('20: invalid delay argument ' + delay + ' in pullpush.forcast(sink, value, delay, source, ...args)', $sink);
 		}
 		if(value !== undefined && source !== undefined){
 			$warning('19: value argument in pullpush.forcast(sink, value, delay, source, ...args) is ignored when the source argument is specified: consider calling either pullpush.forcast(sink, value, delay) or pullpush.forcast(sink, undefined, delay, source, ...args)', $sink);
@@ -478,22 +475,19 @@ let pullpush = (function(){
 	}
 	function $forcastHandler(nonce, sink, value, delay, source, args){
 		let $sink = sink($nonce());
-		if($sink.timer !== undefined){
-			clearTimeout($sink.timer);
-			if(++$sink.skips > 1000){
-				$sink.skips = 0;
-				$warning('15: pullpush.forcast calls on sink with id "' + $sink.id + '" seem to be endlessly skipped: consider slowing down the rate of the source change', $sink);
+		if(delay === false){
+			// declaration to clear the potential active timer from previous pullpush.forcast call
+			if($sink.timer !== undefined){
+				clearTimeout($sink.timer);
 			}
-		}
-		else{
-			$sink.skips = 0;
-		}
-		if(delay >= 0 && delay !==  Number.POSITIVE_INFINITY && delay <= Number.MAX_SAFE_INTEGER){
-			$sink.timer = setTimeout($forcastCallback, delay, sink, value, source, args);
-		}
-		else{
-			// forcast does nothing for negative or infinite delay
 			$sink.timer = undefined;
+			return nonce;
+		}
+		if($sink.timer !== undefined){
+			$warning('15: pullpush.forcast called on sink with id "' + $sink.id + '" which has an active timer set by a previous call to pullpush.forcast: consider explicitely clearing the active timer by calling pullpush.forcast(sink, undefined, false) in the returned handler chain', $sink);
+		}
+		if(delay >= 0 && delay !==  Number.POSITIVE_INFINITY && delay <= Number.MAX_SAFE_INTEGER){ // forcast does nothing for negative or infinite delay
+			$sink.timer = setTimeout($forcastCallback, delay, sink, value, source, args);
 		}
 		return nonce;
 	}

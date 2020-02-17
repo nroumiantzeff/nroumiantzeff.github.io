@@ -14,7 +14,7 @@
 <input id="input5" value="5"/> input5<br/>
 <input id="input6" value="table"/> input6<br/>
 <input id="input7" value="filter"/> input7<br/>
-<input id="input8" value="800"/> input8<br/>
+<input id="input8" value="810"/> input8<br/>
 <input id="input9" value="9"/> input9<br/>
 <input id="input10" value="10"/> input10<br/>
 <input id="input11" value="11"/> input11<br/>
@@ -69,10 +69,10 @@
 <input id="sink47" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness without persistency)<br/>
 <input id="sink48" readonly/> next fibonacci number on button15 click (using global sources depending on input1 emptiness with persistency)<br/>
 <input id="sink49" readonly/> javascript exceptions <input id="button17" value="direct error" type="button"/><input id="button18" value="indirect error" type="button"/><input id="button19" value="system error" type="button" onclick="null()"/><br/>
-<input id="sink50" readonly style="width:800px"/> toggle image <input id="button20" value="toggle" type="button"/><img id="img21" height="50"/><br/>
+<input id="sink50" readonly style="width:810px"/> toggle image <input id="button20" value="toggle" type="button"/><img id="img21" height="50"/><br/>
 <input id="sink51" readonly/> button22 clicks with three second lag <input id="button22" value="button22" type="button"/><br/>
 <input id="sink52" readonly/> span24 text node value <input id="button23" value="use input1 as span24 text" type="button"/><span id="span24" style="background:grey">span24</span><br/>
-<input id="sink53" readonly style="width:800px"/> div26 inner HTML <input id="button25" value="use input1 as div26 inner HTML" type="button"/><div id="div26" style="background:yellow">div26</div><br/>
+<input id="sink53" readonly style="width:810px"/> div26 inner HTML <input id="button25" value="use input1 as div26 inner HTML" type="button"/><div id="div26" style="background:yellow">div26</div><br/>
 <input id="sink54" readonly/> chain (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27 <input id="input27" value="2"/> input27<br/>
 <input id="sink55" readonly/> composition (2 * (3 + (input27 * (1 + (2 * input27)))) initialy equal to 26 and 6 for 0 input27<br/>
 <input id="sink56" readonly/> eval invalid expression input29 <input id="button28" value="fix invalid expression input29" type="button"/> <input id="input29" value="NaN()"/> input29<br/>
@@ -98,11 +98,12 @@
 <input id="sink76" readonly/> fibonacci series clipped (4-7) with decay: "", 8, 13, 21, "" <br/>
 <input id="sink77" readonly/> fibonacci series clipped (4-7) and mapped: "out of bound", 8, 13, 21, "out of bound" <br/>
 <input id="sink78" readonly/> triple-clicks (300 milliseconds delay between clicks) <input id="button41" value="click multiple-times" type="button"/> <br/>
-<input id="sink79" readonly/> count of input42 value change <input id="input42" value="initial value"/> input 42 <br/>
-<input id="sink80" readonly/> time of input42 value change <br/>
-<input id="sink81" readonly/> filtering input43, input44 and input 45 with odd values (initialy "input43,input45") <input id="input43" style="width:50px" value="1"/> input43, <input id="input44" style="width:50px" value="2"/> input44, <input id="input45" style="width:50px" value="3"/> input45 <br/>
-<input id="sink82" readonly/> mapping input43, input44 and input45 to their values (initialy "1,2,3") <br/>
-<input id="sink83" readonly/> reducing input43, input44 and input45 to the sum of their values (initialy "6") <br/>
+<input id="sink79" readonly/> triple-clicks echo (300 milliseconds delay between clicks) <br/>
+<input id="sink80" readonly/> count of input42 value change <input id="input42" value="initial value"/> input 42 <br/>
+<input id="sink81" readonly/> time of input42 value change <br/>
+<input id="sink82" readonly/> filtering input43, input44 and input 45 with odd values (initialy "input43,input45") <input id="input43" style="width:50px" value="1"/> input43, <input id="input44" style="width:50px" value="2"/> input44, <input id="input45" style="width:50px" value="3"/> input45 <br/>
+<input id="sink83" readonly/> mapping input43, input44 and input45 to their values (initialy "1,2,3") <br/>
+<input id="sink84" readonly/> reducing input43, input44 and input45 to the sum of their values (initialy "6") <br/>
 <script>
 function sink1(sink){
 	document.getElementById("sink1").value = pullpush(sink, insert1, "-test1-"); 
@@ -348,22 +349,25 @@ function sink77(sink){
 	document.getElementById("sink77").value = pullpush(sink, map(clipper(4, 7, reduce(stepper, (value1, value2) => value1 + value2, 0, 1), true), value => value === undefined? "out of bound": value), 1000);
 }
 function sink78(sink){
-	document.getElementById("sink78").value = pullpush(sink, counter(compressor(300, click("button41"), true, 2, false, false)));
+	document.getElementById("sink78").value = pullpush(sink, counter(compressor(300, click("button41"), true, 0, false, false))); //debug
 }
 function sink79(sink){
-	document.getElementById("sink79").value = pullpush(sink, counter(input("input42")));
+	document.getElementById("sink79").value = pullpush(sink, counter(deferrer(300, click("button41"), true, 0, false, false))); //debug
 }
 function sink80(sink){
-	document.getElementById("sink80").value = pullpush(sink, stamper(input("input42")));
+	document.getElementById("sink80").value = pullpush(sink, counter(input("input42")));
 }
 function sink81(sink){
-	document.getElementById("sink81").value = pullpush(sink, filtering(filtering81), ["input43", "input44", "input45"]);
+	document.getElementById("sink81").value = pullpush(sink, stamper(input("input42")));
 }
 function sink82(sink){
-	document.getElementById("sink82").value = pullpush(sink, mapping(mapping82), ["input43", "input44", "input45"]);
+	document.getElementById("sink82").value = pullpush(sink, filtering(filtering82), ["input43", "input44", "input45"]);
 }
 function sink83(sink){
-	document.getElementById("sink83").value = pullpush(sink, reducing(reducing83), 0, ["input43", "input44", "input45"]);
+	document.getElementById("sink83").value = pullpush(sink, mapping(mapping83), ["input43", "input44", "input45"]);
+}
+function sink84(sink){
+	document.getElementById("sink84").value = pullpush(sink, reducing(reducing84), 0, ["input43", "input44", "input45"]);
 }
 function insert1(sink, prefix){
 	return prefix + pullpush(sink("input1"), input("input1"));
@@ -848,13 +852,13 @@ function clipper57(sink){
 function onceuponatime58(sink){
 	return "once upon a time";
 }
-function filtering81(sink, item){
+function filtering82(sink, item){
 	return Number(pullpush(sink, input(item))) % 2 === 1;
 }
-function mapping82(sink, item){
+function mapping83(sink, item){
 	return Number(pullpush(sink, input(item)));
 }
-function reducing83(sink, accumulator, item){
+function reducing84(sink, accumulator, item){
 	return accumulator + Number(pullpush(sink, input(item)));
 }
 pullpush(sink, sink1);
@@ -940,6 +944,7 @@ pullpush(sink, sink80);
 pullpush(sink, sink81);
 pullpush(sink, sink82);
 pullpush(sink, sink83);
+pullpush(sink, sink84);
 </script>
 </body>
 </html>
