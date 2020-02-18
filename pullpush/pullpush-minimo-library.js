@@ -358,45 +358,109 @@ function chonicler(n, source){
 	};
 	return named[name];
 }
-function compressor(delay, source, slide, skips, reset, coldstart){
+function compressor(delay, source, slide, defer, skips, reset, hot){
+	defer = defer && !reset; // defer option is ignored if the reset option is set
 	let value;
-	let time = -Infinity;
+	let time = hot? 0: -Infinity;
+	let anchor = hot? 0: -Infinity;
 	let count = 0;
-	let warmup = coldstart? false: true;
-	let name = compressor.name + "~" + delay + "~" + (slide? "sliding": "anchored") + "~" + (skips || 0) + "~" + (reset? "reseting": "lagging") + "~" + (coldstart? "coldstart": "warmup") + "~" + source.name;
+	function callback(sink, currentValue){
+		pullpush(sink, true); // declaration to keep unused souces
+		value = currentValue;
+		return value;
+	}
+	let name = compressor.name + "~" + delay + "~" + (slide? "sliding": "anchored") + "~" + (defer? "deferred": "immediate") + "~" + (skips || 0) + "~" + (reset? "reset": "lag") + "~" + (hot? "hot": "cold") + "~" + source.name;
 	let named = {
 		[name]: function(sink, ...args){
 			let currentValue = pullpush(sink, source, ...args);
 			let currentTime = pullpush.time(sink);
-			let sliding = false;
-			let warmingup = warmup;
-			warmup = false;
-			if(skips && currentTime <= time + delay || !skips && (count === 0 || !(currentTime <= time + delay))){
-				if(!skips || count === (skips || 0)){
+			let deferring = false;
+			if(!hot){
+				hot = true;
+				value = currentValue;
+				return value;
+			}
+			if(skips){
+				if(currentTime <= time + delay){
+					if(defer && count >= (skips || 0) || !defer && count === (skips || 0)){
+						value = currentValue;
+						if(reset){
+							count = 0;
+							time = -Infinity;
+							anchor = -Infinity;
+						}
+						else{
+							deferring = defer;
+							count += 1;
+							if(anchor < 0){ //debug
+								anchor = currentTime;
+							}
+						}
+					}
+					else {
+						count += 1;
+						if(slide){
+							time = currentTime;
+						}
+					}
+				}
+				else{
+					count = 1;
+					time = currentTime;
+					anchor = currentTime;
+				}
+			}
+			else{
+				if(count === 0 || currentTime > time + delay){
 					value = currentValue;
 					if(reset){
 						count = 0;
 						time = -Infinity;
+						anchor = -Infinity;
+					}
+					else{
+						count = 1;
+						time = currentTime;
+						anchor = currentTime;
+					}
+					if(defer && !slide){
+						anchor = currentTime;
 					}
 				}
-				if(!reset || count !== 0){
+				else{
 					count += 1;
-					sliding = slide || !skips;
+					if(slide){
+						time = currentTime;
+					}
 				}
+				deferring = defer;
 			}
-			else if(!warmingup){
-				count = 1;
-				sliding = slide;
-			}
-			if(sliding || skips && count === 1){
-				time = currentTime;
+			if(defer){
+				let currentDelay = delay;
+				if(deferring && !slide && anchor >= 0){
+					currentDelay = delay + anchor - currentTime;
+					if(currentDelay <= 0){
+						deferring = false;
+						anchor = currentTime;
+					}
+				}
+				if(deferring){
+					value = pullpush.value(sink);
+					return (pullpush.forcast(sink, undefined, false))
+						(pullpush.forcast(sink, undefined, currentDelay, callback, currentValue))
+						(value);
+				}
+				else{
+					return (pullpush.forcast(sink, undefined, false))
+						(value);
+				}
 			}
 			return value;
 		},
 	};
 	return named[name];
 }
-function deferrer(delay, source, slide, skips, reset, coldstart){
+function deferrer(delay, source, slide, skips, reset, coldstart){ //todo remove
 	let time = -Infinity;
 	let count = 0;
 	let warmup = coldstart? false: true;
@@ -417,7 +481,7 @@ function deferrer(delay, source, slide, skips, reset, coldstart){
 						time = -Infinity;
 					}
 				}
-				if(!reset || count !== 0){
+				if((!reset || count !== 0) && (!warmingup || skips)){
 					count += 1;
 					sliding = slide || !skips;
 				}
@@ -429,12 +493,13 @@ function deferrer(delay, source, slide, skips, reset, coldstart){
 			if(sliding || skips && count === 1){
 				time = currentTime;
 			}
+			let value = warmingup? currentValue: pullpush.value(sink);
 			if(echo){
 				return (pullpush.forcast(sink, currentValue, false))
 					(pullpush.forcast(sink, currentValue, delay))
-					(pullpush.value(sink));
+					(value);
 			}
-			return pullpush.value(sink);
+			return value;
 		},
 	};
 	return named[name];

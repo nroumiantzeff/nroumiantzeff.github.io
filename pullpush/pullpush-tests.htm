@@ -349,10 +349,10 @@ function sink77(sink){
 	document.getElementById("sink77").value = pullpush(sink, map(clipper(4, 7, reduce(stepper, (value1, value2) => value1 + value2, 0, 1), true), value => value === undefined? "out of bound": value), 1000);
 }
 function sink78(sink){
-	document.getElementById("sink78").value = pullpush(sink, counter(compressor(300, click("button41"), true, 0, false, false))); //debug
+	document.getElementById("sink78").value = pullpush(sink, /*counter*/(compressor(3000, click("button41"), false, false, 1, false, false))); //debug
 }
 function sink79(sink){
-	document.getElementById("sink79").value = pullpush(sink, counter(deferrer(300, click("button41"), true, 0, false, false))); //debug
+	document.getElementById("sink79").value = pullpush(sink, /*counter*/(compressor(3000, click("button41"), false, true, 1, false, false))); //debug
 }
 function sink80(sink){
 	document.getElementById("sink80").value = pullpush(sink, counter(input("input42")));
@@ -861,6 +861,7 @@ function mapping83(sink, item){
 function reducing84(sink, accumulator, item){
 	return accumulator + Number(pullpush(sink, input(item)));
 }
+/* //debug
 pullpush(sink, sink1);
 pullpush(sink, sink2);
 pullpush(sink, sink3);
@@ -938,13 +939,16 @@ pullpush(sink, sink74);
 pullpush(sink, sink75);
 pullpush(sink, sink76);
 pullpush(sink, sink77);
+*/ //debug
 pullpush(sink, sink78);
 pullpush(sink, sink79);
+/* //debug
 pullpush(sink, sink80);
 pullpush(sink, sink81);
 pullpush(sink, sink82);
 pullpush(sink, sink83);
 pullpush(sink, sink84);
+*/ //debug
 </script>
 </body>
 </html>

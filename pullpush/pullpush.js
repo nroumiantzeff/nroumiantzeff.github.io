@@ -455,6 +455,7 @@ let pullpush = (function(){
 		return handler;
 	}
 	function forcast(sink, value, delay, source, ...args){
+		console.log("DEBUG forcast delay=" + delay + ", value=" + value + ", source=" + (source && source.name)); //debug
 		$tick();
 		let $sink = sink($nonce());
 		if(delay === undefined){
@@ -474,10 +475,12 @@ let pullpush = (function(){
 		$warning('6: incorrect sink argument in pullpush.forcast call: pullpush sink argument should not be passed as argument except as source first argument to inner pullpush API calls', $sink);
 	}
 	function $forcastHandler(nonce, sink, value, delay, source, args){
+		console.log("DEBUG forcastHandler delay=" + delay + ", value=" + value + ", source=" + (source && source.name)); //debug
 		let $sink = sink($nonce());
 		if(delay === false){
 			// declaration to clear the potential active timer from previous pullpush.forcast call
 			if($sink.timer !== undefined){
+				console.log("DEBUG forcastHandler clearTimeout " + $sink.timer); //debug
 				clearTimeout($sink.timer);
 			}
 			$sink.timer = undefined;
@@ -488,10 +491,12 @@ let pullpush = (function(){
 		}
 		if(delay >= 0 && delay !==  Number.POSITIVE_INFINITY && delay <= Number.MAX_SAFE_INTEGER){ // forcast does nothing for negative or infinite delay
 			$sink.timer = setTimeout($forcastCallback, delay, sink, value, source, args);
+			console.log("DEBUG forcastHandler setTimeout " + $sink.timer); //debug
 		}
 		return nonce;
 	}
 	function $forcastCallback(sink, value, source, args){
+		console.log("DEBUG forcastCallback value=" + value + ", source=" + (source && source.name)); //debug
 		let $sink = sink($nonce());
 		$sink.timer = undefined;
 		if(source !== undefined){
