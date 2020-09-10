@@ -1,6 +1,6 @@
 # nroumiantzeff.github.io
 
-functner: Functional Container
+js-functner: Functional Container
 
 pullpush.js: Pull Push Functional Reactive Programming Engine
 
