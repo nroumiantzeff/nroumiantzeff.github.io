@@ -5363,7 +5363,42 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 // web applications (pure)
 
 const applications = {
-	"web-application#1": // two-level dependencies
+	"web-application#1": // asynchronous dependencies
+		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Effectuality ((() -> ()) -> (() -> ()))
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			const query = component(true)("query")({
+				tagName: "div",
+				specification: function specification(specification, type, properties){
+					return `<div data-key="${properties.key || ""}">
+							<input value="${properties.key || "4"}"/> input <br>
+							<input value="${properties.value || "16"}"/> asynchronous output (3 second delay): input * input
+					</div>`;
+				},
+				"properties":{
+					key: [elementNode => elementNode.firstElementChild, "value"],
+				},
+				effects:[
+					[
+						["value", (effectuality(function implication(effect){
+							return function cause(causeValue, causeName, effectName, ...u){
+								const effectValue = causeValue * causeValue;
+								return effect(effectValue, causeValue, causeName, effectName, ...u);
+							};
+						}))(delay(3000)), componentNode => componentNode.lastElementChild],
+						["data-key", function(componentNode){
+							return componentNode.firstElementChild.value;
+						}],
+					],
+				],
+				"events":{
+					change: true,
+				},
+			});
+			// specialization
+			const declaration = component("query")();
+			return (declaration)(query);
+		},
+	"web-application#2": // two-level dependencies
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			const calculator = component(true)("calculator")({
@@ -5430,16 +5465,16 @@ const applications = {
 			const declaration = component("calculator")();
 			return (declaration)(calculator)(sum)(cell);
 		},
-	"web-application#2": // inter-dependencies
+	"web-application#3": // inter-dependencies
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			const user = component(true)("user")({
 				tagName: "span",
 				specification: function specification(specification, type, properties){
 					return `<span>
-							First name: ${specification("edit", { value: (properties.firstName || "").trim() }, "firstName")} <br>
-							Last name: ${specification("edit", { value: (properties.lastName || "").trim() }, "lastName")} <br>
-							Full name: ${specification("edit", { value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() }, "fullName")} <br>
+							${specification("edit", { value: (properties.firstName || "").trim() }, "firstName")} first name <br>
+							${specification("edit", { value: (properties.lastName || "").trim() }, "lastName")} last name <br>
+							${specification("edit", { value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() }, "fullName")} full name <br>
 					</span>`;
 				},
 				"properties":{
@@ -5483,41 +5518,6 @@ const applications = {
 			// specialization
 			const declaration = component("user")();
 			return (declaration)(user)(edit);
-		},
-	"web-application#3": // asynchronous dependencies
-		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Effectuality ((() -> ()) -> (() -> ()))
-		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
-			const query = component(true)("query")({
-				tagName: "div",
-				specification: function specification(specification, type, properties){
-					return `<div data-key="${properties.key || ""}">
-							Key: <input value="${properties.key || ""}"/> <br>
-							Value: <input value=""/>
-					</div>`;
-				},
-				"properties":{
-					key: [elementNode => elementNode.firstElementChild, "value"],
-				},
-				effects:[
-					[
-						["value", (effectuality(function implication(effect){
-							return function cause(causeValue, causeName, effectName, ...u){
-								const effectValue = 10 * causeValue;
-								return effect(effectValue, causeValue, causeName, effectName, ...u);
-							};
-						}))(delay(3000)), componentNode => componentNode.lastElementChild],
-						["data-key", function(componentNode){
-							return componentNode.firstElementChild.value;
-						}],
-					],
-				],
-				"events":{
-					change: true,
-				},
-			});
-			// specialization
-			const declaration = component("query")();
-			return (declaration)(query);
 		},
 };
 
