@@ -5582,17 +5582,19 @@ const applications = {
 	"web-application#5":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
-			// Dynamic creation and removal of sub-components
+			// Todo list
 			const list = (component(true)("list")({
 				tagName: "div",
 				specification: function specification(specification, type, properties){
 					return `<div data-key="${properties.key || ""}">
-							<input value="${properties.key || ""}"/> new item <br>
-							<ul></ul>
+							<div><b>Todo list:</b></div>
+							<div></div>
+							<br/>
+							<div><input value="${properties.key || ""}"/> new item</div>
 					</div>`;
 				},
 				"properties":{
-					key: [elementNode => elementNode.firstElementChild, "value"],
+					key: [elementNode => elementNode.lastElementChild.firstElementChild, "value"],
 				},
 				effects:[
 					[
@@ -5600,9 +5602,9 @@ const applications = {
 							return function cause(value, ...x){
 								return effect({ value: value }, value, ...x);
 							};
-						})), componentNode => componentNode.lastElementChild],
+						})), componentNode => componentNode.firstElementChild.nextElementSibling],
 						["data-key", function(componentNode){
-							return componentNode.firstElementChild.value;
+							return componentNode.lastElementChild.firstElementChild.value;
 						}],
 					],
 				],
@@ -5613,15 +5615,15 @@ const applications = {
 			const item = (component(true)("item")({
 				tagName: "li",
 				specification: function specification(specification, type, properties){
-					return `<li>${properties.value || ""}</li>`;
+					return properties.value? `<div><input type="checkbox" ${properties.done? "checked": ""}/> <span contenteditable>${properties.value}</span></div>`: "";
 				},
 				states:{
 					value: function(componentNode){
-						return componentNode.firstChild.textValue;
+						return componentNode.firstElementChild.lastElementChild.textValue;
 					},
 				},
 				"properties":{
-					value: node => node, // value: true,
+					value: true,
 				},
 			}));
 			const declaration = (list)(item);
