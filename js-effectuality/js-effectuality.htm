@@ -8,66 +8,66 @@
 
 What is Effectuality?
 Effectuality is a solution: Effectuality solves the issue of composing n-ary asynchronous functions
-Effectuality is a model: Effectuality models callback functions, Effectuality models side-effects
+Effectuality is an abstraction: Effectuality abstracts side-effects, notably, asynchronous side-effects and input-output side-effects
+Effectuality is a model: Effectuality models callback functions
 Effectuality is JavaScript: Effectuality targets web application and is implented using JavaScript most of it being pure functional code but it could be ported to other programming languages 
 Effectuality is functional: programming with Effectuality is about composition and combinators, programming with Effectuality is pure, programming with Effectuality is declarative and point free, in Effectuality every thing is a function
 Effectuality is reactive: Effectuality deals with events, representing asynchronous effects, triggered by effects
 Effectuality is a generalization: generalization of IO Monad, generalization of Task Monad, generalization of Hughes Arrow
 Effectuality is unification: unification of IO Monad, Task Monad, Hughes Arrow, Promises, side-effects, n-ary functions
-Effectuality is simplification: Effectuality has a single operation, composition of conjunction
+Effectuality is simplification: Effectuality has a single operation, composition, without the need of explicit composition operator
 Effectuality is mathematics: Effectuality thrusts the mathematical backbone of functional programming all the way
-Effectuality is an algebra: Effectuality is a multiple-semiring, composition semiring, conjunction semiring, disjunction semiring
+Effectuality is an algebra: Effectuality is a semiring, with composition as operation and concatenation as notation
 Effectuality is a category: Effectuality is the Category of all effects, called eventualities, where morphisms are causal relationships between effects, called implications
-Effectuality is semantic: Effectuality operational semantics models the effects, Effectuality denotational semantics models the algebra operations (composition, conjunction, concurrence, recurrence), an Effectuality description corresponds to an inverted Hoare triple of the axiomatic semantics
-Effectuality is natural: Effectuality is a natural transformation between operations and effects  
-Effectuality is a logic: as an alternative to the propositional logic and quantum logic, Effectuality logic considers implications between effects, called eventualitities, true if they occur, false otherwise
-Effectuality is a description: Effectuality is a description of the application, interpreting it runs the application
-Effectuality is a interpretation: an Effectuality description may be interpreted by the Effectuality interpreter to run the programm including side-effects 
-Effectuality is a circumvention: Effectuality circumvent the functional programming purity by delegating side-effects to the framework, like the IO Monad 
-Effectuality is a computation: Effectuality, like Hughes Arrows and unlike Monads, may express any computation, including recursive computations
+Effectuality is semantic: Effectuality operational semantics models the effects, Effectuality denotational semantics models the algebra operation (composition), an Effectuality description corresponds to an inverted Hoare triple of the axiomatic semantics
+Effectuality is natural: there is a natural transformation between Effectuality composition and side-effect chaining
+Effectuality is a logic: as an alternative to the propositional logic and quantum logic, Effectuality logic considers implications between effects, called eventualities, true if they occur, false otherwise
+Effectuality is a description: Effectuality is a description of the application, extracting then interpreting it runs the application
+Effectuality is a interpretation: an Effectuality description may be interpreted by the Effectuality interpreter to run the programm including side-effects (the Effectuality interpreter is agnostic unlike the free Monad interpreter)
+Effectuality is a circumvention: Effectuality circumvent the functional programming purity by delegating side-effects to the framework, like the IO Monad and Task Monad
+Effectuality is a computation: Effectuality, like the Hughes Arrow and unlike Monads, may express any computation, including recursive computations
 Effectuality is an abduction: an Effectuality infers the cause from the effect
 Effectuality is an inversion: Effectuality composition is right to left, the cause Effectuality appears after the effect Effectuality implied by that cause, Effectuality conjunction is a right to left
 Effectuality is a strategy: Effectuality is a top-down startegy, Effectuality is a goal oriented strategy
-Effectuality is a library: Effectuality is a nano, standalone, single-function JavaScript library with support for composition, conjunction, concurrence and recurrence
-Effectuality is a framework: Effectuality comes with a sample mini-framework exposing web-application typical side-effects such as log, injunction, disjunction, injunction, observation, stream, delay, signal, request, HTML input element, ...
+Effectuality is a library: Effectuality is a nano, standalone, single-function JavaScript library with support for composition
+Effectuality is a framework: Effectuality comes with a sample mini-framework exposing web-application typical side-effects such as concurrence, recurrence, conjunction, injunction, disjunction, injunction, log, observation, stream, delay, signal, request, HTML components
 Effectuality is a toolbox: combinators maybe implemented from the Effectuality core implementation some of which are provided as sample shuch as unit, any, all, either, lift, ...
-Effectuality is a web-page: a single standalone web-page includes the Effecttuality implementation and a mini-framwork, performs selft-tests, generates and runs a sample web-application
-Effectuality is a project: Effectuality is an open-source github project //todo provide the URL
+Effectuality is a web-page: a single standalone web-page includes the Effecttuality implementation and a mini-framwork, performs selft-tests, generates and runs sample web-applications
+Effectuality is a project: Effectuality is an open-source github project, https://nroumiantzeff.github.io/js-effectuality/js-effectuality.htm
 Effectuality is a type: Effectuality is a functional type, unlike data types which are objects with an API, an Effectuality instance is a function with a single API, called by calling the instance
 Effectuality is a type-system: Effectuality checks that a JavaScript expression is an Effectuality instance at runtime
 Effectuality is an encapsulation: Effectuality encapsulate impure effects preventing the program from triggering them directly
-Effectuality is an endomorphism: composition and conctenation of Effectuality instances return an Effectuality instance, combinators take Effectuality instances and return an Effectuality instance
-Effectuality is an idea: Arrow ((t -> ()) -> (s -> ())
-Effectuality is a patern: effectuality(function implication(effect){ return function cause(x){ ... return effect(y); }; })
-Effectuality is a rule: from a cause an effect shall be called once and once only
+Effectuality is an endomorphism: composition of Effectuality instances returns an Effectuality instance, combinators take Effectuality instances and return an Effectuality instance
+Effectuality is an idea: Effectuality ((t -> ()) -> (s -> ())
+Effectuality is a patern: effectuality(function implication(effect){ return function cause(...x){ ... return effect(...y, ...x); }; })
+Effectuality is conservation: the cause and effect arguments correspond to a conservative stack
 Effectuality is a commitment: arguments shant be consumed
-Effectuality is a convention: Effectuality instances are distinguished in the code by surounding parentheses, (effectuality1), which leads to Effectuality composition a peculiar JavaScript syntax: (effectuality1) (effectuality2) (effectuality3)
+Effectuality is a rule: from a cause an effect shall be called once and once only
+Effectuality is a convention: Effectuality instances are distinguished in the code by surounding parentheses, (effectuality1), which leads to Effectuality composition a peculiar JavaScript syntax: (effectuality1)(effectuality2)(effectuality3)
 Effectuality is a mitigation: unlike when debugging a standard functional program composition, the call stack of an Effectuality program is comprehensible
-Effectuality is a function: Effectuality core implementation is a single function of less than 30 lines of native functional JavaScript
-Effectuality is a generator: generating an Effectuality instance is as follows: effectuality(implication) where implication type is (t -> ()) -> (s -> ()))
+Effectuality is a function: Effectuality core implementation is a single function of less than 30 lines of native functional JavaScript (not counting comments)
+Effectuality is a generator: generating an Effectuality instance is as follows: effectuality(implication) where implication type is ((t -> ()) -> (s -> ()))
 Effectuality is an injection: framework injects functions to get the Effectuality instance generator: const effectuality = Efectuality(encryption, decryption1, decryption2) where encryption is a public key function and decryption1 and decryption2 are private key functions
 Effectuality is an architecture: the framework instanciates the Effectuality instance generator and injects it together with encapsulated side-effects to the program which returns an Effectuality ran by the framework
-Effectuality is a convenience: Effectuality compilation of an Effectuality program may be performed server side or client side, Effectuality compilation of an Effectuality program may generate static web-pages for the server or dynamic web-pages for the client  
-Effectuality is an interface: the Effectuality API supports construction, composition, conjunction, concurrence and recurrence of Effectuality instances
-Effectuality is a language: expressions, effectiality0(effectuality1, effectuality2, ...), return an Effectuality instance from Effectuality instances, native Effectuality instance are providied by the environment, lift, notably which provides interoperability with JavaScript
+Effectuality is a convenience: Effectuality interpretation of an Effectuality program may be performed server side or client side, Effectuality compilation of an Effectuality program may pre-generate web-pages on the server or dynamically generate web-pages on the client
+Effectuality is an interface: the Effectuality API supports definition and composition of Effectuality instances
+Effectuality is a language: the Effectuality language expressions, each enclosed by parentheses, either atomic Effectuality instances or concatenation of expressions or combination of expressions (application of combinator) are Effectuality instances, native Effectuality instances and native Effectuality combinators are providied by the environment, notably, the lift combinator which provides interoperability with JavaScript
 Effectuality is a terminology: Effectuality is the quality of being able to bring about an effect, the power to be effective, adequate to accomplish a purpose, producing the intended or expected result
 Effectuality is a signature: (t -> ()) -> (s -> ())
 Effectuality is a manifesto: (t -> ()) -> (s -> ())
-Effectuality is an abstraction: Effectuality ((t -> ()) -> (s -> ())) is a composable model of an asynchronous effect with a callback and Effectuality (() -> (s -> ())) is a vanishing composable model of an asynchronous effect without callback
-Effectuality is fractal: Effectuality ((t -> ()) -> (s -> ())), Effectuality ((Effectuality ((v -> ()) -> (u -> ())) -> ()) -> (Effectuality ((t -> ()) -> (s -> ())) -> ())), ...
 Effectuality is a continuation: in a continuation passing style, the effect represents the rest of the computation after the cause 
-Effectuality is a singulatity: although there are tones of articles, papers, about Monads and Promises, nothing is to be found on the signature (t -> ()) -> (s -> ())
+Effectuality is a singularity: although there are tones of articles, papers, about Monads and Promises, nothing is to be found on the signature (t -> ()) -> (s -> ())
 Effectuality is a quest: from the complexity of web-application development, to functional programming, functional reactive programming, IO Monad, Task Monad, Huges Arrow and Effectuality
-Effectuality is a millestone: a WebAssembly implementation has been envisioned, effect type and cause type could be specify when declaring an Effectuality allowing type checking at compilation time
+Effectuality is a millestone: effect type and cause type could be specify when declaring an Effectuality allowing type checking at compilation time
 Effectuality is a tribute: Effectuality is a tribute to callbacks, asynchronous and n-ary yet composable
 Effectuality is a rebellion: Effectuality is a rebellion against the rebellion against callbacks
 Effectuality is a rehabilitation: Effectuality rehabilitates callbacks by renaming them eventualities
 Effectuality is a joy: the arguments passed between Effectuality eventualities (aka callbacks) may be considered as a Joy (the concatenative functional language) stack, Joy conservative combinators may be implemented as Effectuality instances and composed with other Effectuality instances, the stack is conservative except for the injunction combinator (Effectuality equivalent of function application)
 Effectuality is a tendency: since Effectuality allows composition of nary functions and since nary arguments are concatenated, Effectuality composition has a tendency of beeing used extensively, Effectuality conjunction (Hughes arrow operations "first", "second", ...) has a tendency of not beeing needed
-Effectuality is a scale: at the low level you rearrange the argument stack using standard stack combinators, at the middle level you use conservative stack combinators togeteher with the injunction combinator to reduce the arguments stack, at the higher level you use the tag combinator to automatically adapt the argument stack
+Effectuality is a scale: at the level 0 you rearrange the argument stack using standard stack combinators, at the level 1 you use conservative stack combinators togeteher with the injunction combinator to reduce the arguments stack, at level 2 you use the tag combinator to automatically adapt the argument stack, at level 3 use the store combinator to immutably model procedural variables
 Effectuality is a discipline: if programming is easy but functional programming is hard and requires discipline then Effectuality is easy but conservative Effectuality is hard and requires discipline
 Effectuality is a riddle: what is simple yet incomprehensible, obvious yet inconceivable, beautiful yet frightening
-Effectuality is fun: functional is fun, Effectuality is functional, Effectuality is fun
+Effectuality is a silogism: functional is fun, Effectuality is functional, Effectuality is fun
 Effectuality is social: be part of the social framewok by writing your own JavaScript framework, copy the Effectuality function, rename it to your pseudonym and share it with your friends
 Effectuality is a thesis: to do
 Effectuality is a vision: a vision of a free world, free of Promise, Async/Await, Generator, Signal, Monad and Functional Programming daily blog posts
@@ -75,74 +75,36 @@ Effectuality is an anthem: no Future
 Effectuality is a contradiction: the structure of an Effectuality declarative program is sequential by nature which is procedural by nature
 Effectuality is an aberration: functions with signature such as t -> (), s -> (), (t1, t2, ...) -> (), (s1, s2, ...) -> () are mathematical aberrations because they have no returned value, in a pure functional JavaScript program their calls might as well be replaced by undefined  
 Effectuality is a trade-off: the abherrant signature Effectuality ((t -> ()) -> (s -> ())) could be replace by a conforment yet more complex signature Effectuality ((t -> $) -> (s -> $)) where $ is an opaque type, forcing the cause (s -> $) implementation to call the effect (t -> $) and return its value 
+Effectuality is fractal: Effectuality ((t -> ()) -> (s -> ())), Effectuality ((Effectuality ((v -> ()) -> (u -> ())) -> ()) -> (Effectuality ((t -> ()) -> (s -> ())) -> ())), ...
 Effectuality is a question: why have you been reading this up to here?
 Effectuality is an exclamation: stop reading this crap and go write some code!
-Effectuality is an end: since Effectuality twists the brain it is aend to a means, Effectuality means the end of my research since it prooves that a mathematicaly perfect abstraction is not suitable for the coder mass
+Effectuality is an end: since Effectuality twists the brain it is an end to a means, Effectuality means the end of my research since it proves that a mathematicaly perfect abstraction is not suitable for the coder mass
 Effectuality is an hoax: Effectuality will be officialy released on the first of april to fool people into thinking Effectuality is an hoax
 Effectuality is a community: be the first to be part of it
 Effectuality is a quotation: "I realise that my entire social and professional live has been dedicated to my emotional preparation for the diclosure of this project"
-Effectuality is beyound: Effectuality is one step beyound callbacks, Effectuality is one step beyound Promises, Effectuality is one step beyound Monads, Effectuality is one step beyound Applicative Functors, Effectuality is one step beyound Arrows, Effectuality is one step beyound Effectualities, one step beyound...    
+Effectuality is beyond: Effectuality is one step beyond callbacks, one step beyond Promises, one step beyond Monads, one step beyond Applicative Functors, one step beyond Arrows, one step beyond Effectuality, one step beyond...
 Effectuality is a message: Effectuality is a message to you rudy, i hope that someone gets my message in the bottle
 Effectuality is a revolution: Effectuality fits right in, it's a revolution, i suppose
 Effectuality is an utopia: imagine all the people programming with Effectuality, first born unicorn, functional core software, dream of Effectuality
-//todo update to reflect changes in Effectuality implementation and design decisions
-
-//todo rename effectuality to "end"? (no "end-js" nor "end-npm" on google) => no
-//todo rename effectuality to "abduction" (inferring the cause from the effect)?
-//todo rename cause to "means"? "purpose"? "motive"? "explanation"? "motivation"? "principal"? "instigation"? "reason"? "prequel"? "premise"? => no
-//todo rename effect to "end"? "intention"? "intent"? "aim"? "goal"? "purpose"? "reason"? "consequence"? "conclusion"? => no
-//todo rename "implication" to "reason"? => no
-//todo rename cause and effect to "because" and "therefore"?
-//todo rename cause and effect to "since" and "thus" or "hence"?
 
 --------------------------------------------------
 Effectuality "hello world" application description
 --------------------------------------------------
 
-// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Input -> Output  -> Effectuality ((() -> ()) -> (() -> ()))
-function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
-	return (label("hello world"));
-}
-
-----------------------------------------------------------------------
-Effectuality interactive application sample description (event-driven)
-----------------------------------------------------------------------
-
-// this application creates 3 edit-boxes labeled "a", "b" and "c", the third one displays the product of the two others
-
-// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Input -> Output  -> Effectuality ((() -> ()) -> (() -> ()))
-function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
-	const lift = effectualityLift(effectuality);
-	const multiplication = lift(function(x1, x2){
-		return x1 * x2;
-	});
-	const computation = (output("c"))(multiplication)(input("a"))(input("b"));
-	return (label("c = a * b"))(editbox("c"))
-		(label())(label("b"))(editbox("b", 7, computation))
-		(label())(label("a"))(editbox("a", 6, computation));
-}
-
------------------------------------------------------------------------
-Effectuality reactive application sample description (observer pattern)
------------------------------------------------------------------------
-
-// this application creates 3 edit-boxes labeled "a", "b" and "c", the third one displays the product of the two others
-
-// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Input -> Output  -> Effectuality ((() -> ()) -> (() -> ()))
-function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
-	const lift = effectualityLift(effectuality);
-	const multiplication = lift(function(x1, x2){
-		return x1 * x2;
-	});
-	const computation = (output("c"))(multiplication)(input("a"))(input("b"));
-	return (label("c = a * b"))(observation("a", "c", computation))(observation("b", "c", computation))(editbox("c"))
-		(label())(label("b"))(editbox("b", 7, observation("b")))
-		(label())(label("a"))(editbox("a", 6, observation("a")));
+// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
+function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+	const declaration = (component(true)("hello-world")({
+		specification: function(){
+			return `<div>Hello World!</div>`;
+		},
+	}));
+	const definition = (component("hello-world")());
+	return (definition)(declaration);
 }
 
 -------------------------------------------------------------------------------
 Effectuality application compilation and execution (performed by the framework)
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 compilation(application)();
 
@@ -150,130 +112,142 @@ compilation(application)();
 Effectuality entry point (provided by the framework)
 ----------------------------------------------------
 
-// effectuality: (t -> ()) -> (s -> ()) -> Effectuality ((t -> ()) -> (s -> ()))
+// effectuality: (((t1, t2, ...) -> ()) -> ((s1, s2, ... -> ())) -> Effectuality (((t1, t2, ...) -> ()) -> (s1, s2, ... -> ()))
+// Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())): Effectuality (((s1, s2, ...) -> ()) -> ((r1, r2, ...) -> ())) -> Effectuality (((t1, t2, ...) -> ()) -> ((r1, r2, ...) -> ()))
 
-------------------------------------------------------
-Effectuality sample effects (provided by the framwork)
-------------------------------------------------------
+---------------------------------------------------------
+Effectuality core combinators (provided by the framwork)
+---------------------------------------------------------
 
-//todo update documentation
+// concurrence: Effectuality ((([tj1, tj2, ...], ...) -> ()) -> ([[[ti1, ti2, ...], CountN, IndexNi], ...] -> ())) -> (Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality ((([tj1, tj2, ...], ...) -> ()) -> (([s11, s12, ...], [s21, s22, ...], ...) -> ())))
+ 
+// recurrence: Effectuality (((Boolean, ..., s2, s1, u1, u2, ...) -> ()) -> ((..., s2, s1, u1, u2, ...) -> ())) -> Effectuality (((..., s2, s1, u1, u2, ...) -> ()) -> ((..., s2, s1, u1, u2, ...) -> ())) -> Effectuality (((..., s2, s1, u1, u2, ...) -> ()) -> ((..., s2, s1, u1, u2, ...) -> ()))
+// recurrence: Effectuality (((Boolean, tn, tm, ... tj, ti, ..., t2, t1, s1, s2, ...) -> ()) -> ((tj, ti, ..., t2, t1, s1, s2, ...) -> ())) -> Effectuality (((tj, ti, ..., t2, t1, s1, s2, ...) -> ()) -> ((..., t2, t1, s1, s2, ...) -> ())) -> Effectuality (((..., t2, t1, s1, s2, ...) -> () -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((..., t2, t1, s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 
-// log: ((s1, s2, ...) -> String) -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+// conjunction: Effectuality (((t11, t12, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t21, t22, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality (((t11, t12, ..., t21, t22, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 
-// counter: Effectuality ((Number -> ()) -> (() -> ()))
+// disjunction: Effectuality (((t11, t12, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) -> Effectuality (((t21, t22, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) -> ... -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
 
-// canceler: Effectuality ((() -> ()) -> (Id -> ()))
+// injunction: Effectuality (((t1, t2, ..., s1, s2, ..., u1, u2, ...) -> ()) -> ((s1, s2, ..., u1, u2, ...) -> ())) -> Effectuality (((s1, s2, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) -> Effectuality (((t1, t2, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+// injunction: () -> Effectuality (((s1, s2, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+
+---------------------------------------------------------------
+Effectuality environment combinators (provided by the framwork)
+---------------------------------------------------------------
+
+// Level: 0
+// Level: 1
+// Level: 2
+// log: Level -> ((s1, s2, ...) -> String) -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+
+// observation: () -> True -> Effectuality (((Id2, u1, u2, ...) -> ()) -> ((u1, u2...) -> ())) // registration
+// observation: () -> False -> Effectuality (((Id2, u1, u2, ...) -> ()) -> ((Id2, u1, u2...) -> ())) // cancellation
+// observation: True -> Id1 -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) // notification
+// observation: True -> Id1 -> Effectuality (((t1, t2, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) // notification with initialization
+// observation: True -> () -> Effectuality (((t1, t2, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((Id1, s1, s2, ...) -> ()) -> ((Id1, s1, s2, ...) -> ())) // notification with variable id1 with initialization
+// observation: True -> () -> Effectuality (((Id1, s1, s2, ...) -> ()) -> ((Id1, s1, s2, ...) -> ())) // notification with variable id1
+// observation: False -> True -> Id1 -> Effectuality (() -> ((s1, s2, ...) -> ())) -> Effectuality (((Id2, u1, u2, ...) -> ()) -> ((Id2, u1, u2...) -> ())) // cancellable observation
+// observation: False -> False -> Id1 -> Effectuality (() -> ((s1, s2, ...) -> ())) -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2...) -> ())) // uncancellable observation
+// observation: False -> True -> () -> Effectuality (() -> ((s1, s2, ...) -> ())) -> Effectuality (((Id1, Id2, u1, u2, ...) -> ()) -> ((Id1, Id2, u1, u2...) -> ())) // cancellable observation with variable id1
+// observation: False -> False -> () -> Effectuality (() -> ((s1, s2, ...) -> ())) -> Effectuality (((Id1, u1, u2, ...) -> ()) -> ((Id1, u1, u2...) -> ())) // uncancellable observation with variable id1
+
+// stream: () -> (StreamConsumerCount -> StreamWatermark -> StreamOndemandProducer -> Effectuality (((Id, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) // declaration
+// stream: () -> (True -> StreamWatermark -> StreamOndemandProducer -> Effectuality (((Id, StreamConsumerCount, u1, u2, ...) -> ()) -> ((StreamConsumerCount, u1, u2, ...) -> ())) // declaration
+// stream: () -> (StreamConsumerCount -> True -> StreamOndemandProducer -> Effectuality (((Id, StreamWatermark, u1, u2, ...) -> ()) -> ((StreamWatermark, u1, u2, ...) -> ())) // declaration
+// stream: () -> (True -> True -> StreamOndemandProducer -> Effectuality (((Id, StreamConsumerCount, StreamWatermark, u1, u2, ...) -> ()) -> ((StreamConsumerCount, StreamWatermark, u1, u2, ...) -> ())) // declaration
+// stream: True -> Effectuality (((s, Id, u1, u2, ...) -> ()) -> ((s, Id, u1, u2, ...) -> ())) // production
+// stream: False -> StreamConsumerIndex -> Effectuality (((s, Id, u1, u2...) -> ()) -> ((Id, u1, u2...) -> ())) // consumption
+// stream: False -> True -> Effectuality (((s, StreamConsumerIndex, Id, u1, u2...) -> ()) -> ((StreamConsumerIndex, Id, u1, u2...) -> ())) // consumption
+// stream: False -> StreamConsumerIndex -> False -> Effectuality (((s, Id, u1, u2...) -> ()) -> ((Id, u1, u2...) -> ())) // termination
+// stream: False -> True -> False -> Effectuality (((s, StreamConsumerIndex, Id, u1, u2...) -> ()) -> ((StreamConsumerIndex, Id, u1, u2...) -> ())) // termination
+// stream: False -> StreamConsumerIndex -> True -> Effectuality (((Id, u1, u2...) -> ()) -> ((Id, u1, u2...) -> ())) // termination
+// stream: False -> True -> True -> Effectuality (((StreamConsumerIndex, Id, u1, u2...) -> ()) -> ((StreamConsumerIndex, Id, u1, u2...) -> ())) // termination
 
 // delay: Milliseconds -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
-// delay: Milliseconds -> Effectuality ((Id -> ()) -> (Id -> ())) -> Effectuality (((s1, s2, ...) -> ()) -> ((Id, s1, s2, ...) -> ()))
-// delay: Effectuality ((Milliseconds -> ()) -> (Milliseconds -> ())) -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
-// delay: Effectuality ((Milliseconds -> ()) -> (Milliseconds -> ())) -> Effectuality ((Id -> ()) -> (Id -> ())) -> Effectuality (((s1, s2, ...) -> ()) -> ((Id, s1, s2, ...) -> ()))
+// delay: True -> Effectuality (((Milliseconds, s1, s2, ...) -> ()) -> ((Milliseconds, s1, s2, ...) -> ()))
+// delay: () -> (True -> Effectuality (((Id, s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) // registration
+// delay: () -> (False -> Effectuality (((Id, s1, s2, ...) -> ()) -> ((Id, s1, s2, ...) -> ()))) // cancellation
+// delay: Milliseconds -> True -> Effectuality (((Id, s1, s2, ...) -> ()) -> ((Id, s1, s2, ...) -> ())) // cancellable
+// delay: True -> True -> Effectuality (((Milliseconds, Id, s1, s2, ...) -> ()) -> ((Milliseconds, Id, s1, s2, ...) -> ())) // cancellable
 
-// request: ((s1, s2, ...sM) -> [{}]) -> Number -> Effectuality (([{}] -> ()) -> ((s1, s2, ...sM) -> ()))
-// request: ((s1,s2, ...sM) -> [{}]) -> Number -> Effectuality ((Id -> ()) -> (Id -> ())) -> Effectuality (([{}] -> ()) -> ((Id, s1, s2, ...sM) -> ()))
+// signal: () -> (True -> Effectuality (((Id, s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) // registration
+// signal: () -> (False -> Effectuality (((Id, s1, s2, ...) -> ()) -> ((Id, s1, s2, ...) -> ()))) // cancellation
+// signal: Milliseconds -> Effectuality (() -> ((Time, Id, s1, s2, ...) -> ())) -> Effectuality (((Id, s1, s2, ...) -> ()) -> ((Id, s1, s2, ...) -> ()))
+// signal: True -> Effectuality (() -> ((Time, Id, s1, s2, ...) -> ())) -> Effectuality (((Milliseconds, Id, s1, s2, ...) -> ()) -> ((Milliseconds, Id, s1, s2, ...) -> ()))
 
-// input: Identifier -> Effectuality ((String -> ()) -> (() -> ()))
+// request: () -> (True -> Effectuality (((Id, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))) // registration
+// request: () -> (False -> Effectuality (((Id, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))) // cancellation
+// request: ((s1, s2, ...) -> [{}]) -> Milliseconds -> Effectuality ((([{}], s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) // uncancellable
+// request: ((s1, s2, ...) -> [{}]) -> Milliseconds -> True -> Effectuality ((([{}], id, s1, s2, ...) -> ()) -> ((id, s1, s2, ...) -> ())) // cancellable
 
-// output: Identifier -> Effectuality ((() -> ()) -> (String -> ()))
-
-// editbox: Identifier -> String -> Effectuality ((String -> ()) -> (() -> ())) -> Effectuality ((s -> ()) -> (s -> ()))
-
-// label: String -> Effectuality ((s -> ()) -> (s -> ()))
-
----------------------
-Effectuality core API
----------------------
-instanciation:
-	// implication1: (t -> ()) -> (s -> ())	
-	const effectuality1 = effectuality(implication1);
-	// effectuality1: Effectuality ((t -> ()) -> (s -> ()))
-composition:
-	// implication1: (s -> ()) -> (r -> ())
-	// implication0: (t -> ()) -> (s -> ())
-	const effectuality1 = effectuality(implication1);
-	const effectuality0 = effectuality(implication0);
-	// effectuality1: Effectuality ((s -> ()) -> (r -> ()))
-	// effectuality0: Effectuality ((t -> ()) -> (s -> ()))
-	const compositionEffectuality = (effectuality0)(effectuality1);
-	// compositionEffectuality: Effectuality ((t -> ()) -> (r -> ()))
-
--------------------------------
-Effectuality special combinators
--------------------------------
-
-concurrence: //todo
-	// implication2: (t2 -> ()) -> (s2 -> ())
-	// implication1: (t1 -> ()) -> (s1 -> ())
-	// implication0: (([tj], ...) -> ()) -> ([[[ti], CountN, IndexN], ...] -> ())
-	const effectuality2 = effectuality(implication2);
-	const effectuality1 = effectuality(implication1);
-	const effectuality0 = effectuality(implication0);
-	// effectuality2: Effectuality ((t2 -> ()) -> (s2 -> ()))
-	// effectuality1: Effectuality ((t1 -> ()) -> (s1 -> ()))
-	// effectuality0: Effectuality ((([tj], ...) -> ()) -> ([[[ti], Count2, Index2], ...] -> ()))
-	const concurrenceEffectuality = (effetuality0)((effectuality1), (effectuality2));
-	// concurrenceEffectuality: Effectuality ((([tj], ...) -> ()) -> ((si, ...) -> ()))
-recurrence: //todo
-	const recurrence = effectuality(effectuality)(effectuality);
-	// implication2: (t -> ()) -> (s -> ())
-	// implication1: ((Boolean, s, t) -> ()) -> (t -> ())
-	const effectuality2 = effectuality(implication2);
-	const effectuality1 = effectuality(implication1);
-	// effectuality2: Effectuality ((t -> ()) -> (s -> ()))
-	// effectuality1: Effectuality (((Boolean, s, t) -> ()) -> (t -> ()))
-	const recurrenceEffectuality = recurrence((effectuality1), (effectuality2));
-	// recurrenceEffectuality: Effectuality ((t -> ()) -> (s -> ()))
-conjunction:
-	// implication2: (s2 -> ()) -> (r2 -> ())
-	// implication1: (s1 -> ()) -> (r1 -> ())
-	// implication0: (t -> ()) -> ((s1, s2) -> ())
-	const effectuality2 = effectuality(implication2);
-	const effectuality1 = effectuality(implication1);
-	const effectuality0 = effectuality(implication0);
-	// effectuality2: Effectuality ((s2 -> ()) -> (r2 -> ()))
-	// effectuality1: Effectuality ((s1 -> ()) -> (r1 -> ()))
-	// effectuality0: Effectuality ((t -> ()) -> ((s1, s2) -> ()))
-	const conjunctionEffectuality = (effetuality0)((effectuality1), (effectuality2));
-	// conjunctionEffectuality: Effectuality ((t -> ()) -> ((r1, r2) -> ()))
-//todo disjunction
-//todo injunction
+// component: True -> () -> ComponentTypeAttribute -> ComponentSubtypeAttribute -> ComponentEffectAttributePrefix -> ComponentCauseAttributePrefix -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+// component: True -> ComponentType -> ComponentRegistration -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+// component: ComponentType -> ComponentSubtype -> { PropertyName: PropertyValue } -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
 
 -------------------------------
 Effectuality sample combinators
 -------------------------------
 
-//todo is the documentation up to date?
-
+// effectualityZero: Effectuality -> Effectuality ()
 var zero = effectualityZero(effectuality);
-// zero: Effectuality ()
 
+// effectualityUnit: Effectuality -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 var unit = effectualityUnit(effectuality);
-// unit: Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 
+// effectualityLift: Effectuality -> (((s1, s2, ...) -> t) -> Effectuality (((t, s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())))
+// effectualityLift: Effectuality -> (((s1, s2, ...) -> [t1, t2, ...]) -> True -> Effectuality (((t1, t2, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())))
 var lift = effectualityLift(effectuality);
-// lift: (((s1, s2, ...) -> t) -> Effectuality ((t -> ()) -> ((s1, s2, ...) -> ())))
 
+// effectualityInitialization: Effectuality -> t1 -> t2 -> ... -> Effectuality (((t1, t2, ...) -> ()) -> (() -> ()))
 var initialization = effectualityInitialization(effectuality);
-// initialization: t1 -> t2 -> ... -> Effectuality (((t1, t2, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 
-var copy = effectualityCopy(effectuality);
-// copy: Index -> Index -> ... -> Effectuality (((si, sj, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+// effectualityCopy: Effectuality -> Index -> Index -> ... -> Effectuality ((si, sj, ..., s1, s2, ...] -> ()) -> ((s1, s2, ...) -> ()))
+var initialization = effectualityInitialization(effectuality);
 
+// effectualityInjunctionFit: Effectuality -> Injunction -> (EffectIndex -> EffectIndex -> ...) -> (CauseIndex -> CauseIndex -> ...) -> (Effectuality (((t1, t2, t3, ..., u1, u2, u3, ...) -> ()) -> ((s1, s2, ..., u1, u2, u3, ...) -> ())) -> Effectuality (((ti, tj, ..., u1, ..., s1, u2, ..., s2, u3, ...) -> ()) -> ((u1, ..., s1, u2, ..., s2, u3, ...) -> ()))))
+var fit = effectualityInjunct
+ionFit(effectuality, injunction);
+
+// effectualityIndexation: Effectuality (((t11, t12, ...) -> ()) -> ((Index, s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((Index, s21, s22, ...) -> ())) -> ... -> [Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ...]
+var indexation = effectualityIndexation(effectuality);
+
+// effectualityConcurrenceAll: Effectuality -> Concurrence -> (Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality ((([t11, t12, ...], [t21, t22, ...], ...) -> ()) -> (([s11, s12, ...], [s21, s22, ...], ...) -> ())))
 var all = effectualityConcurrenceAll(effectuality, concurrence);
-// all: Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality ((([t11, t12, ...], [t21, t22, ...], ...) -> ()) -> (([s11, s12, ...], [s21, s22, ...], ...) -> ()))
 
+// effectualityConcurrenceAny: Effectuality -> Concurrence -> (Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality (((ti1, ti2, ...) -> ()) -> (([s11, s12, ...], [s21, s22, ...], ...) -> ())))
 var any = effectualityConcurrenceAny(effectuality, concurrence);
-// any: Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality (((ti1, ti2, ...) -> ()) -> (([s11, s12, ...], [s21, s22, ...], ...) -> ()))
 
+// effectualityConcurrenceEither: Effectuality -> Concurrence -> (Effectuality ((Boolean -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality ((Boolean -> ()) -> ((s1, s2, ...) -> ())) -> ... -> (Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()))))
 var either = effectualityConcurrenceEither(effectuality, concurrence);
-// either: Effectuality ((Boolean -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality ((Boolean -> ()) -> ((s1, s2, ...) -> ())) -> ... -> (Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())))
 
---------------------------------------
-Effectuality sample effect combinators
---------------------------------------
+// effectualityStore: Effectuality -> True -> Key, Key, ... -> Effectuality ((Store, s, u1, u2, ...) -> ()) -> ((s, u1, u2, ...) -> ()))
+// effectualityStore: Effectuality -> False -> Key, Key, ... -> Effectuality ((s, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+// effectualityStore: Effectuality -> True -> True, True, ... -> Effectuality ((Store, Key, Key, ..., s, u1, u2, ...) -> ()) -> ((Key, Key, ..., s, u1, u2, ...) -> ()))
+// effectualityStore: Effectuality -> False -> True, True, ... -> Effectuality ((s, Key, Key, ..., u1, u2, ...) -> ()) -> ((Key, Key, ..., u1, u2, ...) -> ()))
+var store = effectualityConcurrenceStore(effectuality);
 
-//todo
+// tag: [String, String, ...] -> [String, String, ...] -> Effectuality(((t1, t2, ..., u1, u2, ...) -> ()) -> ((s1, s2, ..., u1, u2, ..., Tag (s1, s2, ..), v1, v2, ...) -> ())) -> Effectuality(((Tag (t1, t2, ..., s1, s2, ...), u1, u2, ..., Tag (s1, s2, ...), v1, v2, ...) -> ()) -> ((u1, u2, ..., Tag (s1, s2, ...), v1, v2, ...)  -> ()))
+var tag = effectualityConcurrenceTag(effectuality);
 
+----------------------------------------------------
+Effectuality pure sample (using the lift combinator)
+----------------------------------------------------
+
+// square: Effectuality (((Number, Number, u1, u2, ...) -> ()) -> ((Number, u1, u2, ...) -> ()))
+const square = effectualityLift(x => x * x);
+
+----------------------------------------------------
+Effectuality pure sample Effectuality (from scratch)
+----------------------------------------------------
+
+// square: Effectuality (((Number, Number, u1, u2, ...) -> ()) -> ((Number, u1, u2, ...) -> ()))
+const square = effectuality(function implication(effect){
+	// effect: (Number, Number, u1, u2, ...) -> ()
+	// cause: (Number, u1, u2, ...) -> ()
+	return function cause(value, ...x){
+		return effect(value * value, value, ...x);
+	};
+});
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->
 
@@ -510,7 +484,7 @@ Framework core implementation: the <b>execution</b> function executes an Effectu
 // result: b
 // expected: b
 // label: string
-// declaration: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Input -> Output  -> Effectuality ((() -> ()) -> (() -> ()))
+// declaration: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> ... -> Effectuality ((() -> ()) -> (() -> ()))
 // effectuality: ((t -> ()) -> (s -> ())) -> Effectuality ((t -> ()) -> (s -> ()))
 // effectuality: (((t1, t2, ...tN) -> ()) -> ((s1, s2, ...sM) -> ())) -> Effectuality (((t1, t2, ...tN) -> ()) -> ((s1, s2, ...sM) -> ()))
 // Effectuality ((t -> ()) -> (s -> ())): Effectuality ((s -> ()) -> (r -> ())) -> Effectuality ((t -> ()) -> (r -> ()))
@@ -520,7 +494,7 @@ Framework core implementation: the <b>execution</b> function executes an Effectu
 // Output: Identifier -> Effectuality ((() -> ()) -> (String -> ()), 0)
 // Editbox: Identifier -> String -> Effectuality ((String -> ()) -> (s -> ())) -> Effectuality ((s -> ()) -> (s -> ()))
 // Label: String -> Effectuality ((s -> ()) -> (s -> ()))
-function compilation(declaration){
+function compilation(declaration, ...additionalSideEffects){
 
 	// safe access to the effectuality encapulation by the framework
 	let decryption;
@@ -1562,10 +1536,10 @@ function compilation(declaration){
 		});
 	}
 
-	// log: Level -> ((s1, s2, ...) -> String) -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 	// Level: 0
 	// Level: 1
 	// Level: 2
+	// log: Level -> ((s1, s2, ...) -> String) -> Effectuality (((s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 	function log(level){
 		return function(format){
 			return effectuality(function implication(effect){
@@ -1585,6 +1559,7 @@ function compilation(declaration){
 		};
 	}
 
+	// internal
 	// input: Identifier -> Effectuality (((String, ...) -> ()) -> ((...) -> ()))
 	function input(identifier){
 		return effectuality(function implication(effect){
@@ -1598,6 +1573,7 @@ function compilation(declaration){
 		});
 	}
 
+	// internal
 	// output: Identifier -> Effectuality (((String, ...) -> ()) -> ((String, ...) -> ()))
 	function output(identifier){
 		return effectuality(function implication(effect){
@@ -1606,17 +1582,7 @@ function compilation(declaration){
 			return function cause(value, ...x){
 				const element = document.getElementById(identifier);
 				if (element){
-					const oldValue = element.value;
 					element.value = value;
-					const newValue = element.value;
-					if (newValue !== oldValue){
-						setTimeout(function(){
-							const element = document.getElementById(identifier);
-							if (element){
-								element.dispatchEvent(new Event("change"));
-							}
-						});
-					}
 				}
 				effect(value, ...x);
 			};
@@ -2396,7 +2362,6 @@ function compilation(declaration){
 	}
 
 	// self-tests
-
 	if (declaration === undefined){
 		if (location.hash !== "#self-tests"){
 			return function(){
@@ -3244,8 +3209,14 @@ function compilation(declaration){
 	///////////////////////////////////////////////////////////
 	// execution
 
-	// declaration: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Input -> Output  -> Effectuality ((() -> ()) -> (() -> ()))
-	const effectuality1 = declaration(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output);
+	function preparation(additionalSideEffects){
+		return additionalSideEffects.map(function(item){
+			return item(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component);
+		});
+	}
+
+	// declaration: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> ... -> Effectuality ((() -> ()) -> (() -> ()))
+	const effectuality1 = declaration(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, ...preparation(additionalSideEffects));
 	// effectuality1: Effectuality ((t -> ()) -> (s -> ()))
 	// interpretation: Efectuality ((t -> ()) -> (s -> ())) -> (s -> ())
 	function interpretation(interpretationEffectuality){
@@ -3682,23 +3653,51 @@ const effectualityTag = (function(){
 	};
 })();
 
-//todo generic DOM effect "document" and "window"? (instead of "input", "label", input, output) global handlers?
 //todo immutable stack (linked list instead of spread arrays)
-//todo server-side HTML generation
 //todo name effect values and cause values (second and third arguments of Effectuality) and check names in composition, concurrence, recurrence, injunction, concurrence, recurrence, conjunction, disjunction (semantic type system at declaration stage)
 //todo optimize closures (static functions called with closure arguments)
-//todo WebAssembly (using Plorth wasm compiler?) (using Clean wasm compiler?) (using Idris wasm compiler?) (using standard wasm compiler?)
 
 </script>
 
 <script> "use strict"
 
-////////////
+/////////////////
 // run tests
 
-function runTest(...x){
+// tests
+function runTest(declaration){
 	if (location.hash === "#self-tests"){
-		return compilation(...x);
+		// input: Effectuality -> Identifier -> Effectuality (((String, ...) -> ()) -> ((...) -> ()))
+		function input(effectuality){
+			return function input(identifier){
+				return effectuality(function implication(effect){
+					// effect: (String, ...) -> ()
+					// cause: (...) -> ()
+					return function cause(...x){
+						const element = document.getElementById(identifier);
+						const value = element? element.value: "";
+						effect(value, ...x);
+					};
+				});
+			};
+		}
+		// output: Effectuality -> Identifier -> Effectuality (((String, ...) -> ()) -> ((String, ...) -> ()))
+		function output(effectuality){
+			return function output(identifier){
+				return effectuality(function implication(effect){
+					// effect: (String, ...) -> ()
+					// cause: (String, ...) -> ()
+					return function cause(value, ...x){
+						const element = document.getElementById(identifier);
+						if (element){
+							element.value = value;
+						}
+						effect(value, ...x);
+					};
+				});
+			};
+		}
+		return compilation(declaration, input, output);
 	}
 	return function(){
 	};
@@ -5363,10 +5362,21 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 // web applications (pure)
 
 const applications = {
-	"web-application#1": // asynchronous dependencies
-		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Effectuality ((() -> ()) -> (() -> ()))
+	"web-application#1": // hello world
+		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
-			const query = component(true)("query")({
+			const declaration = (component(true)("hello-world")({
+				specification: function(){
+					return `<div>Hello World!</div>`;
+				},
+			}));
+			const definition = (component("hello-world")());
+			return (definition)(declaration);
+		},
+	"web-application#2": // asynchronous dependency
+		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			const declaration = (component(true)("asynchronous-square")({
 				tagName: "div",
 				specification: function specification(specification, type, properties){
 					return `<div data-key="${properties.key || ""}">
@@ -5393,15 +5403,14 @@ const applications = {
 				"events":{
 					change: true,
 				},
-			});
-			// specialization
-			const declaration = component("query")();
-			return (declaration)(query);
+			}));
+			const definition = component("asynchronous-square")();
+			return (definition)(declaration);
 		},
-	"web-application#2": // two-level dependencies
-		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Effectuality ((() -> ()) -> (() -> ()))
+	"web-application#3": // two-level dependencies
+		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
-			const calculator = component(true)("calculator")({
+			const calculator = (component(true)("calculator")({
 				tagName: "div",
 				specification: function specification(specification, type, properties){
 					return `<div>
@@ -5417,8 +5426,8 @@ const applications = {
 						return a * b;
 					}, "total"],
 				],
-			});
-			const sum = component(true)("sum")({
+			}));
+			const sum = (component(true)("sum")({
 				tagName: "span",
 				specification: function specification(specification, type, properties){
 					return `<span>
@@ -5443,8 +5452,8 @@ const applications = {
 						return 1 * a + 1 * b;
 					}, "total"],
 				],
-			});
-			const cell = component(true)("cell")({
+			}));
+			const cell = (component(true)("cell")({
 				tagName: "input",
 				specification: function specification(specification, type, properties){
 					return `<input value="${properties.value || ""}"/>`;
@@ -5460,15 +5469,15 @@ const applications = {
 				"events":{
 					change: true,
 				},
-			});
-			// specialization
-			const declaration = component("calculator")();
-			return (declaration)(calculator)(sum)(cell);
+			}));
+			const declaration = (calculator)(sum)(cell);
+			const definition = component("calculator")();
+			return (definition)(declaration);
 		},
-	"web-application#3": // inter-dependencies
-		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request-> Component -> Effectuality ((() -> ()) -> (() -> ()))
+	"web-application#4": // inter-dependencies
+		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
-			const user = component(true)("user")({
+			const user = (component(true)("user")({
 				tagName: "span",
 				specification: function specification(specification, type, properties){
 					return `<span>
@@ -5497,8 +5506,8 @@ const applications = {
 						return (fullName.split(" ")[1] || "").trim();
 					}, "lastName"],
 				],
-			});
-			const edit = component(true)("edit")({
+			}));
+			const edit = (component(true)("edit")({
 				tagName: "input",
 				specification: function specification(specification, type, properties){
 					return `<input value="${properties.value || ""}"/>`;
@@ -5514,10 +5523,10 @@ const applications = {
 				"events":{
 					change: true,
 				},
-			});
-			// specialization
-			const declaration = component("user")();
-			return (declaration)(user)(edit);
+			}));
+			const declaration = (user)(edit);
+			const definition = component("user")();
+			return (definition)(declaration);
 		},
 };
 
@@ -5550,6 +5559,12 @@ if (!location.hash){
 	frame3.height = "300em";
 	frame3.src = location.href + "#web-application#3";
 	document.body.appendChild(frame3);
+
+	const frame4 = document.createElement("IFRAME");
+	frame4.width = "100%";
+	frame4.height = "300em";
+	frame4.src = location.href + "#web-application#4";
+	document.body.appendChild(frame4);
 
 	const frame0 = document.createElement("IFRAME");
 	frame0.width = "100%";
@@ -5621,16 +5636,17 @@ else{
 	}
 	else{
 		const subtitle = document.createElement("H2");
+		subtitle.style.with = "100%";
 		subtitle.appendChild(document.createTextNode(name));
 		document.body.appendChild(subtitle);
 		const source = document.createElement("button");
+		source.style.float = "right";
 		source.appendChild(document.createTextNode("view source"));
 		source.onclick = function(){
-			document.body.innerHTML = '<textarea style="width: 100%; height: 100%">\t\t' + applications[name].toString() + '</textarea>';
+			document.body.innerHTML = '<textarea style="width: 100%; height: 100%">\t\t</textarea>';
+			document.body.firstChild.value += applications[name].toString();
 		};
-		document.body.appendChild(source);
-		document.body.appendChild(document.createElement("BR"));
-		document.body.appendChild(document.createElement("BR"));
+		subtitle.appendChild(source);
 		const application = applications[name];
 		compilation(application)();
 	}
