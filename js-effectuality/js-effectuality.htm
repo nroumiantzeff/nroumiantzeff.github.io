@@ -2379,7 +2379,7 @@ function compilation(declaration, ...additionalSideEffects){
 									if (ignition === true || typeof ignition === "string"){
 										document.addEventListener(eventName, function(event){
 											componentEventIgnition(type, event, ignition);
-										});
+										}, true);
 									}
 									else if (ignition){
 										const subpropertyName = ignition[0];
@@ -2392,7 +2392,7 @@ function compilation(declaration, ...additionalSideEffects){
 												if (typeof subpropertyIgnition === "function"){
 													document.addEventListener(eventName, function(event){
 														componentEventIgnition(type, event, subpropertyIgnition, subpropertyName, subpropertySubelement);
-													});
+													}, true);
 												}
 											}
 										}
@@ -5654,7 +5654,7 @@ const applications = {
 					return componentNode("value");
 				},
 				events:{
-					keyup: true,
+					blur: "span",
 				},
 			}));
 			const declaration = (list)(item);
