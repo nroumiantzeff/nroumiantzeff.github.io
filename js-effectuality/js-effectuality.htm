@@ -182,7 +182,8 @@ Effectuality environment combinators (provided by the framwork)
 
 // component: True -> () -> ComponentTypeAttribute -> ComponentSubtypeAttribute -> ComponentEffectAttributePrefix -> ComponentCauseAttributePrefix -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
 // component: True -> ComponentType -> ComponentRegistration -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
-// component: ComponentType -> ComponentSubtype -> { PropertyName: PropertyValue } -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+// component: ComponentType -> ComponentSubtype -> { PropertyName: PropertyValue, ... } -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+// component: ComponentType -> ComponentSubtype -> True -> Effectuality ((({ PropertyName: PropertyValue, ... }, u1, u2, ...) -> ()) -> (({ PropertyName: PropertyValue, ... }, u1, u2, ...) -> ()))
 
 -------------------------------
 Effectuality sample combinators
@@ -1589,6 +1590,39 @@ function compilation(declaration, ...additionalSideEffects){
 		});
 	}
 
+
+	// internal
+	const contextSymbol = Symbol("context");
+	let contextDecryption = undefined;
+	function context(object){
+		if (object !== undefined){
+			return Object.create(null, {
+				[contextSymbol]: {
+					value: function(){
+						contextDecryption = object;
+					}, 
+				}	
+			});
+		}
+		return function(...keys){
+			return function(...x){
+				const encrytion = x.reduce(function(accumulator, item){
+					return accumulator || (typeof item === "object" && item !== null && item[contextSymbol]? item: undefined);
+				}, undefined);
+				if (encrytion !== undefined){
+					contextDecryption = undefined;
+					encrytion[contextSymbol]();
+					const object = contextDecryption;
+					if (object !== undefined){
+						return keys.reduce(function(object, key){
+							return typeof object === "object" && object !== null && object[key];
+						}, object);
+					}
+				}
+			}
+		}
+	}
+
 	// internal
 	// ComponentRegistration: {
 	//		"tagName": ComponentTagName,
@@ -2167,15 +2201,21 @@ function compilation(declaration, ...additionalSideEffects){
 						if (causePropertyValue !== undefined){
 							const updated = componentPropertyUpdate(element, causePropertyName, causePropertyValue, causePropertySubelement, causePropertyAlias);
 							if (updated){
-								const effectApplication = effectuality(function implication(effect){
-									return function cause(effectPropertyValue, ...x){
-										if (effectPropertyValue !== undefined){
-											componentEffectApplication(element, effectPropertyName, effectPropertyValue, effectPropertySubelement, effectPropertyAlias);
-										}
-										return effect(effectPropertyValue, ...x);
-									};
-								});
-								interpretation((effectApplication)(effectEffectuality))(causePropertyValue, causePropertyName, effectPropertyName);
+								const subelement = componentPropertyElement(element, effectPropertyName, effectPropertySubelement);
+								if (subelement){
+									const effectApplication = effectuality(function implication(effect){
+										return function cause(effectPropertyValue, ...x){
+											if (effectPropertyValue !== undefined){
+												componentEffectApplication(element, effectPropertyName, effectPropertyValue, effectPropertySubelement, effectPropertyAlias);
+											}
+											return effect(effectPropertyValue, ...x);
+										};
+									});
+									//todo ignit reaction after asynchronous effet
+									//todo force asynchronous interpretation (setTimeout or animationFrame)
+									const componentContext = context({ component: { container: subelement } });
+									interpretation((effectApplication)(effectEffectuality))(causePropertyValue, causePropertyName, effectPropertyName, componentContext);
+								}
 							}
 						}
 					});
@@ -2297,7 +2337,8 @@ function compilation(declaration, ...additionalSideEffects){
 	}
 	// component: True -> () -> ComponentTypeAttribute -> ComponentSubtypeAttribute -> ComponentEffectAttributePrefix -> ComponentCauseAttributePrefix -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
 	// component: True -> ComponentType -> ComponentRegistration -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
-	// component: ComponentType -> ComponentSubtype -> { PropertyName: PropertyValue } -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+	// component: ComponentType -> ComponentSubtype -> { PropertyName: PropertyValue, ... } -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+	// component: ComponentType -> ComponentSubtype -> True -> Effectuality ((({ PropertyName: PropertyValue, ... }, u1, u2, ...) -> ()) -> (({ PropertyName: PropertyValue, ... }, u1, u2, ...) -> ()))
 	function component(type, subtype){
 		if (type === true){
 			return function(type){
@@ -2346,12 +2387,18 @@ function compilation(declaration, ...additionalSideEffects){
 					if (registration){
 						const specification = registration.specification;
 						if (specification){
-							const outerHTML = specification(componentSpecification, type, properties || {});
+							const outerHTML = specification(componentSpecification, type, properties === true && x[0] || properties || {});
 							if (outerHTML){
 								const taggedOuterHTML = componentTaggedDeclaration(outerHTML, type, subtype, properties);
 								const element = document.createElement("dummy");
-								document.body.appendChild(element);
-								element.outerHTML= taggedOuterHTML;
+								const container = context()("component", "container")(...x);
+								if (container !== undefined){
+									container.appendChild(element);
+								}
+								else{
+									document.body.appendChild(element);
+								}
+								element.outerHTML= taggedOuterHTML; //todo before appendChild?
 							}
 						}
 					}
@@ -5532,8 +5579,55 @@ const applications = {
 			const definition = component("user")();
 			return (definition)(declaration);
 		},
-		//todo todo list demo
-		// Dynamic creation and removal of sub-components
+	"web-application#5":
+		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			// Dynamic creation and removal of sub-components
+			const list = (component(true)("list")({
+				tagName: "div",
+				specification: function specification(specification, type, properties){
+					return `<div data-key="${properties.key || ""}">
+							<input value="${properties.key || ""}"/> new item <br>
+							<ul></ul>
+					</div>`;
+				},
+				"properties":{
+					key: [elementNode => elementNode.firstElementChild, "value"],
+				},
+				effects:[
+					[
+						["value", (component("item")(true))(effectuality(function implication(effect){
+							return function cause(value, ...x){
+								return effect({ value: value }, value, ...x);
+							};
+						})), componentNode => componentNode.lastElementChild],
+						["data-key", function(componentNode){
+							return componentNode.firstElementChild.value;
+						}],
+					],
+				],
+				"events":{
+					change: true,
+				},
+			}));
+			const item = (component(true)("item")({
+				tagName: "li",
+				specification: function specification(specification, type, properties){
+					return `<li>${properties.value || ""}</li>`;
+				},
+				states:{
+					value: function(componentNode){
+						return componentNode.firstChild.textValue;
+					},
+				},
+				"properties":{
+					value: node => node, // value: true,
+				},
+			}));
+			const declaration = (list)(item);
+			const definition = component("list")();
+			return (definition)(declaration);
+		},
 };
 
 </script>
