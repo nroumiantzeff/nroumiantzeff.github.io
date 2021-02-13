@@ -5547,37 +5547,21 @@ if (!location.hash){
 	const title = document.createElement("H1");
 	title.appendChild(document.createTextNode("Effectuality"));
 	document.body.appendChild(title);
-
-	const frame1 = document.createElement("IFRAME");
-	frame1.width = "100%";
-	frame1.height = "300em";
-	frame1.src = location.href + "#web-application#1";
-	document.body.appendChild(frame1);
-
-	const frame2 = document.createElement("IFRAME");
-	frame2.width = "100%";
-	frame2.height = "300em";
-	frame2.src = location.href + "#web-application#2";
-	document.body.appendChild(frame2);
-
-	const frame3 = document.createElement("IFRAME");
-	frame3.width = "100%";
-	frame3.height = "300em";
-	frame3.src = location.href + "#web-application#3";
-	document.body.appendChild(frame3);
-
-	const frame4 = document.createElement("IFRAME");
-	frame4.width = "100%";
-	frame4.height = "300em";
-	frame4.src = location.href + "#web-application#4";
-	document.body.appendChild(frame4);
-
+	// Effectuality web-application demos
+	Object.keys(applications).forEach(function(key){
+		const frame = document.createElement("IFRAME");
+		frame.width = "100%";
+		frame.height = "300em";
+		frame.src = location.href + "#" + key;
+		document.body.appendChild(frame);
+	});
+	// Effectuality self-tests
 	const frame0 = document.createElement("IFRAME");
 	frame0.width = "100%";
 	frame0.height = "950em";
 	frame0.src = location.href + "#self-tests";
 	document.body.appendChild(frame0);
-
+	// Effectuality sample
 	const frame00 = document.createElement("IFRAME");
 	frame00.width = "100%";
 	frame00.height = "2360em";
@@ -5649,8 +5633,10 @@ else{
 		source.style.float = "right";
 		source.appendChild(document.createTextNode("view source"));
 		source.onclick = function(){
-			document.body.innerHTML = '<textarea style="width: 100%; height: 100%">\t\t</textarea>';
-			document.body.firstChild.value += applications[name].toString();
+			const view = window.open("about:blank");
+			view.document.title = name;
+			view.document.body.innerHTML = '<textarea style="width: 100%; height: 100%">\t\t</textarea>';
+			view.document.body.firstChild.value += applications[name].toString();
 		};
 		subtitle.appendChild(source);
 		const application = applications[name];
