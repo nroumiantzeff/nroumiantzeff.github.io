@@ -1627,6 +1627,7 @@ function compilation(declaration, ...additionalSideEffects){
 	// ComponentRegistration: {
 	//		"tagName": ComponentTagName,
 	//		"specification": ComponentSpecification, // ComponentSpecification: ComponentSpecification -> ComponentType -> { ComponentPropertyName: ComponentPropertyValue } -> ComponentSubtype -> ComponentOuterHTML
+	//		"presence": ComponentPresence // ComponentPresence: ComponentNode -> Boolean
 	//		"states":{
 	//			ComponentStateName: ComponentStateExtraction, // ComponentStateExtraction: ComponentNode -> ComponentStateName -> ComponentStateParameter -> ... -> ComponentStateValue
 	//			...
@@ -2179,6 +2180,9 @@ function compilation(declaration, ...additionalSideEffects){
 	}
 	// componentEffects: Element -> ()
 	function componentEffects(element){
+		if (!element.isConnected){
+			return;
+		}
 		const type = componentType(element);
 		if (type){
 			const registration = componentRegistrations[type];
@@ -2223,6 +2227,25 @@ function compilation(declaration, ...additionalSideEffects){
 			}
 		}
 	}
+	// componentPresence: Element -> ()
+	function componentPresence(element){
+		if (!element.isConnected){
+			return;
+		}
+		const type = componentType(element);
+		if (type){
+			const registration = componentRegistrations[type];
+			if (registration){
+				const presence = registration.presence;
+				if (typeof presence === "function"){
+					if (!presence(componentNode(element, 0))){
+						element.parentNode.removeChild(element);
+						componentReaction(element.parentElement);
+					}
+				}
+			}
+		}
+	}
 	// ComponentPropertySubelement: ComponentNode -> ComponentPropertyName -> ComponentNode
 	// ComponentPropertyAlias: ComponentPropertyName
 	// ComponentPropertyAlias: ComponentPropertyName -> ComponentPropertyName
@@ -2242,6 +2265,7 @@ function compilation(declaration, ...additionalSideEffects){
 			}
 		});
 		for (let updatedElement of updatedElements){
+			componentPresence(updatedElement);
 			componentEffects(updatedElement);
 		}
 	}
@@ -2277,6 +2301,7 @@ function compilation(declaration, ...additionalSideEffects){
 	// componentReaction: Element -> ()
 	function componentReaction(element){
 		if (element && element.isConnected){
+			componentPresence(element);
 			componentEffects(element);
 			const parent = componentParent(element);
 			if (parent){
@@ -5433,7 +5458,7 @@ const applications = {
 							<input value="${properties.value || "16"}"/> asynchronous output (3 second delay): input * input
 					</div>`;
 				},
-				"properties":{
+				properties:{
 					key: [elementNode => elementNode.firstElementChild, "value"],
 				},
 				effects:[
@@ -5449,7 +5474,7 @@ const applications = {
 						}],
 					],
 				],
-				"events":{
+				events:{
 					change: true,
 				},
 			}));
@@ -5492,7 +5517,7 @@ const applications = {
 						return componentNode.lastComponentChild.value;
 					},
 				},
-				"properties":{
+				properties:{
 					value: true,
 				},
 				subcomponents:[
@@ -5513,10 +5538,10 @@ const applications = {
 						return componentNode.value;
 					},
 				},
-				"properties":{
+				properties:{
 					value: true,
 				},
-				"events":{
+				events:{
 					change: true,
 				},
 			}));
@@ -5537,7 +5562,7 @@ const applications = {
 							${specification("edit", { value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() }, "fullName")} full name <br>
 					</span>`;
 				},
-				"properties":{
+				properties:{
 					firstName: true,
 					lastName: true,
 					fullName: true,
@@ -5568,10 +5593,10 @@ const applications = {
 						return componentNode.value;
 					},
 				},
-				"properties":{
+				properties:{
 					value: node => node, // value: true,
 				},
-				"events":{
+				events:{
 					change: true,
 				},
 			}));
@@ -5608,22 +5633,28 @@ const applications = {
 						}],
 					],
 				],
-				"events":{
+				events:{
 					change: true,
 				},
 			}));
 			const item = (component(true)("item")({
 				tagName: "li",
 				specification: function specification(specification, type, properties){
-					return properties.value? `<div><input type="checkbox" ${properties.done? "checked": ""}/> <span contenteditable>${properties.value}</span></div>`: "";
+					return properties.value? `<div><input type="checkbox" ${properties.done? "checked": ""}/> <span contenteditable title="double-click to edit or erase">${properties.value}</span></div>`: "";
 				},
 				states:{
 					value: function(componentNode){
-						return componentNode.firstElementChild.lastElementChild.textValue;
+						return componentNode.lastElementChild.innerText;
 					},
 				},
-				"properties":{
+				properties:{
 					value: true,
+				},
+				presence: function(componentNode){
+					return componentNode("value");
+				},
+				events:{
+					keyup: true,
 				},
 			}));
 			const declaration = (list)(item);
