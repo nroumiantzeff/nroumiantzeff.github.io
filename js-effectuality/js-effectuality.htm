@@ -5362,9 +5362,10 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 // web applications (pure)
 
 const applications = {
-	"web-application#1": // hello world
+	"web-application#1":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			// Hello World!
 			const declaration = (component(true)("hello-world")({
 				specification: function(){
 					return `<div>Hello World!</div>`;
@@ -5373,9 +5374,10 @@ const applications = {
 			const definition = (component("hello-world")());
 			return (definition)(declaration);
 		},
-	"web-application#2": // asynchronous dependency
+	"web-application#2":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			// Asynchronous side-effect
 			const declaration = (component(true)("asynchronous-square")({
 				tagName: "div",
 				specification: function specification(specification, type, properties){
@@ -5407,9 +5409,10 @@ const applications = {
 			const definition = component("asynchronous-square")();
 			return (definition)(declaration);
 		},
-	"web-application#3": // two-level dependencies
+	"web-application#3":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			// 3 levels of components
 			const calculator = (component(true)("calculator")({
 				tagName: "div",
 				specification: function specification(specification, type, properties){
@@ -5474,9 +5477,10 @@ const applications = {
 			const definition = component("calculator")();
 			return (definition)(declaration);
 		},
-	"web-application#4": // inter-dependencies
+	"web-application#4":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			// Inter-dependencies
 			const user = (component(true)("user")({
 				tagName: "span",
 				specification: function specification(specification, type, properties){
@@ -5528,6 +5532,8 @@ const applications = {
 			const definition = component("user")();
 			return (definition)(declaration);
 		},
+		//todo todo list demo
+		// Dynamic creation and removal of sub-components
 };
 
 </script>
