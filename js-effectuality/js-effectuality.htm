@@ -2205,9 +2205,9 @@ function compilation(declaration, ...additionalSideEffects){
 										};
 									});
 									//todo ignit reaction after asynchronous effet
-									//todo force asynchronous interpretation (setTimeout or animationFrame)
 									const componentContext = context({ component: { container: subelement } });
-									interpretation((effectApplication)(effectEffectuality))(causePropertyValue, causePropertyName, effectPropertyName, componentContext);
+									// note: the interpretation must be asynchronous (specify a zero millisecond delay)
+									interpretation((effectApplication)(effectEffectuality)(delay(0)))(causePropertyValue, causePropertyName, effectPropertyName, componentContext);
 								}
 							}
 						}
@@ -5669,14 +5669,10 @@ const applications = {
 					], "data-new": properties.new || "" };
 				},
 				states:{
-					"new": function(componentNode){
-						return componentNode.lastComponentChild("value");
-					},
+					"new": componentNode => componentNode.lastComponentChild("value"),
 				},
 				subcomponents:[
-					["list", "", "data-new", function(componentNode, subcomponentNode, subcomponentIndex, propertyName){
-						return componentNode("new");
-					}],
+					["list", "", "data-new", componentNode => componentNode("new")],
 				],
 			}));
 			const list = (component(true)("list")({
@@ -5684,9 +5680,7 @@ const applications = {
 					return { DIV: [] };
 				},
 				"properties":{
-					"data-new": [function(elementNode){
-						return elementNode;
-						}, "data-new"],
+					"data-new": "data-new",
 				},
 				effects:[
 					[
@@ -5694,12 +5688,8 @@ const applications = {
 							return function cause(value, ...x){
 								return effect({ value: value }, value, ...x);
 							};
-						})), function(componentNode){ //debug
-							return componentNode;
-						}],
-						["data-key", function(componentNode){
-							return componentNode["data-new"];
-						} ],
+						}))],
+						["data-key", componentNode => componentNode["data-new"]],
 					],
 				],
 			}));
@@ -5713,16 +5703,12 @@ const applications = {
 					}
 				},
 				states:{
-					value: function(componentNode){
-						return componentNode.lastElementChild.innerText;
-					},
+					value: componentNode => componentNode.lastElementChild.innerText,
 				},
 				properties:{
 					value: true,
 				},
-				presence: function(componentNode){
-					return componentNode("value");
-				},
+				presence: componentNode => componentNode("value"),
 				events:{
 					blur: "span",
 				},
@@ -5732,9 +5718,7 @@ const applications = {
 					return { INPUT: [], value: properties.value || "" };
 				},
 				states:{
-					value: function(componentNode){
-						return componentNode.value;
-					},
+					value: componentNode => componentNode.value,
 				},
 				properties:{
 					value: true,
@@ -5744,22 +5728,14 @@ const applications = {
 				},
 				effects:[
 					[
-						["value", (effectuality(function implication(effect){
-							return function cause(causeValue, causeName, effectName, ...u){
-								const effectValue = "";
-								return effect(effectValue, causeValue, causeName, effectName, ...u);
-							};
-						}))(delay(0)), componentNode => componentNode],
-						["data-value", function(componentNode){
-							return componentNode.value;
-						}],
+						["value", (effectualityInitialization(effectuality)(""))], // reset input
+						["data-value", componentNode => componentNode.value],
 					],
 				],
 			}));
 			const declaration = (todo)(list)(item)(edit);
 			const definition = component("todo")();
 			return (definition)(declaration);
-			//todo reset input after new item addition (the input and the list should be subcomponents, see js-effectuality-new.js)
 		},
 };
 
