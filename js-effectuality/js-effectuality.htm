@@ -101,7 +101,6 @@ function application(effectuality, concurrence, recurrence, conjunction, disjunc
 	const definition = (component("hello-world")());
 	return (definition)(declaration);
 }
-//todo use Array for children
 
 -------------------------------------------------------------------------------
 Effectuality application compilation and execution (performed by the framework)
@@ -2336,7 +2335,7 @@ function compilation(declaration, ...additionalSideEffects){
 	}
 	// ComponentOuterHTML: String
 	// componentSpecification: ComponentType -> ComponentProperties -> ComponentSubtype -> ComponentOuterHTML
-	function componentSpecification(type, properties, subtype){ //todo remove (use componentDescription only)
+	function componentSpecification(type, properties, subtype){
 		if (type){
 			const registration = componentRegistrations[type];
 			if (registration){
@@ -2403,7 +2402,7 @@ function compilation(declaration, ...additionalSideEffects){
 	} 
 	// componentOuterHTML: String -> String
 	// componentOuterHTML: Object -> String
-	function componentOuterHTML(description){ //todo remove (only support string)
+	function componentOuterHTML(description){
 		if (typeof description === "string"){
 			return description;
 		}
@@ -2476,7 +2475,7 @@ function compilation(declaration, ...additionalSideEffects){
 								else{
 									document.body.appendChild(element);
 								}
-								element.outerHTML= taggedOuterHTML; //todo before appendChild?
+								element.outerHTML= taggedOuterHTML;
 							}
 						}
 					}
