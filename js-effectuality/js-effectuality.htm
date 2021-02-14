@@ -95,12 +95,13 @@ Effectuality "hello world" application description
 function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 	const declaration = (component(true)("hello-world")({
 		specification: function(){
-			return `<div>Hello World!</div>`;
+			return { tagName: "div", "1": "Hello World!" };
 		},
 	}));
 	const definition = (component("hello-world")());
 	return (definition)(declaration);
 }
+//todo use Array for children
 
 -------------------------------------------------------------------------------
 Effectuality application compilation and execution (performed by the framework)
@@ -1626,7 +1627,7 @@ function compilation(declaration, ...additionalSideEffects){
 	// internal
 	// ComponentRegistration: {
 	//		"tagName": ComponentTagName,
-	//		"specification": ComponentSpecification, // ComponentSpecification: ComponentSpecification -> ComponentType -> { ComponentPropertyName: ComponentPropertyValue } -> ComponentSubtype -> ComponentOuterHTML
+	//		"specification": ComponentSpecification, // ComponentSpecification: ComponentType -> { ComponentPropertyName: ComponentPropertyValue } -> ComponentSubtype -> Object
 	//		"presence": ComponentPresence // ComponentPresence: ComponentNode -> Boolean
 	//		"states":{
 	//			ComponentStateName: ComponentStateExtraction, // ComponentStateExtraction: ComponentNode -> ComponentStateName -> ComponentStateParameter -> ... -> ComponentStateValue
@@ -2344,14 +2345,16 @@ function compilation(declaration, ...additionalSideEffects){
 			}
 		}
 	}
-	// componentSpecification:
-	function componentSpecification(type, properties, subtype){
+	// ComponentOuterHTML: String
+	// componentSpecification: ComponentType -> ComponentProperties -> ComponentSubtype -> ComponentOuterHTML
+	function componentSpecification(type, properties, subtype){ //todo remove (use componentDescription only)
 		if (type){
 			const registration = componentRegistrations[type];
 			if (registration){
 				const specification = registration.specification;
 				if (specification){
-					const outerHTML = specification(componentSpecification, type, properties || {}, subtype);
+					const description = specification(type, properties || {}, subtype);
+					const outerHTML = componentOuterHTML(description);
 					if (outerHTML){
 						return componentTaggedDeclaration(outerHTML, type, subtype, properties);
 					}
@@ -2359,6 +2362,62 @@ function compilation(declaration, ...additionalSideEffects){
 			}
 		}
 		return "";
+	}
+	// componentDescription: Object
+	function componentDescription(description){ //todo do not use document.createElement so it is compatible with server-side rendering, use strings only with proper escaping
+		if (typeof description === "object"){
+			if (description.tagName){
+				let children = [];
+				let element = document.createElement(description.tagName);
+				Object.keys(description).forEach(function(key){
+					if (key[0] >= "0" && key[0] <= "9"){
+						children[key] = description[key];
+					}
+					else if (key != "tagName" && typeof description[key] === "string"){
+						element.setAttribute(key, description[key]);
+					}
+				});
+				children.forEach(function(item){
+					if (typeof item === "string"){
+						element.appendChild(document.createTextNode(item));
+					}
+					else{
+						const child = componentDescription(item);
+						if (child !== undefined){
+							if (typeof child === "string"){
+								const dummy = document.createElement("dummy");
+								element.appendChild(dummy);
+								dummy.outerHTML = child;
+							}
+							else{
+								element.appendChild(child);
+							}
+						}
+					}
+				});
+				return element;
+			}
+			// component
+			const componentType = description.componentType;
+			if (componentType){
+				const componentSubtype = description.componentSubtype;
+				const componentProperties = Object.fromEntries(Object.entries(description).filter(function(entry){
+					return entry[0] !== "componentType" && entry[0] !== "componentSubype";
+				}));
+				return componentSpecification(componentType, componentProperties, componentSubtype);
+			}
+		}
+	} 
+	// componentOuterHTML: String -> String
+	// componentOuterHTML: Object -> String
+	function componentOuterHTML(description){ //todo remove (only support string)
+		if (typeof description === "string"){
+			return description;
+		}
+		const element = componentDescription(description);
+		if (element){
+			return element.outerHTML;
+		}
 	}
 	// component: True -> () -> ComponentTypeAttribute -> ComponentSubtypeAttribute -> ComponentEffectAttributePrefix -> ComponentCauseAttributePrefix -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
 	// component: True -> ComponentType -> ComponentRegistration -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
@@ -2412,7 +2471,8 @@ function compilation(declaration, ...additionalSideEffects){
 					if (registration){
 						const specification = registration.specification;
 						if (specification){
-							const outerHTML = specification(componentSpecification, type, properties === true && x[0] || properties || {});
+							const description = specification(type, properties === true && x[0] || properties || {});
+							const outerHTML = componentOuterHTML(description);
 							if (outerHTML){
 								const taggedOuterHTML = componentTaggedDeclaration(outerHTML, type, subtype, properties);
 								const element = document.createElement("dummy");
@@ -5440,7 +5500,7 @@ const applications = {
 			// Hello World!
 			const declaration = (component(true)("hello-world")({
 				specification: function(){
-					return `<div>Hello World!</div>`;
+					return { tagName: "div", "0": "Hello World!" };
 				},
 			}));
 			const definition = (component("hello-world")());
@@ -5452,11 +5512,14 @@ const applications = {
 			// Asynchronous side-effect
 			const declaration = (component(true)("asynchronous-square")({
 				tagName: "div",
-				specification: function specification(specification, type, properties){
-					return `<div data-key="${properties.key || ""}">
-							<input value="${properties.key || "4"}"/> input <br>
-							<input value="${properties.value || "16"}"/> asynchronous output (3 second delay): input * input
-					</div>`;
+				specification: function specification(type, properties){
+					return { tagName: "div", "data-key": properties.key || "",
+						"1": { tagName: "input", value: properties.key || "4" },
+						"2": " input",
+						"3": { tagName: "br" }, 
+						"4": { tagName: "input", value: properties.value || "16" },
+						"5": " asynchronous output (3 second delay): input * input",
+					};
 				},
 				properties:{
 					key: [elementNode => elementNode.firstElementChild, "value"],
@@ -5487,12 +5550,18 @@ const applications = {
 			// 3 levels of components
 			const calculator = (component(true)("calculator")({
 				tagName: "div",
-				specification: function specification(specification, type, properties){
-					return `<div>
-							${specification("sum", { a: "6", b: "2" })} a<br>
-							${specification("sum", { a: "7", b: "3" })} b<br>
-							${specification("cell", { value: "80" }, "total")} c = a * b<br>
-						</div>`;
+				specification: function specification(type, properties){
+					return { tagName: "div",
+						"1": { componentType: "sum", a: "6", b: "2" }, //todo use Array
+						"2": " a",
+						"3": { tagName: "br" },
+						"4": { componentType: "sum", a: "7", b: "3" },
+						"5": " b",
+						"6": { tagName: "br" },
+						"7": { componentType: "cell", componentSubtype: "total", value: "80" },
+						"8": " c = a * b",
+						"9": { tagName: "br" },
+					};
 				},
 				subcomponents:[
 					["cell", "", "value", function(componentNode, subcomponentNode, subcomponentIndex, propertyName){
@@ -5504,12 +5573,14 @@ const applications = {
 			}));
 			const sum = (component(true)("sum")({
 				tagName: "span",
-				specification: function specification(specification, type, properties){
-					return `<span>
-							${specification("cell", { value: properties.a || "" })} +
-							${specification("cell", { value: properties.b || "" })} = 
-							${specification("cell", { value: 1 * (properties.a || "") + 1 * (properties.b || "") }, "total")}
-					</span>`;
+				specification: function specification(type, properties){
+					return { tagName: "span",
+						"1": { componentType: "cell", value: properties.a || "" },
+						"2": " + ",
+						"3": { componentType: "cell", value: properties.b || "" },
+						"4": " = ",
+						"5": { componentType: "cell", componentSubtype: "total", value: 1 * (properties.a || "") + 1 * (properties.b || "") },
+					};
 					//todo implement "hot" properties (hot properties should be evaluated at artificial "hot" event)
 				},
 				states:{
@@ -5530,8 +5601,8 @@ const applications = {
 			}));
 			const cell = (component(true)("cell")({
 				tagName: "input",
-				specification: function specification(specification, type, properties){
-					return `<input value="${properties.value || ""}"/>`;
+				specification: function specification(type, properties){
+					return { tagName: "input", value: (properties.value || "").toString() };
 				},
 				states:{
 					value: function(componentNode){
@@ -5555,12 +5626,18 @@ const applications = {
 			// Inter-dependencies
 			const user = (component(true)("user")({
 				tagName: "span",
-				specification: function specification(specification, type, properties){
-					return `<span>
-							${specification("edit", { value: (properties.firstName || "").trim() }, "firstName")} first name <br>
-							${specification("edit", { value: (properties.lastName || "").trim() }, "lastName")} last name <br>
-							${specification("edit", { value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() }, "fullName")} full name <br>
-					</span>`;
+				specification: function specification(type, properties){
+					return { tagName: "span",
+						"1": { componentType: "edit", componentSubtype: "firstName", value: (properties.firstName || "").trim() },
+						"2": " first name",
+						"3": { tagName: "br" },
+						"4": { componentType: "edit", componentSubtype: "lastName", value: (properties.lastName || "").trim() },
+						"5": " last name",
+						"6": { tagName: "br" },
+						"7": { componentType: "edit", componentSubtype: "fullName", value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() },
+						"8": " full name",
+						"9": { tagName: "br" },
+					};
 				},
 				properties:{
 					firstName: true,
@@ -5585,8 +5662,8 @@ const applications = {
 			}));
 			const edit = (component(true)("edit")({
 				tagName: "input",
-				specification: function specification(specification, type, properties){
-					return `<input value="${properties.value || ""}"/>`;
+				specification: function specification(type, properties){
+					return { tagName: "input", value: properties.value || "" };
 				},
 				states:{
 					value: function(componentNode){
@@ -5610,13 +5687,20 @@ const applications = {
 			// Todo list
 			const list = (component(true)("list")({
 				tagName: "div",
-				specification: function specification(specification, type, properties){
-					return `<div data-key="${properties.key || ""}">
-							<div><b>Todo list:</b></div>
-							<div></div>
-							<br/>
-							<div><input value="${properties.key || ""}"/> new item</div>
-					</div>`;
+				specification: function specification(type, properties){
+					return { tagName: "div", "data-key": properties.key || "",
+						"1": { tagName: "div",
+							"1": { tagName: "b",
+								"1": "Todo list:",
+							},
+						},
+						"2": { tagName: "div" },
+						"3": { tagName: "br" },
+						"4": { tagName: "div",
+							"1": { tagName: "input", value: properties.key || "" },
+							"2": " new item",
+						}, 
+					};
 				},
 				"properties":{
 					key: [elementNode => elementNode.lastElementChild.firstElementChild, "value"],
@@ -5639,8 +5723,16 @@ const applications = {
 			}));
 			const item = (component(true)("item")({
 				tagName: "li",
-				specification: function specification(specification, type, properties){
-					return properties.value? `<div><input type="checkbox" ${properties.done? "checked": ""}/> <span contenteditable title="double-click to edit or erase">${properties.value}</span></div>`: "";
+				specification: function specification(type, properties){
+					if (properties.value){
+						return { tagName: "div",
+							"1": { tagName: "input", type: "checkbox", checked: properties.done? "": null },
+							"2": " ",
+							"3": { tagName: "span", contenteditable: "", title: "double-click to edit or erase",
+								"1": properties.value,
+							},
+						};
+					}
 				},
 				states:{
 					value: function(componentNode){
@@ -5660,6 +5752,7 @@ const applications = {
 			const declaration = (list)(item);
 			const definition = component("list")();
 			return (definition)(declaration);
+			//todo reset input after new item addition (the input and the list should be subcomponents, see js-effectuality-new.js)
 		},
 };
 
