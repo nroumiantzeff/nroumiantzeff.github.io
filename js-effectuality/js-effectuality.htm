@@ -5660,32 +5660,48 @@ const applications = {
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			// Todo list
-			const list = (component(true)("list")({
+			const todo = (component(true)("todo")({
 				description: function(type, properties){
 					return { DIV: [
 						{ DIV: [{ B: ["Todo list:"] }] },
-						{ DIV: [] }, [],
-						{ DIV: [{ INPUT: [], value: properties.key || "" }, " new item"] }, 
-					], "data-key": properties.key || "" };
+						["list"], [],
+						["edit"], " new item",
+					], "data-new": properties.new || "" };
+				},
+				states:{
+					"new": function(componentNode){
+						return componentNode.lastComponentChild("value");
+					},
+				},
+				subcomponents:[
+					["list", "", "data-new", function(componentNode, subcomponentNode, subcomponentIndex, propertyName){
+						return componentNode("new");
+					}],
+				],
+			}));
+			const list = (component(true)("list")({
+				description: function(type, properties){
+					return { DIV: [] };
 				},
 				"properties":{
-					key: [elementNode => elementNode.lastElementChild.firstElementChild, "value"],
+					"data-new": [function(elementNode){
+						return elementNode;
+						}, "data-new"],
 				},
 				effects:[
 					[
-						["value", (component("item")(true))(effectuality(function implication(effect){
+						["data-value", (component("item")(true))(effectuality(function implication(effect){
 							return function cause(value, ...x){
 								return effect({ value: value }, value, ...x);
 							};
-						})), componentNode => componentNode.firstElementChild.nextElementSibling],
+						})), function(componentNode){ //debug
+							return componentNode;
+						}],
 						["data-key", function(componentNode){
-							return componentNode.lastElementChild.firstElementChild.value;
+							return componentNode["data-new"];
 						} ],
 					],
 				],
-				events:{
-					change: true,
-				},
 			}));
 			const item = (component(true)("item")({
 				description: function(type, properties){
@@ -5711,8 +5727,37 @@ const applications = {
 					blur: "span",
 				},
 			}));
-			const declaration = (list)(item);
-			const definition = component("list")();
+			const edit = (component(true)("edit")({
+				description: function(type, properties){
+					return { INPUT: [], value: properties.value || "" };
+				},
+				states:{
+					value: function(componentNode){
+						return componentNode.value;
+					},
+				},
+				properties:{
+					value: true,
+				},
+				events:{
+					change: true,
+				},
+				effects:[
+					[
+						["value", (effectuality(function implication(effect){
+							return function cause(causeValue, causeName, effectName, ...u){
+								const effectValue = "";
+								return effect(effectValue, causeValue, causeName, effectName, ...u);
+							};
+						}))(delay(0)), componentNode => componentNode],
+						["data-value", function(componentNode){
+							return componentNode.value;
+						}],
+					],
+				],
+			}));
+			const declaration = (todo)(list)(item)(edit);
+			const definition = component("todo")();
 			return (definition)(declaration);
 			//todo reset input after new item addition (the input and the list should be subcomponents, see js-effectuality-new.js)
 		},
