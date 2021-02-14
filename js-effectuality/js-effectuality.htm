@@ -94,7 +94,7 @@ Effectuality "hello world" application description
 // application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
 function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 	const declaration = (component(true)("hello-world")({
-		specification: function(){
+		description: function(){
 			return { DIV: ["Hello World!"] };
 		},
 	}));
@@ -1627,7 +1627,7 @@ function compilation(declaration, ...additionalSideEffects){
 	// internal
 	// ComponentRegistration: {
 	//		"tagName": ComponentTagName,
-	//		"specification": ComponentSpecification, // ComponentSpecification: ComponentType -> { ComponentPropertyName: ComponentPropertyValue } -> ComponentSubtype -> Object
+	//		"description": ComponentDescriptio, // ComponentDescription: ComponentType -> { ComponentPropertyName: ComponentPropertyValue } -> ComponentSubtype -> Object
 	//		"presence": ComponentPresence // ComponentPresence: ComponentNode -> Boolean
 	//		"states":{
 	//			ComponentStateName: ComponentStateExtraction, // ComponentStateExtraction: ComponentNode -> ComponentStateName -> ComponentStateParameter -> ... -> ComponentStateValue
@@ -2351,10 +2351,10 @@ function compilation(declaration, ...additionalSideEffects){
 		if (type){
 			const registration = componentRegistrations[type];
 			if (registration){
-				const specification = registration.specification;
-				if (specification){
-					const description = specification(type, properties || {}, subtype);
-					const outerHTML = componentOuterHTML(description);
+				const description = registration.description;
+				if (description){
+					const definition = description(type, properties || {}, subtype);
+					const outerHTML = componentOuterHTML(definition);
 					if (outerHTML){
 						return componentTaggedDeclaration(outerHTML, type, subtype, properties);
 					}
@@ -2475,10 +2475,10 @@ function compilation(declaration, ...additionalSideEffects){
 				return function cause(...x){
 					const registration = componentRegistrations[type];
 					if (registration){
-						const specification = registration.specification;
-						if (specification){
-							const description = specification(type, properties === true && x[0] || properties || {});
-							const outerHTML = componentOuterHTML(description);
+						const description = registration.description;
+						if (description){
+							const definition = description(type, properties === true && x[0] || properties || {});
+							const outerHTML = componentOuterHTML(definition);
 							if (outerHTML){
 								const taggedOuterHTML = componentTaggedDeclaration(outerHTML, type, subtype, properties);
 								const element = document.createElement("dummy");
@@ -5505,7 +5505,7 @@ const applications = {
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			// Hello World!
 			const declaration = (component(true)("hello-world")({
-				specification: function(){
+				description: function(){
 					return { DIV: ["Hello World!"] };
 				},
 			}));
@@ -5518,7 +5518,7 @@ const applications = {
 			// Asynchronous side-effect
 			const declaration = (component(true)("asynchronous-square")({
 				tagName: "DIV",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					return { DIV: [
 						{ INPUT: [], value: properties.key || "4" }, " input", { BR: [] }, 
 						{ INPUT: [], value: properties.value || "16" }, " asynchronous output (3 second delay): input * input",
@@ -5553,7 +5553,7 @@ const applications = {
 			// 3 levels of component dependencies
 			const calculator = (component(true)("calculator")({
 				tagName: "DIV",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					return { DIV: [
 						{ componentType: "sum", a: "6", b: "2" }, " a", { BR: [] },
 						{ componentType: "sum", a: "7", b: "3" }, " b",	{ BR: [] },
@@ -5570,7 +5570,7 @@ const applications = {
 			}));
 			const sum = (component(true)("sum")({
 				tagName: "SPAN",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					return { SPAN: [
 						{ componentType: "cell", value: properties.a || "" }, " + ",
 						{ componentType: "cell", value: properties.b || "" }, " = ",
@@ -5596,7 +5596,7 @@ const applications = {
 			}));
 			const cell = (component(true)("cell")({
 				tagName: "INPUT",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					return { INPUT: [], value: (properties.value || "").toString() };
 				},
 				states:{
@@ -5621,7 +5621,7 @@ const applications = {
 			// Inter-dependencies
 			const user = (component(true)("user")({
 				tagName: "SPAN",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					return { SPAN: [
 						{ componentType: "edit", componentSubtype: "firstName", value: (properties.firstName || "").trim() }, " first name", { BR: [] },
 						{ componentType: "edit", componentSubtype: "lastName", value: (properties.lastName || "").trim() }, " last name", { BR: [] },
@@ -5651,7 +5651,7 @@ const applications = {
 			}));
 			const edit = (component(true)("edit")({
 				tagName: "INPUT",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					return { INPUT: [], value: properties.value || "" };
 				},
 				states:{
@@ -5676,7 +5676,7 @@ const applications = {
 			// Todo list
 			const list = (component(true)("list")({
 				tagName: "DIV",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					return { DIV: [
 						{ DIV: [{ B: ["Todo list:"] }] },
 						{ DIV: [] }, { BR: [] },
@@ -5704,7 +5704,7 @@ const applications = {
 			}));
 			const item = (component(true)("item")({
 				tagName: "DIV",
-				specification: function specification(type, properties){
+				description: function(type, properties){
 					if (properties.value){
 						return { DIV: [
 							{ INPUT: [], type: "checkbox", checked: properties.done? "": null }, " ",
