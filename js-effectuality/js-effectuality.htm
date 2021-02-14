@@ -1626,7 +1626,6 @@ function compilation(declaration, ...additionalSideEffects){
 
 	// internal
 	// ComponentRegistration: {
-	//		"tagName": ComponentTagName,
 	//		"description": ComponentDescriptio, // ComponentDescription: ComponentType -> { ComponentPropertyName: ComponentPropertyValue } -> ComponentSubtype -> Object
 	//		"presence": ComponentPresence // ComponentPresence: ComponentNode -> Boolean
 	//		"states":{
@@ -1984,14 +1983,13 @@ function compilation(declaration, ...additionalSideEffects){
 		}
 		return outerHTML.replace(tagEnd, ' ' + componentTypeAttribute + '="' + type + '"' + tagEnd);
 	}
-	// ComponentSubcomponentTagName: ComponentTagName
 	// ComponentSubcomponentType: ComponentType
 	// ComponentSubcomponentSubtype: ComponentType
 	// ComponentSubcomponentParentSelector: ComponentSubcomponentSelector
 	// ComponentSubcomponentSelector: String
-	// componentSubcomponentSelector: ComponentSubcomponentParentSelector -> ComponentSubcomponentTagName -> ComponentSubcomponentType -> ComponentSubcomponentSubtype -> ComponentSubcomponentSelector
-	function componentSubcomponentSelector(subcomponentParentSelector, subcomponentTagName, subcomponentType, subcomponentSubtype){
-		const selector = ":scope " + subcomponentParentSelector + ">" + subcomponentTagName + "[" + componentTypeAttribute + "='" + subcomponentType + "']";
+	// componentSubcomponentSelector: ComponentSubcomponentParentSelector -> ComponentSubcomponentType -> ComponentSubcomponentSubtype -> ComponentSubcomponentSelector
+	function componentSubcomponentSelector(subcomponentParentSelector, subcomponentType, subcomponentSubtype){
+		const selector = ":scope " + subcomponentParentSelector + ">*[" + componentTypeAttribute + "='" + subcomponentType + "']";
 		if (!subcomponentSubtype){
 			return selector;
 		}
@@ -2020,14 +2018,6 @@ function compilation(declaration, ...additionalSideEffects){
 				return level || 0;
 			}
 			return componentSubcomponentLevel(parent, child.parentNode, (level || 0) + 1);
-		}
-	}
-	// ComponentTaName: String
-	// componentTagName: ComponentType -> ComponentTagName
-	function componentTagName(componentType){
-		const registration = componentRegistrations[componentType];
-		if (registration){
-			return registration.tagName;
 		}
 	}
 	// ComponentPropertyApplication: True
@@ -2161,8 +2151,7 @@ function compilation(declaration, ...additionalSideEffects){
 			if (!subcomponentPropertyApplication){
 				return evaluations;
 			}
-			const subcomponentTagName = componentTagName(subcomponentType);
-			const subcomponentSelector = componentSubcomponentSelector(subcomponentParentSelector, subcomponentTagName, subcomponentType, subcomponentSubtype);
+			const subcomponentSelector = componentSubcomponentSelector(subcomponentParentSelector, subcomponentType, subcomponentSubtype);
 			const subcomponentPropertySubelement = typeof subcomponentPropertyApplication === "function"? subcomponentPropertyApplication: Array.isArray(subcomponentPropertyApplication)? subcomponentPropertyApplication[0]: undefined;
 			const subcomponentPropertyAlias = typeof subcomponentPropertyApplication === "string"? subcomponentPropertyApplication: Array.isArray(subcomponentPropertyApplication)? subcomponentPropertyApplication[1]: undefined;
 			return componentSelectorPropertyEvaluations(parent, child, exclusion, subcomponentSelector, propertyName, propertyEvaluation, subcomponentPropertySubelement, subcomponentPropertyAlias, evaluations);
@@ -5515,7 +5504,6 @@ const applications = {
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			// Asynchronous side-effect
 			const declaration = (component(true)("asynchronous-square")({
-				tagName: "DIV",
 				description: function(type, properties){
 					return { DIV: [
 						{ INPUT: [], value: properties.key || "4" }, " input", { BR: [] }, 
@@ -5550,7 +5538,6 @@ const applications = {
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			// 3 levels of component dependencies
 			const calculator = (component(true)("calculator")({
-				tagName: "DIV",
 				description: function(type, properties){
 					return { DIV: [
 						["sum", { a: "6", b: "2" }], " a", { BR: [] },
@@ -5567,7 +5554,6 @@ const applications = {
 				],
 			}));
 			const sum = (component(true)("sum")({
-				tagName: "SPAN",
 				description: function(type, properties){
 					return { SPAN: [
 						["cell", { value: properties.a || "" }], " + ",
@@ -5593,7 +5579,6 @@ const applications = {
 				],
 			}));
 			const cell = (component(true)("cell")({
-				tagName: "INPUT",
 				description: function(type, properties){
 					return { INPUT: [], value: (properties.value || "").toString() };
 				},
@@ -5618,7 +5603,6 @@ const applications = {
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			// Inter-dependencies
 			const user = (component(true)("user")({
-				tagName: "SPAN",
 				description: function(type, properties){
 					return { SPAN: [
 						["edit", { value: (properties.firstName || "").trim() }, "firstName"], " first name", { BR: [] },
@@ -5648,7 +5632,6 @@ const applications = {
 				],
 			}));
 			const edit = (component(true)("edit")({
-				tagName: "INPUT",
 				description: function(type, properties){
 					return { INPUT: [], value: properties.value || "" };
 				},
@@ -5673,7 +5656,6 @@ const applications = {
 		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
 			// Todo list
 			const list = (component(true)("list")({
-				tagName: "DIV",
 				description: function(type, properties){
 					return { DIV: [
 						{ DIV: [{ B: ["Todo list:"] }] },
@@ -5701,7 +5683,6 @@ const applications = {
 				},
 			}));
 			const item = (component(true)("item")({
-				tagName: "DIV",
 				description: function(type, properties){
 					if (properties.value){
 						return { DIV: [
