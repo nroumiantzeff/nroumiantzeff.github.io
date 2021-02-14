@@ -2334,8 +2334,8 @@ function compilation(declaration, ...additionalSideEffects){
 		}
 	}
 	// ComponentOuterHTML: String
-	// componentSpecification: ComponentType -> ComponentProperties -> ComponentSubtype -> ComponentOuterHTML
-	function componentSpecification(type, properties, subtype){
+	// componentSubcomponentDescription: ComponentType -> ComponentProperties -> ComponentSubtype -> ComponentOuterHTML
+	function componentSubcomponentDescription(type, properties, subtype){
 		if (type){
 			const registration = componentRegistrations[type];
 			if (registration){
@@ -2354,11 +2354,15 @@ function compilation(declaration, ...additionalSideEffects){
 	// componentDescription: Object
 	function componentDescription(description){ //todo do not use document.createElement so it is compatible with server-side rendering, use strings only with proper escaping
 		if (Array.isArray(description)){
+			if (description.length === 0){
+				// default component: line break
+				return document.createElement("BR");
+			}
 			// component
 			const type = description[0];
 			const properties = description [1];
 			const subtype = description[2];
-			return componentSpecification(type, properties, subtype);			
+			return componentSubcomponentDescription(type, properties, subtype);			
 		}
 		if (typeof description === "object"){
 			let element = Object.keys(description).reduce(function(accumulator, key){
@@ -2398,6 +2402,8 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				return element;
 			}
+			// default element: line break
+			return document.createElement("BR");
 		}
 	} 
 	// componentOuterHTML: String -> String
@@ -5505,7 +5511,7 @@ const applications = {
 			const declaration = (component(true)("asynchronous-square")({
 				description: function(type, properties){
 					return { DIV: [
-						{ INPUT: [], value: properties.key || "4" }, " input", { BR: [] }, 
+						{ INPUT: [], value: properties.key || "4" }, " input", [], 
 						{ INPUT: [], value: properties.value || "16" }, " asynchronous output (3 second delay): input * input",
 					], "data-key": properties.key || "" };
 				},
@@ -5539,8 +5545,8 @@ const applications = {
 			const calculator = (component(true)("calculator")({
 				description: function(type, properties){
 					return { DIV: [
-						["sum", { a: "6", b: "2" }], " a", { BR: [] },
-						["sum", { a: "7", b: "3" }], " b", { BR: [] },
+						["sum", { a: "6", b: "2" }], " a", [],
+						["sum", { a: "7", b: "3" }], " b", [],
 						["cell", { value: "80" }, "total"], " c = a * b",
 					] };
 				},
@@ -5604,8 +5610,8 @@ const applications = {
 			const user = (component(true)("user")({
 				description: function(type, properties){
 					return { SPAN: [
-						["edit", { value: (properties.firstName || "").trim() }, "firstName"], " first name", { BR: [] },
-						["edit", { value: (properties.lastName || "").trim() }, "lastName"], " last name", { BR: [] },
+						["edit", { value: (properties.firstName || "").trim() }, "firstName"], " first name", [],
+						["edit", { value: (properties.lastName || "").trim() }, "lastName"], " last name", [],
 						["edit", { value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() }, "fullName"], " full name",
 					] };
 				},
@@ -5658,7 +5664,7 @@ const applications = {
 				description: function(type, properties){
 					return { DIV: [
 						{ DIV: [{ B: ["Todo list:"] }] },
-						{ DIV: [] }, { BR: [] },
+						{ DIV: [] }, [],
 						{ DIV: [{ INPUT: [], value: properties.key || "" }, " new item"] }, 
 					], "data-key": properties.key || "" };
 				},
