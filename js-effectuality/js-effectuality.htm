@@ -2365,6 +2365,13 @@ function compilation(declaration, ...additionalSideEffects){
 	}
 	// componentDescription: Object
 	function componentDescription(description){ //todo do not use document.createElement so it is compatible with server-side rendering, use strings only with proper escaping
+		if (Array.isArray(description)){
+			// component
+			const type = description[0];
+			const properties = description [1];
+			const subtype = description[2];
+			return componentSpecification(type, properties, subtype);			
+		}
 		if (typeof description === "object"){
 			let element = Object.keys(description).reduce(function(accumulator, key){
 				if (accumulator){
@@ -2402,15 +2409,6 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 				});
 				return element;
-			}
-			// component
-			const componentType = description.componentType;
-			if (componentType){
-				const componentSubtype = description.componentSubtype;
-				const componentProperties = Object.fromEntries(Object.entries(description).filter(function(entry){
-					return entry[0] !== "componentType" && entry[0] !== "componentSubype";
-				}));
-				return componentSpecification(componentType, componentProperties, componentSubtype);
 			}
 		}
 	} 
@@ -5555,9 +5553,9 @@ const applications = {
 				tagName: "DIV",
 				description: function(type, properties){
 					return { DIV: [
-						{ componentType: "sum", a: "6", b: "2" }, " a", { BR: [] },
-						{ componentType: "sum", a: "7", b: "3" }, " b",	{ BR: [] },
-						{ componentType: "cell", componentSubtype: "total", value: "80" }, " c = a * b",
+						["sum", { a: "6", b: "2" }], " a", { BR: [] },
+						["sum", { a: "7", b: "3" }], " b", { BR: [] },
+						["cell", { value: "80" }, "total"], " c = a * b",
 					] };
 				},
 				subcomponents:[
@@ -5572,9 +5570,9 @@ const applications = {
 				tagName: "SPAN",
 				description: function(type, properties){
 					return { SPAN: [
-						{ componentType: "cell", value: properties.a || "" }, " + ",
-						{ componentType: "cell", value: properties.b || "" }, " = ",
-						{ componentType: "cell", componentSubtype: "total", value: 1 * (properties.a || "") + 1 * (properties.b || "") },
+						["cell", { value: properties.a || "" }], " + ",
+						["cell", { value: properties.b || "" }], " = ",
+						["cell", { value: 1 * (properties.a || "") + 1 * (properties.b || "") }, "total"],
 					] };
 					//todo implement "hot" properties (hot properties should be evaluated at artificial "hot" event)
 				},
@@ -5623,9 +5621,9 @@ const applications = {
 				tagName: "SPAN",
 				description: function(type, properties){
 					return { SPAN: [
-						{ componentType: "edit", componentSubtype: "firstName", value: (properties.firstName || "").trim() }, " first name", { BR: [] },
-						{ componentType: "edit", componentSubtype: "lastName", value: (properties.lastName || "").trim() }, " last name", { BR: [] },
-						{ componentType: "edit", componentSubtype: "fullName", value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() }, " full name",
+						["edit", { value: (properties.firstName || "").trim() }, "firstName"], " first name", { BR: [] },
+						["edit", { value: (properties.lastName || "").trim() }, "lastName"], " last name", { BR: [] },
+						["edit", { value: ((properties.firstName || "") + " " + (properties.lastName || "")).trim() }, "fullName"], " full name",
 					] };
 				},
 				properties:{
