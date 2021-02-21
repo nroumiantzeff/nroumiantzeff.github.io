@@ -1,3 +1,4 @@
+<!doctype html>
 <html>
 <head>
 <title>js-effectuality</title>
@@ -1653,9 +1654,9 @@ function compilation(declaration, ...additionalSideEffects){
 	//					ComponentCauseSubelement, // ComponentNode -> ComponentCauseName -> Node
 	//					ComponentCauseAlias, // ComponentCauseName || ComponentCauseName -> ComponentCauseName
 	//				],
-	//				ComponentEffectOptions:{ //todo
+	//				ComponentEffectOptions:{
 	//					"internal": Boolean, // if true, no propagation of change
-	//					"hot": Boolean, // if true, execution of the Effectuality when component is connected to the DOM
+	//					"hot": Boolean, // if true, execution of the Effectuality when component is connected to the DOM //todo
 	//				},
 	//			],
 	//			...
@@ -1663,7 +1664,7 @@ function compilation(declaration, ...additionalSideEffects){
 	//		"subcomponents":[
 	//			[
 	//				ComponentType,
-	//				ComponentParentSelector, // for example ">aaa>bbb>ccc",
+	//				ComponentParentSelector, // for example ">aaa>bbb>ccc", //todo support array, for example ["aaa"],["bbb"],["ccc"]
 	//				ComponentPropertyName,
 	//				ComponentPropertyEvaluation, // ComponentPropertyEvaluation: ComponentNode -> ComponentSubcomponentNode -> ComponentSubcomponentIndex -> ComponentPropertyName -> ComponentPropertyValue
 	//				ComponentSubcomponentSubtype,
@@ -1673,6 +1674,9 @@ function compilation(declaration, ...additionalSideEffects){
 	//		"styles":[], //todo
 	//	}, ...
 	// }
+	//todo focus declaration on page load
+	//todo effect to focus and select elements
+	//todo declaration to sort subcomponents
 	// componentRegistrations: { ComponentType: ComponentRegistration, ... }
 	let componentRegistrations = Object.create(null);
 	// componentReactions: Map Element [Element, Boolean]
@@ -1972,7 +1976,7 @@ function compilation(declaration, ...additionalSideEffects){
 			}
 		}
 		return proxy;
-		// todo add "ticks" argument to decactivate the proxy when the states have changed
+		// todo add "ticks" argument to deactivate the proxy when the states have changed
 	})(componentType, componentState);
 	// componentTaggedDeclaration: OuterHTML -> ComponentType -> ComponentSubtype -> ComponentProperties -> OuterHTML
 	function componentTaggedDeclaration(outerHTML, type, subtype, properties){
@@ -2159,11 +2163,11 @@ function compilation(declaration, ...additionalSideEffects){
 		//todo subcomponents of subcomponents should be evaluated (synchronously and whithout exclusion) 
 	}
 	// ComponentPropertySubelement: ComponentNode -> ComponentPropertyName -> ComponentNode
-	// componentEffectApplication: Element -> ComponentPropertyName -> ComponentPropertyValue -> ComponentPropertySubelement -> ()
-	// componentEffectApplication: Element -> ComponentPropertyName -> ComponentPropertyValue -> ComponentPropertySubelement -> ComponentPropertyAlias -> ()
-	function componentEffectApplication(element, effectPropertyName, effectPropertyValue, effectPropertySubelement, effectPropertyAlias){
+	// ComponentInternalEffectOption: Boolean
+	// componentEffectApplication: Element -> ComponentPropertyName -> ComponentPropertyValue -> ComponentPropertySubelement -> ComponentPropertyAlias -> ComponentInternalEffectOption -> ()
+	function componentEffectApplication(element, effectPropertyName, effectPropertyValue, effectPropertySubelement, effectPropertyAlias, internalEffectOption){
 		const updated = componentPropertyUpdate(element, effectPropertyName, effectPropertyValue, effectPropertySubelement, effectPropertyAlias);
-		if (updated){
+		if (updated || !internalEffectOption){
 			componentReaction(element);
 		}
 	}
@@ -2189,7 +2193,8 @@ function compilation(declaration, ...additionalSideEffects){
 						const causePropertyEvaluation = cause[1];
 						const causePropertySubelement = cause[2];
 						const causePropertyAlias = cause[3];
-						const options = item[2]; //todo
+						const options = item[2];
+						const internalEffectOption = options && options.internal;
 						const causePropertyValue = causePropertyEvaluation(componentNode(element, 0), causePropertyName);
 						if (causePropertyValue !== undefined){
 							const updated = componentPropertyUpdate(element, causePropertyName, causePropertyValue, causePropertySubelement, causePropertyAlias);
@@ -2199,15 +2204,14 @@ function compilation(declaration, ...additionalSideEffects){
 									const effectApplication = effectuality(function implication(effect){
 										return function cause(effectPropertyValue, ...x){
 											if (effectPropertyValue !== undefined){
-												componentEffectApplication(element, effectPropertyName, effectPropertyValue, effectPropertySubelement, effectPropertyAlias);
+												componentEffectApplication(element, effectPropertyName, effectPropertyValue, effectPropertySubelement, effectPropertyAlias, internalEffectOption);
 											}
 											return effect(effectPropertyValue, ...x);
 										};
 									});
-									//todo ignit reaction after asynchronous effet
 									const componentContext = context({ component: { container: subelement } });
-									// note: the interpretation must be asynchronous (specify a zero millisecond delay)
-									interpretation((effectApplication)(effectEffectuality)(delay(0)))(causePropertyValue, causePropertyName, effectPropertyName, componentContext);
+									const asynchronous = (delay(0)); // note: the interpretation must be asynchronous (specify a zero millisecond delay)
+									interpretation((effectApplication)(effectEffectuality)(asynchronous))(causePropertyValue, causePropertyName, effectPropertyName, componentContext);
 								}
 							}
 						}
@@ -5835,6 +5839,7 @@ else{
 		const source = document.createElement("button");
 		source.style.float = "right";
 		source.appendChild(document.createTextNode("view source"));
+		source.tabIndex = -1;
 		source.onclick = function(){
 			const view = window.open("about:blank");
 			view.document.title = name;
