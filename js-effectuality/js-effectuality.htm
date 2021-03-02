@@ -2090,6 +2090,9 @@ function compilation(declaration, ...additionalSideEffects){
 	// ComponentSubelement -> ComponentPropertyName -> ComponentNode 
 	// componentPropertyUpdate: Node -> ComponentPropertyName -> ComponentPropertyValue -> ComponentSubelement -> ComponentPropertyChanged
 	function componentPropertyUpdate(node, name, value, subelement, alias){
+		if (value === undefined){
+			return false;
+		}
 		const element = componentPropertyElement(node, name, subelement);
 		if (!element){
 			return false;
@@ -5759,7 +5762,11 @@ const applications = {
 					count: true,
 				},
 				events:{
-					click: ["value", node => 1 + node.firstElementChild.innerText * 1, node => node.firstElementChild, "innerText"],
+					click: ["value", function(node, target){
+						if (target.tagName === "BUTTON"){
+							return 1 + node.firstElementChild.innerText * 1;
+						}
+					}, node => node.firstElementChild, "innerText"],
 				},
 			}));
 			const definition = component("counter")();
