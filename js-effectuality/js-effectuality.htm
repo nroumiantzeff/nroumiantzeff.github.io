@@ -20,6 +20,7 @@ Effectuality is simplification: Effectuality has a single operation, composition
 Effectuality is mathematics: Effectuality thrusts the mathematical backbone of functional programming all the way
 Effectuality is an algebra: Effectuality is a semiring, with composition as operation and concatenation as notation
 Effectuality is a category: Effectuality is the Category of all effects, called eventualities, where morphisms are causal relationships between effects, called implications
+Effectuality is a theory: functors map Effectuality objects to callbacks and Effectuality morphisms to side-effects, callbacks and side-effects form the program category, natural transformation between these functors correspond to program execution
 Effectuality is semantic: Effectuality operational semantics models the effects, Effectuality denotational semantics models the algebra operation (composition), an Effectuality description corresponds to an inverted Hoare triple of the axiomatic semantics
 Effectuality is natural: there is a natural transformation between Effectuality composition and side-effect chaining
 Effectuality is a logic: as an alternative to the propositional logic and quantum logic, Effectuality logic considers implications between effects, called eventualities, true if they occur, false otherwise
@@ -2330,7 +2331,7 @@ function compilation(declaration, ...additionalSideEffects){
 			}
 			else{
 				const level = componentSubcomponentLevel(element, target);
-				const subpropertyValue = ignition(componentNode(element, 0), componentNode(target, level), eventName);
+				const subpropertyValue = ignition(componentNode(element, 0), componentNode(target, level), eventName, subpropertyName);
 				if (componentPropertyUpdate(element, subpropertyName, subpropertyValue, subpropertySubelement, subpropertyAlias)){
 					componentReaction(element);
 				}
@@ -2452,7 +2453,7 @@ function compilation(declaration, ...additionalSideEffects){
 												const subpropertyAlias = ignition[3];
 												if (typeof subpropertyIgnition === "function"){
 													document.addEventListener(eventName, function(event){
-														componentEventIgnition(type, event, subpropertyIgnition, subpropertyName, subpropertySubelement);
+														componentEventIgnition(type, event, subpropertyIgnition, subpropertyName, subpropertySubelement, subpropertyAlias);
 													}, true);
 												}
 											}
@@ -5650,7 +5651,7 @@ const applications = {
 					},
 				},
 				properties:{
-					value: node => node, // value: true,
+					value: true,
 				},
 				events:{
 					change: true,
@@ -5739,6 +5740,29 @@ const applications = {
 			}));
 			const declaration = (todo)(list)(item)(edit);
 			const definition = component("todo")();
+			return (definition)(declaration);
+		},
+	"web-application#6":
+		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component){
+			// Counter
+			const declaration = (component(true)("counter")({
+				description: function(type, properties){
+					return {
+						DIV: [
+							"Counter: ", { SPAN: [properties.count || "0"] }, [],
+						 	{ BUTTON: ["increment"] },
+						],
+					};
+				},
+				properties:{
+					count: true,
+				},
+				events:{
+					click: ["value", node => 1 + node.firstElementChild.innerText * 1, node => node.firstElementChild, "innerText"],
+				},
+			}));
+			const definition = component("counter")();
 			return (definition)(declaration);
 		},
 };
