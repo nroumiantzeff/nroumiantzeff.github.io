@@ -22,8 +22,8 @@ Effectuality is an algebra: Effectuality is a semiring, with composition as oper
 Effectuality is semantic: Effectuality operational semantics models the effects, Effectuality denotational semantics models the algebra operation (composition), an Effectuality description corresponds to an inverted Hoare triple of the axiomatic semantics
 Effectuality is natural: there is a natural transformation between Effectuality composition and side-effect chaining
 Effectuality is a logic: as an alternative to the propositional logic and quantum logic, Effectuality logic considers implications between effects, called eventualities, true if they occur, false otherwise
-Effectuality is a category: Effectuality is a Category with the set of eventualities as its single object and implications as morphisms
-Effectuality is a theory: Effectuality (contravariant) functors map eventualities to program callbacks and implications to program side-effects, the natural transformation between Effectuality functors corresponds to the program execution
+Effectuality is a category: Effectuality is a Category with the set of eventualities as its objects and implications as morphisms
+Effectuality is a theory: Effectuality functors map eventualities to program callbacks and implications to callback calls, the natural transformation between Effectuality functors corresponds to the effect of program execution
 Effectuality is a description: Effectuality is a description of the application, extracting then interpreting it runs the application
 Effectuality is a interpretation: an Effectuality description may be interpreted by the Effectuality interpreter to run the programm including side-effects (the Effectuality interpreter is agnostic unlike the free Monad interpreter)
 Effectuality is a circumvention: Effectuality circumvent the functional programming purity by delegating side-effects to the framework, like the IO Monad and Task Monad
