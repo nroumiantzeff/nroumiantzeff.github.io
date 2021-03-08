@@ -3792,8 +3792,39 @@ const effectualityTag = (function(){
 })();
 
 //todo immutable stack (linked list instead of spread arrays)
-//todo name effect values and cause values (second and third arguments of Effectuality) and check names in composition, concurrence, recurrence, injunction, concurrence, recurrence, conjunction, disjunction (semantic type system at declaration stage)
 //todo optimize closures (static functions called with closure arguments)
+//todo name effect values and cause values (second and third arguments of Effectuality) and check names in composition, concurrence, recurrence, injunction, concurrence, recurrence, conjunction, disjunction (semantic type system at declaration stage)
+/* //todo add TypeScript type checking as in this example
+type Any = Array<any>;
+var x: [...Any] = [];
+function effect(x0: number, ...x: Any): void
+{
+	console.log(x0, ...x);
+}
+function implication1(effect: (x0: number, ...x: Any) => void): (...x: Any) => void
+{
+	return function cause(...x: [...Any]): void
+	{
+		return effect(3, ...x);
+	}
+}
+function implication2(effect: (x0: number, ...x: Any) => void): (...x: Any) => void
+{
+	return function cause(...x: [...Any]): void
+	{
+		return effect(4, ...x);
+	}
+}
+function implication3(effect: (x0: number, x1: number, x2: number, ...x: Any) => void): (x0: number, x1: number, ...x: Any) => void
+{
+	return function cause(x0: number, x1: number, ...x: [...Any]): void
+	{
+		return effect(x0+x1, x0, x1, ...x);
+	}
+}
+var cause = implication1(implication2(implication3(effect)));
+cause();
+*/ //todo add TypeScript type checking as in this example
 
 </script>
 
