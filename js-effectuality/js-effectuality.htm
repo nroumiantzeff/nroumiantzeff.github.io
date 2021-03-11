@@ -60,7 +60,7 @@ Effectuality is a manifesto: (t -> ()) -> (s -> ())
 Effectuality is a continuation: in a continuation passing style, the effect represents the rest of the computation after the cause 
 Effectuality is a singularity: although there are tones of articles, papers, about Monads and Promises, nothing is to be found on the signature (t -> ()) -> (s -> ())
 Effectuality is a quest: from the complexity of web-application development, to functional programming, functional reactive programming, IO Monad, Task Monad, Huges Arrow and Effectuality
-Effectuality is a millestone: effect type and cause type could be specify when declaring an Effectuality allowing type checking at compilation time
+Effectuality is a millestone: effect type and cause type could be specify when declaring an Effectuality allowing type checking using TypeScript for instance, type Effectuality<T extends unknown[], S extends unknown[]> = <R extends unknown[], Q extends unknown[]>(effectuality1: Effectuality<R, Q>) => R extends [...S, ...infer SR]? Effectuality<[...T, ...SR], Q>: S extends [...infer RS, ...R]? [...R, ...RS] extends S? Effectuality<T, [...Q, ...RS]>: never: never;
 Effectuality is a tribute: Effectuality is a tribute to callbacks, asynchronous and n-ary yet composable
 Effectuality is a rebellion: Effectuality is a rebellion against the rebellion against callbacks
 Effectuality is a rehabilitation: Effectuality rehabilitates callbacks by renaming them eventualities
@@ -3794,37 +3794,14 @@ const effectualityTag = (function(){
 //todo immutable stack (linked list instead of spread arrays)
 //todo optimize closures (static functions called with closure arguments)
 //todo name effect values and cause values (second and third arguments of Effectuality) and check names in composition, concurrence, recurrence, injunction, concurrence, recurrence, conjunction, disjunction (semantic type system at declaration stage)
-/* //todo add TypeScript type checking as in this example
-type Any = Array<any>;
-var x: [...Any] = [];
-function effect(x0: number, ...x: Any): void
-{
-	console.log(x0, ...x);
-}
-function implication1(effect: (x0: number, ...x: Any) => void): (...x: Any) => void
-{
-	return function cause(...x: [...Any]): void
-	{
-		return effect(3, ...x);
-	}
-}
-function implication2(effect: (x0: number, ...x: Any) => void): (...x: Any) => void
-{
-	return function cause(...x: [...Any]): void
-	{
-		return effect(4, ...x);
-	}
-}
-function implication3(effect: (x0: number, x1: number, x2: number, ...x: Any) => void): (x0: number, x1: number, ...x: Any) => void
-{
-	return function cause(x0: number, x1: number, ...x: [...Any]): void
-	{
-		return effect(x0+x1, x0, x1, ...x);
-	}
-}
-var cause = implication1(implication2(implication3(effect)));
-cause();
-*/ //todo add TypeScript type checking as in this example
+
+/* //todo alternatively the following TypeScript type checks effectuality composition compatibility:
+type Effectuality<T extends unknown[], S extends unknown[]> = <R extends unknown[], Q extends unknown[]>(effectuality1: Effectuality<R, Q>) => R extends [...S, ...infer SR]? Effectuality<[...T, ...SR], Q>: S extends [...infer RS, ...R]? [...R, ...RS] extends S? Effectuality<T, [...Q, ...RS]>: never: never;
+declare const effectuality1: Effectuality<[number], []>;
+declare const effectuality2: Effectuality<[number], []>;
+declare const effectuality3: Effectuality<[string, number, number], [number, number]>;
+const effectuality321 = (effectuality3)(effectuality2)(effectuality1);
+*/
 
 </script>
 
