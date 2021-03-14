@@ -3802,7 +3802,7 @@ type Effectuality<T extends unknown[], S extends unknown[]> = <R extends unknown
 declare const effectuality1: Effectuality<[number], []>;
 declare const effectuality2: Effectuality<[number], []>;
 declare const effectuality3: Effectuality<[string, number, number], [number|boolean, number]>;
-declare const duplication: <T extends unknown[], S extends unknown[], X, Y extends X>(arg: Effectuality<T, [X, Y, ...S]>) => Effectuality<T, [Y, ...S]>;
+declare const duplication: <T extends unknown[], S extends unknown[], X>(arg: Effectuality<[X, ...T], S>) => Effectuality<[X, X, ...T], S>;
 const effectuality21 = (effectuality2)(effectuality1); // TypeScript type is: Effectuality<[number, number], []>
 const effectuality32 = (effectuality3)(effectuality2); // TypeScript type is: Effectuality<[string, number, number], [number]>
 const effectuality31 = (effectuality3)(effectuality1); // TypeScript type is: Effectuality<[string, number, number], [number]>
@@ -3812,9 +3812,8 @@ const effectuality33 = (effectuality3)(effectuality3); // TypeScript type is: ne
 const effectuality331 = (effectuality3)(effectuality3)(effectuality1); // TypeScript error
 const effectuality321 = (effectuality3)(effectuality2)(effectuality1); // TypeScript type is: Effectuality<[string, number, number], []>
 const effectuality3212 = (effectuality3)(effectuality2)(effectuality1)(effectuality2); // TypeScript type is: Effectuality<[string, number, number, number], []>
-const effectuality3duplication = (duplication(effectuality3)); // TypeScript type is: Effectuality<[string, number, number], [number]>
-const effectuality3duplication1 = (duplication(effectuality3))(effectuality1); // TypeScript type is: Effectuality<[string, number, number], []>
-const effectuality3duplication3 = (duplication(effectuality3))(effectuality3); // TypeScript type is: never
+const effectuality3duplication1 = (effectuality3)(duplication(effectuality1)); // TypeScript type is: Effectuality<[string, number, number], []>
+const effectuality3duplication3 = (effectuality3)(duplication(effectuality3)); // TypeScript type is: never
 */
 
 </script>
