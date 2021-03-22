@@ -42,7 +42,7 @@ Effectuality is an encapsulation: Effectuality encapsulate impure effects preven
 Effectuality is an endomorphism: composition of Effectuality instances returns an Effectuality instance, combinators take Effectuality instances and return an Effectuality instance
 Effectuality is an idea: Effectuality ((t -> ()) -> (s -> ())
 Effectuality is a patern: effectuality(function implication(effect){ return function cause(...x){ ... return effect(...y, ...x); }; })
-Effectuality is conservation: the cause and effect arguments correspond to a conservative stack (no removal)
+Effectuality is a conservation: the cause and effect arguments correspond to a conservative stack (no removal)
 Effectuality is a commitment: arguments shant be consumed
 Effectuality is a rule: from a cause an effect shall be called once and once only
 Effectuality is a convention: Effectuality instances are distinguished in the code by surounding parentheses, (effectuality1), which leads to Effectuality composition a peculiar JavaScript syntax: (effectuality1)(effectuality2)(effectuality3)
@@ -50,6 +50,7 @@ Effectuality is a mitigation: unlike when debugging a standard functional progra
 Effectuality is a function: Effectuality core implementation is a single function of less than 30 lines of native functional JavaScript (not counting comments)
 Effectuality is a generator: generating an Effectuality instance is as follows: effectuality(implication) where implication type is ((t -> ()) -> (s -> ()))
 Effectuality is an injection: framework injects functions to get the Effectuality instance generator: const effectuality = Efectuality(encryption, decryption1, decryption2) where encryption is a public key function and decryption1 and decryption2 are private key functions
+Effectuality is a dependency: an Effectuality implication injects the effect to the cause
 Effectuality is an architecture: the framework instanciates the Effectuality instance generator and injects it together with encapsulated side-effects to the program which returns an Effectuality ran by the framework
 Effectuality is a convenience: Effectuality interpretation of an Effectuality program may be performed server side or client side, Effectuality compilation of an Effectuality program may pre-generate web-pages on the server or dynamically generate web-pages on the client
 Effectuality is an interface: the Effectuality API supports definition and composition of Effectuality instances
@@ -3814,6 +3815,38 @@ const effectuality321 = (effectuality3)(effectuality2)(effectuality1); // TypeSc
 const effectuality3212 = (effectuality3)(effectuality2)(effectuality1)(effectuality2); // TypeScript type is: Effectuality<[string, number, number, number], []>
 const effectuality3duplication1 = (effectuality3)(duplication(effectuality1)); // TypeScript type is: Effectuality<[string, number, number], []>
 const effectuality3duplication3 = (effectuality3)(duplication(effectuality3)); // TypeScript type is: never
+*/
+
+/* //todo the following Haskell programm is a Proof Of Concept for Effectuality:
+import Debug.Trace
+data S a b = S a b | E deriving Show
+e = E
+top :: S a b -> a
+top (S x y) = x
+bottom :: S a b -> b
+bottom (S x y) = y
+data Effectuality t s = Effectuality ((t -> ()) -> (s -> ()))
+implication :: Effectuality t s -> ((t -> ()) -> (s -> ()))
+implication (Effectuality i) = i
+-- Efectuality composition infix operator: <<
+(<<) :: Effectuality t s -> Effectuality s r -> Effectuality t r
+e1 << e2 = Effectuality (\effect -> (implication e2) ((implication e1) effect))
+initialization :: a -> Effectuality (S a b) b
+initialization x = Effectuality (\effect -> (\y -> effect (S x y)))
+decimal :: Effectuality (S Integer (S String a)) (S String a)
+decimal = Effectuality (\effect -> (\(S x y) -> effect (S (read x) (S x y))))
+square :: Effectuality (S Integer (S Integer a)) (S Integer a)
+square = Effectuality (\effect -> (\(S x y) -> effect (S (x * x) (S x y))))
+add :: Effectuality (S Integer (S Integer (S Integer a))) (S Integer (S Integer a))
+add = Effectuality (\effect -> (\(S x (S y z)) -> effect (S (x + y) (S x (S y z)))))
+effectuality0 = add << initialization 10 << square << decimal << initialization "3"
+implication0 = implication effectuality0
+effect :: (S Integer b) -> ()
+effect (S x y) = trace ("effect: " ++  show x) ()
+cause = implication0(effect)
+-- main returns: "()"
+-- main logs: "effect: 19"
+main = putStrLn (show (cause e))
 */
 
 </script>
