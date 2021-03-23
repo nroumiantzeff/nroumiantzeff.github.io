@@ -3818,7 +3818,7 @@ const effectuality3duplication3 = (effectuality3)(duplication(effectuality3)); /
 */
 
 /* //todo the following Haskell programm is a Proof Of Concept for Effectuality:
-import Debug.Trace
+import System.IO.Unsafe (unsafePerformIO)
 -- Stack
 data S a b = S a b | Bottom deriving Show
 -- Effectuality
@@ -3828,27 +3828,33 @@ implication (Effectuality i) = i
 -- Efectuality composition infix operator: <<
 (<<) :: Effectuality t s -> Effectuality s r -> Effectuality t r
 e1 << e2 = Effectuality (\effect -> (implication e2) ((implication e1) effect))
+-- sample Effectuality with side-effect
+output :: (Show a) => String -> Effectuality (S a b) (S a b)
+output x = Effectuality (\effect -> (\(S y z) -> unsafePerformIO (putStrLn (x ++  show y) >> return (effect (S y z)))))
 -- sample Effectuality with no side-effect
 initialization :: a -> Effectuality (S a b) b
 initialization x = Effectuality (\effect -> (\y -> effect (S x y)))
 -- sample Effectuality with no side-effect
 decimal :: Effectuality (S Integer (S String a)) (S String a)
 decimal = Effectuality (\effect -> (\(S x y) -> effect (S (read x) (S x y))))
--- sample Effectuality with trace side-effect
+-- sample Effectuality with no side-effect
 square :: Effectuality (S Integer (S Integer a)) (S Integer a)
-square = Effectuality (\effect -> (\(S x y) -> trace ("square " ++  show x ++ " side-effect") effect (S (x * x) (S x y))))
--- sample Effectuality with trace side-effect
+square = Effectuality (\effect -> (\(S x y) -> effect (S (x * x) (S x y))))
+-- sample Effectuality with no side-effect
 add :: Effectuality (S Integer (S Integer (S Integer a))) (S Integer (S Integer a))
-add = Effectuality (\effect -> (\(S x (S y z)) -> trace ("add " ++  show x ++ " and " ++ show y ++ " side-effect") effect (S (x + y) (S x (S y z)))))
+add = Effectuality (\effect -> (\(S x (S y z)) -> effect (S (x + y) (S x (S y z)))))
 -- sample Effectuality composition
-effectuality0 = add << initialization 10 << square << decimal << initialization "3"
+effectuality0 = output "add: " << add << initialization 10 << output "square: " << square << decimal << output "initialization: " << initialization "3"
 -- sample Effectuality execution
 implication0 = implication effectuality0
 effect :: a -> ()
 effect x = ()
 cause = implication0(effect)
--- main returns: "()"
--- main trace side-effects: "square 3 side-effect", "add 10 and 9 side-effect"
+-- main output side-effects:
+--  initialization: "3"
+--  square: 9
+--  add: 19
+-- main returns: ()
 main = putStrLn (show (cause Bottom))
 */
 
