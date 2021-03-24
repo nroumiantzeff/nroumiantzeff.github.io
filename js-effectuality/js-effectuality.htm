@@ -3818,7 +3818,9 @@ const effectuality3duplication3 = (effectuality3)(duplication(effectuality3)); /
 */
 
 /* //todo the following Haskell programm is a Proof Of Concept for Effectuality:
+-- online test at https://replit.com/languages/haskell
 import System.IO.Unsafe (unsafePerformIO)
+import Control.Concurrent (threadDelay)
 -- Stack
 data S a b = S a b | Bottom deriving Show
 -- Effectuality
@@ -3838,6 +3840,9 @@ input x = Effectuality (\effect -> (\y -> unsafePerformIO (do
         z <- getLine
         return (effect (S z y))
     )))
+-- sample Effectuality with side-effect
+delay :: Int -> Effectuality a a
+delay x = Effectuality (\effect -> (\y -> unsafePerformIO (Control.Concurrent.threadDelay x >> return (effect y))))
 -- sample Effectuality with no side-effect
 initialization :: a -> Effectuality (S a b) b
 initialization x = Effectuality (\effect -> (\y -> effect (S x y)))
@@ -3851,20 +3856,24 @@ square = Effectuality (\effect -> (\(S x y) -> effect (S (x * x) (S x y))))
 add :: Effectuality (S Integer (S Integer (S Integer a))) (S Integer (S Integer a))
 add = Effectuality (\effect -> (\(S x (S y z)) -> effect (S (x + y) (S x (S y z)))))
 -- sample Effectuality composition
-effectuality0 = output "add: " << add << initialization 10 << output "square: " << square << output "decimal: " << decimal << input "type 3..."
+effectuality0 = output "add: " << add << initialization 10 << delay 3000000 << output "square: " << square << output "decimal: " << decimal << input "type 3..."
 -- sample Effectuality execution
 implication0 = implication effectuality0
 effect :: a -> ()
 effect x = ()
 cause = implication0(effect)
--- stdin:
---  3
 -- stdout:
---  type 3...
---  decimal: 3
---  square: 9
---  add: 19
---  ()
+--- type 3...
+-- stdin:
+--- 3
+-- stdout:
+--- decimal: 3
+--- square: 9
+-- wait:
+--- 3 seconds
+-- stdout:
+--- add: 19
+--- ()
 main = putStrLn (show (cause Bottom))
 */
 
