@@ -42,7 +42,7 @@ Effectuality is an encapsulation: Effectuality encapsulate impure effects preven
 Effectuality is an endomorphism: composition of Effectuality instances returns an Effectuality instance, combinators take Effectuality instances and return an Effectuality instance
 Effectuality is an idea: Effectuality ((t -> ()) -> (s -> ())
 Effectuality is a patern: effectuality(function implication(effect){ return function cause(...x){ ... return effect(...y, ...x); }; })
-Effectuality is a conservation: the cause and effect arguments correspond to a conservative stack (no removal)
+Effectuality is a collection: the cause and effect arguments correspond to a conservative stack (no removal)
 Effectuality is a commitment: arguments shant be consumed
 Effectuality is a rule: from a cause an effect shall be called once and once only
 Effectuality is a convention: Effectuality instances are distinguished in the code by surounding parentheses, (effectuality1), which leads to Effectuality composition a peculiar JavaScript syntax: (effectuality1)(effectuality2)(effectuality3)
@@ -58,10 +58,11 @@ Effectuality is a language: the Effectuality language expressions, each enclosed
 Effectuality is a terminology: Effectuality is the quality of being able to bring about an effect, the power to be effective, adequate to accomplish a purpose, producing the intended or expected result
 Effectuality is a signature: (t -> ()) -> (s -> ())
 Effectuality is a manifesto: (t -> ()) -> (s -> ())
-Effectuality is a continuation: in a continuation passing style, the effect represents the rest of the computation after the cause 
+Effectuality is a continuation: in a continuation passing style the effect represents the rest of the computation after the cause, an Effectuality is a composable continuation  
 Effectuality is a singularity: although there are tones of articles, papers, about Monads and Promises, nothing is to be found on the signature (t -> ()) -> (s -> ())
 Effectuality is a quest: from the complexity of web-application development, to functional programming, functional reactive programming, IO Monad, Task Monad, Huges Arrow and Effectuality
 Effectuality is an integration: Effectuality integrates to TypeScript allowing checking Effecuality composition compatibility: type Effectuality<T extends unknown[], S extends unknown[]> = <R extends unknown[], Q extends unknown[]>(effectuality1: Effectuality<R, Q>) => R extends [...S, ...infer V]? Effectuality<[...T, ...V], Q>: R extends Partial<S>? S extends [...[any] extends R? [any]: [any, any] extends R? [any, any]: [any, any, any] extends R? [any, any, any]: [any, any, any, any] extends R? [any, any, any, any]: [any, any, any, any, any] extends R? [any, any, any, any, any]: [any, any, any, any, any, any] extends R? [any, any, any, any, any, any]: [any, any, any, any, any, any, any] extends R? [any, any, any, any, any, any, any]: [any, any, any, any, any, any, any, any] extends R? [any, any, any, any, any, any, any, any]: /* ... up to 100 underflow subtype checking ... */ R, ...infer U]? Effectuality<T, [...Q, ...U]>: never: never;
+Effectuality is a pluralism: Effectuality may be implemented in Haskell: data Effectuality t s = Effectuality ((t -> ()) -> (s -> ())), implication :: Effectuality t s -> ((t -> ()) -> (s -> ())), implication (Effectuality i) = i, (<<) :: Effectuality t s -> Effectuality s r -> Effectuality t r, effectuality1 << effectuality2 = Effectuality (\effect -> (implication effectuality2) ((implication effectuality1) effect))
 Effectuality is a tribute: Effectuality is a tribute to callbacks, asynchronous and n-ary yet composable
 Effectuality is a rebellion: Effectuality is a rebellion against the rebellion against callbacks
 Effectuality is a rehabilitation: Effectuality rehabilitates callbacks by renaming them eventualities
