@@ -3826,7 +3826,7 @@ const effectuality3duplication3 = (effectuality3)(duplication(effectuality3)); /
 import System.IO.Unsafe (unsafePerformIO)
 import Control.Concurrent (threadDelay)
 -- Stack
-data S a b = S a b | Bottom deriving Show
+data S a b = S a b deriving Show
 -- Effectuality
 data Effectuality t s = Effectuality ((t -> ()) -> (s -> ()))
 implication :: Effectuality t s -> ((t -> ()) -> (s -> ()))
@@ -3878,7 +3878,84 @@ cause = implication0(effect)
 -- stdout:
 --- add: 19
 --- ()
-main = putStrLn (show (cause Bottom))
+main = putStrLn (show (cause ()))
+*/
+
+/* //todo alternative Haskell Proof Of Concept using composition instead of "<<" infix operator:
+-- online test at https://replit.com/languages/haskell
+--
+import System.IO.Unsafe (unsafePerformIO)
+import Control.Concurrent (threadDelay)
+--
+-- Stack
+data Stack a b = UnsafeStack a b | UnsafeStackStub deriving Show
+--
+-- effectuality execution
+effect :: a -> ()
+effect x = ()
+cause = effectuality(effect)
+main = putStrLn (show (cause UnsafeStackStub))
+--
+-- sample Effectuality with side-effect
+output :: (Show a) => String -> ((Stack a b) -> ()) -> ((Stack a b) -> ())
+output x = (\effect -> (\(UnsafeStack y z) -> unsafePerformIO (putStrLn (x ++  show y) >> return (effect (UnsafeStack y z)))))
+--
+-- sample Effectuality with side-effect
+input :: String -> ((Stack String b) -> ()) -> (b -> ())
+input x = (\effect -> (\y -> unsafePerformIO (do
+        putStrLn x
+        z <- getLine
+        return (effect (UnsafeStack z y))
+    )))
+--
+-- sample Effectuality with side-effect
+delay :: Int -> ((Stack a b) -> ()) -> ((Stack a b) -> ())
+delay x = (\effect -> (\(UnsafeStack y z) -> unsafePerformIO (Control.Concurrent.threadDelay x >> return (effect (UnsafeStack y z)))))
+--
+-- sample Effectuality with no side-effect
+initialization :: a -> ((Stack a b) -> ()) -> (b -> ())
+initialization x = (\effect -> (\y -> effect (UnsafeStack x y)))
+--
+-- sample Effectuality with no side-effect
+decimal :: ((Stack Integer (Stack String a)) -> ()) -> ((Stack String a) -> ())
+decimal = (\effect -> (\(UnsafeStack x y) -> effect (UnsafeStack (read x) (UnsafeStack x y))))
+--
+-- sample Effectuality with no side-effect
+square :: ((Stack Integer (Stack Integer a)) -> ()) -> ((Stack Integer a) -> ())
+square = (\effect -> (\(UnsafeStack x y) -> effect (UnsafeStack (x * x) (UnsafeStack x y))))
+--
+-- sample Effectuality with no side-effect
+add :: ((Stack Integer (Stack Integer (Stack Integer a))) -> ()) -> ((Stack Integer (Stack Integer a)) -> ())
+add = (\effect -> (\(UnsafeStack x (UnsafeStack y z)) -> effect (UnsafeStack (x + y) (UnsafeStack x (UnsafeStack y z)))))
+--
+-- ^^^^^^^^^^^^^^^^^^ UNSAFE MODULE ^^^^^^^^
+--
+--
+-- vvvvvvvvvvvvvvvvvv SAFE MODULE vvvvvvvvvv
+--
+-- sample Effectuality composition
+effectuality = 
+ input "type 3...".
+ decimal.
+ output "decimal: ".
+ square.
+ output "square: ".
+ delay 3000000.
+ initialization 10.
+ add.
+ output "add: "
+-- stdout:
+--- type 3...
+-- stdin:
+--- 3
+-- stdout:
+--- decimal: 3
+--- square: 9
+-- wait:
+--- 3 seconds
+-- stdout:
+--- add: 19
+--- ()
 */
 
 </script>
