@@ -3891,9 +3891,10 @@ import Control.Concurrent (threadDelay)
 data Stack a b = UnsafeStack a b | UnsafeStackStub deriving Show
 --
 -- effectuality execution
-effect :: a -> ()
+cause :: (Stack a b) -> ()
+cause = effectuality(effect) -- effectuality :: (t -> ()) -> (s -> ())
+effect :: (Stack a b) -> ()
 effect x = ()
-cause = effectuality(effect)
 main = putStrLn (show (cause UnsafeStackStub))
 --
 -- sample Effectuality with side-effect
