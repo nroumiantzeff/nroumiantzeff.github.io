@@ -2506,6 +2506,50 @@ function compilation(declaration, ...additionalSideEffects){
 		};
 	}
 
+	// parser: (String -> Boolean) -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
+	// parser: () -> Parser -> Parser -> ... -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
+	function parser(check){
+		if (check === undefined){
+			return function(...parsers){
+				const implications = parsers.map(function(item){
+					if (item === effectuality()){
+						return undefined;
+					}
+					return decryption1(item);
+				}).filter(function (application){
+					if (application === undefined){
+						return false;
+					}
+					return true;
+				});
+				if (implications.length === 0){
+					return effectuality();
+				}
+				return effectuality(function parsersImplication(effect){
+					// effect: (Result, String, u1, u2, ...) -> ()
+					// cause: (Result, String, u1, u2, ...) -> ()
+					return function cause(result, string, ...x){
+						// x: u1, u2, ...
+						return implications.reduce(function(accumulator, item){
+							// item: ((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ())
+							const parsersCause = item(effect);
+							return parsersCause(result, string, ...x);
+						}, undefined);
+					};
+				});
+			};
+		}
+		return effectuality(function implication(effect){
+			return function cause(result, string, ...x){
+				const token = string[0];
+				if (check(token)){
+					const tail = string.slice(1);
+					return effect(result + token, tail, ...x);
+				}
+			};
+		});
+	}
+
 	// self-tests
 	if (declaration === undefined){
 		if (location.hash !== "#self-tests"){
@@ -3348,6 +3392,229 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				cause();
 			})();
+
+			// parser test
+			(function(){
+				const string = "A";
+				const A = parser(x => x === "A");
+				const name = "A"; 
+				const implication1 = decryption1(A);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "A":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "Azerty";
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const Azerty = (y)(t)(r)(e)(z)(A);
+				const name = "Azerty"; 
+				const implication1 = decryption1(Azerty);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "Azerty":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "A";
+				const A = parser(x => x === "A");
+				const Q = parser(x => x === "Q");
+				const A__Q = parser()((A),(Q));
+				const name = "A__Q"; 
+				const implication1 = decryption1(A__Q);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "A":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "Q";
+				const A = parser(x => x === "A");
+				const Q = parser(x => x === "Q");
+				const A__Q = parser()((A),(Q));
+				const name = "A__Q"; 
+				const implication1 = decryption1(A__Q);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "Q":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "Azerty";
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const Q = parser(x => x === "Q");
+				const w = parser(x => x === "w");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const Az__Qw = parser()((z)(A),(w)(Q));
+				const Az__Qw_erty = (y)(t)(r)(e)(Az__Qw);
+				const name = "Az__Qw_erty"; 
+				const implication1 = decryption1(Az__Qw_erty);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "Azerty":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "Qwerty";
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const Q = parser(x => x === "Q");
+				const w = parser(x => x === "w");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const Az__Qw = parser()((z)(A),(w)(Q));
+				const Az__Qw_erty = (y)(t)(r)(e)(Az__Qw);
+				const name = "Az__Qw_erty"; 
+				const implication1 = decryption1(Az__Qw_erty);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "Qwerty":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "fooAzerty";
+				const f = parser(x => x === "f");
+				const o = parser(x => x === "o");
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const Q = parser(x => x === "Q");
+				const w = parser(x => x === "w");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const foo = (o)(o)(f);
+				const Az__Qw = parser()((z)(A),(w)(Q));
+				const erty = (y)(t)(r)(e);
+				const foo_Az__Qw_erty = (erty)(Az__Qw)(foo);
+				const name = "foo_Az__Qw_erty"; 
+				const implication1 = decryption1(foo_Az__Qw_erty);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "fooAzerty":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "fooQwerty";
+				const f = parser(x => x === "f");
+				const o = parser(x => x === "o");
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const Q = parser(x => x === "Q");
+				const w = parser(x => x === "w");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const foo = (o)(o)(f);
+				const Az__Qw = parser()((z)(A),(w)(Q));
+				const erty = (y)(t)(r)(e);
+				const foo_Az__Qw_erty = (erty)(Az__Qw)(foo);
+				const name = "foo_Az__Qw_erty"; 
+				const implication1 = decryption1(foo_Az__Qw_erty);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, string){
+					if (!string){
+						switch (result){
+							case "fooQwerty":
+								console.warn(title + result);
+								break;
+							default:
+								console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
 		};
 	}
 
@@ -4013,11 +4280,11 @@ function check(effectuality, log, title, values, outcomes, effectuality1){
 		}, false);
 	}
 	return (log(1)(function(...outcome){
-		if (among(outcome, outcomes)){
+		if (outcomes && among(outcome, outcomes)){
 			return title + ": " + JSON.stringify(outcome);
 		}
 	}))(log(2)(function(...outcome){
-		if (!among(outcome, outcomes)){
+		if (outcomes && !among(outcome, outcomes)){
 			if (outcomes.length === 0){
 				return title + ": error: should not occur: got " + JSON.stringify(outcome);
 			}
