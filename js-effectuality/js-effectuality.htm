@@ -791,6 +791,56 @@ function compilation(declaration, ...additionalSideEffects){
 		};
 	}
 
+	// combinations: Effectuality (((t11, t12, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality ((((t11, t12, ...) -> ()) | ((t21, t22, ...) -> ()) | ...)  -> ((s1, s2, ...) -> ()))
+	function combinations(...effectualities){
+		const implications = effectualities.map(function(item){
+			if (item === effectuality()){
+				return undefined;
+			}
+			return decryption1(item);
+		}).filter(function (application){
+			if (application === undefined){
+				return false;
+			}
+			return true;
+		});
+		if (implications.length === 0){
+			return effectuality();
+		}
+		return effectuality(function implication(effect){
+			// effect: (t11, t12, ...) -> () | (t21, t22, ...) -> () | ... 
+			// cause: (s1, s2, ...) -> ()
+			return function cause(...x){
+				// x: s1, s2, ...
+				return implications.reduce(function(accumulator, combinationsImplication){
+					// combinationsImplication: (((t11, t12, ...) -> ()) | ((t21, t22, ...) -> ()) | ...) -> ((s1, s2, ...) -> ())
+					const combinationsCause = combinationsImplication(effect);
+					return combinationsCause(...x);
+				}, undefined);
+			};
+		});
+	}
+
+	// iterations: Effectuality (((s1, s2, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality ((((s1, s2, ..., s1, s2, ...) -> ()) | ((s1, s2, ..., s1, s2, ..., s1, s2, ...) -> ()) | ...) -> ((s1, s2, ...) -> ()))
+	function iterations(iterationsEffectuality){
+		if (iterationsEffectuality === effectuality()){
+			return iterationsEffectuality;
+		}
+		const iterationsImplication = decryption1(iterationsEffectuality);
+		return effectuality(function implication(effect){
+			// effect: (s2, s1, ..., s1, s2, ...) -> () | (s2, s1, ..., s1, s2, ..., s1, s2, ...) -> () | ...
+			// cause: (s2, s1, ...) -> ()
+			function cause(...x){
+				function iterationsEffect(...y){
+					return (effect(...y), cause(...y));
+				}				
+				const iterationsCause = iterationsImplication(iterationsEffect);
+				return iterationsCause(...x);	
+			};
+			return cause;
+		});
+	}
+
 	// internal
 	// delays: [[TimerId]]
 	let delays = [];
@@ -2506,38 +2556,20 @@ function compilation(declaration, ...additionalSideEffects){
 		};
 	}
 
+	// internal
+	// parser0: Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
+	const parser0 = (function(){
+ 		return effectuality(function implication(effect){
+			return function cause(result, string, ...x){
+				return effect(result, string, ...x);
+			};
+		});
+	})();
+
 	// parser: (String -> Boolean) -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
-	// parser: () -> Parser -> Parser -> ... -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
 	function parser(check){
 		if (check === undefined){
-			return function(...parsers){
-				const implications = parsers.map(function(item){
-					if (item === effectuality()){
-						return undefined;
-					}
-					return decryption1(item);
-				}).filter(function (application){
-					if (application === undefined){
-						return false;
-					}
-					return true;
-				});
-				if (implications.length === 0){
-					return effectuality();
-				}
-				return effectuality(function parsersImplication(effect){
-					// effect: (Result, String, u1, u2, ...) -> ()
-					// cause: (Result, String, u1, u2, ...) -> ()
-					return function cause(result, string, ...x){
-						// x: u1, u2, ...
-						return implications.reduce(function(accumulator, item){
-							// item: ((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ())
-							const parsersCause = item(effect);
-							return parsersCause(result, string, ...x);
-						}, undefined);
-					};
-				});
-			};
+			return parser0;
 		}
 		return effectuality(function implication(effect){
 			return function cause(result, string, ...x){
@@ -3400,14 +3432,13 @@ function compilation(declaration, ...additionalSideEffects){
 				const name = "A"; 
 				const implication1 = decryption1(A);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "A":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
@@ -3427,14 +3458,13 @@ function compilation(declaration, ...additionalSideEffects){
 				const name = "Azerty"; 
 				const implication1 = decryption1(Azerty);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "Azerty":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
@@ -3446,18 +3476,17 @@ function compilation(declaration, ...additionalSideEffects){
 				const string = "A";
 				const A = parser(x => x === "A");
 				const Q = parser(x => x === "Q");
-				const A__Q = parser()((A),(Q));
+				const A__Q = combinations((A),(Q));
 				const name = "A__Q"; 
 				const implication1 = decryption1(A__Q);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "A":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
@@ -3469,18 +3498,17 @@ function compilation(declaration, ...additionalSideEffects){
 				const string = "Q";
 				const A = parser(x => x === "A");
 				const Q = parser(x => x === "Q");
-				const A__Q = parser()((A),(Q));
+				const A__Q = combinations((A),(Q));
 				const name = "A__Q"; 
 				const implication1 = decryption1(A__Q);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "Q":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
@@ -3498,19 +3526,18 @@ function compilation(declaration, ...additionalSideEffects){
 				const r = parser(x => x === "r");
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
-				const Az__Qw = parser()((z)(A),(w)(Q));
+				const Az__Qw = combinations((z)(A),(w)(Q));
 				const Az__Qw_erty = (y)(t)(r)(e)(Az__Qw);
 				const name = "Az__Qw_erty"; 
 				const implication1 = decryption1(Az__Qw_erty);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "Azerty":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
@@ -3528,19 +3555,18 @@ function compilation(declaration, ...additionalSideEffects){
 				const r = parser(x => x === "r");
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
-				const Az__Qw = parser()((z)(A),(w)(Q));
+				const Az__Qw = combinations((z)(A),(w)(Q));
 				const Az__Qw_erty = (y)(t)(r)(e)(Az__Qw);
 				const name = "Az__Qw_erty"; 
 				const implication1 = decryption1(Az__Qw_erty);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "Qwerty":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
@@ -3561,20 +3587,19 @@ function compilation(declaration, ...additionalSideEffects){
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
 				const foo = (o)(o)(f);
-				const Az__Qw = parser()((z)(A),(w)(Q));
+				const Az__Qw = combinations((z)(A),(w)(Q));
 				const erty = (y)(t)(r)(e);
 				const foo_Az__Qw_erty = (erty)(Az__Qw)(foo);
 				const name = "foo_Az__Qw_erty"; 
 				const implication1 = decryption1(foo_Az__Qw_erty);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "fooAzerty":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
@@ -3595,20 +3620,363 @@ function compilation(declaration, ...additionalSideEffects){
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
 				const foo = (o)(o)(f);
-				const Az__Qw = parser()((z)(A),(w)(Q));
+				const Az__Qw = combinations((z)(A),(w)(Q));
 				const erty = (y)(t)(r)(e);
 				const foo_Az__Qw_erty = (erty)(Az__Qw)(foo);
 				const name = "foo_Az__Qw_erty"; 
 				const implication1 = decryption1(foo_Az__Qw_erty);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
-				const cause = implication1(function effect(result, string){
-					if (!string){
-						switch (result){
-							case "fooQwerty":
-								console.warn(title + result);
-								break;
-							default:
-								console.error(title + result);
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "A";
+				const option = p => (combinations(parser(),(p)));
+				const A = parser(x => x === "A");
+				const A___ = option(A);
+				const name = "A___";
+				const implication1 = decryption1(A___);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "";
+				const option = p => (combinations(parser(),(p)));
+				const A = parser(x => x === "A");
+				const A___ = option(A);
+				const name = "A___";
+				const implication1 = decryption1(A___);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "Q";
+				const option = p => (combinations(parser(),(p)));
+				const A = parser(x => x === "A");
+				const A___ = option(A);
+				const name = "A___";
+				const implication1 = decryption1(A___);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						console.error(title + result);
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "Azerty";
+				const option = p => (combinations(parser(),(p)));
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const x = parser(x => x === "x");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const Az___x___erty = (y)(t)(r)(e)(option(x))(z)(A);
+				const name = "Az___x___erty"; 
+				const implication1 = decryption1(Az___x___erty);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "Azxerty";
+				const option = p => (combinations(parser(),(p)));
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const x = parser(x => x === "x");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const Az___x___erty = (y)(t)(r)(e)(option(x))(z)(A);
+				const name = "Az___x___erty"; 
+				const implication1 = decryption1(Az___x___erty);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "A";
+				const A = parser(x => x === "A");
+				const A____ = (iterations(A));
+				const name = "A____"; 
+				const implication1 = decryption1(A____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "AA";
+				const A = parser(x => x === "A");
+				const A____ = (iterations(A));
+				const name = "A____"; 
+				const implication1 = decryption1(A____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "AAAAA";
+				const A = parser(x => x === "A");
+				const A____ = (iterations(A));
+				const name = "A____"; 
+				const implication1 = decryption1(A____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "AzertyAzertyAzerty";
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const Azerty = (y)(t)(r)(e)(z)(A);
+				const Azerty____ = (iterations(Azerty));
+				const name = "Azerty____"; 
+				const implication1 = decryption1(Azerty____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "AzertyAAAzertyAzerty";
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const A____zerty = (y)(t)(r)(e)(z)(iterations(A));
+				const A____zerty____ = (iterations(A____zerty));
+				const name = "A____zerty____"; 
+				const implication1 = decryption1(A____zerty____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+
+			// parser test
+			(function(){
+				const string = "AzertyAAAzexxxrtyAzexrty";
+				const option = p => (combinations(parser(),(p)));
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const x = parser(x => x === "x");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const ____A____ = (iterations(A));
+				const _______x_______ = (option(iterations(x)));
+				const ____A____ze_______x_______rty = (y)(t)(r)(_______x_______)(e)(z)(____A____);
+				const ________A____ze_______x_______rty____ = (iterations(____A____ze_______x_______rty));
+				const name = "________A____ze_______x_______rty____"; 
+				const implication1 = decryption1(________A____ze_______x_______rty____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "AzertyQQQwexxxrtyAAAzexrty";
+				const option = p => (combinations(parser(),(p)));
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const Q = parser(x => x === "Q");
+				const w = parser(x => x === "w");
+				const x = parser(x => x === "x");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const ____A____ = (iterations(A));
+				const ____Q____ = (iterations(Q));
+				const ____A____z = (z)(____A____);
+				const ____Q____w = (w)(____Q____);
+				const _______A____z_______Q____w___ = (combinations(____A____z,____Q____w));
+				const _______x_______ = (option(iterations(x)));
+				const _______A____z_______Q____w___e_______x_______rty = (y)(t)(r)(_______x_______)(e)(_______A____z_______Q____w___);
+				const ___________A____z_______Q____w___e_______x_______rty____ = (iterations(_______A____z_______Q____w___e_______x_______rty));
+				const name = "___________A____z_______Q____w___e_______x_______rty____";
+				const implication1 = decryption1(___________A____z_______Q____w___e_______x_______rty____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "fooAzertyQQQwexxxrtyAAAzexrtyfoo";
+				const option = p => (combinations(parser(),(p)));
+				const f = parser(x => x === "f");
+				const o = parser(x => x === "o");
+				const A = parser(x => x === "A");
+				const z = parser(x => x === "z");
+				const Q = parser(x => x === "Q");
+				const w = parser(x => x === "w");
+				const x = parser(x => x === "x");
+				const e = parser(x => x === "e");
+				const r = parser(x => x === "r");
+				const t = parser(x => x === "t");
+				const y = parser(x => x === "y");
+				const foo = (o)(o)(f);
+				const ____A____ = (iterations(A));
+				const ____Q____ = (iterations(Q));
+				const ____A____z = (z)(____A____);
+				const ____Q____w = (w)(____Q____);
+				const _______A____z_______Q____w___ = (combinations(____A____z,____Q____w));
+				const _______x_______ = (option(iterations(x)));
+				const _______A____z_______Q____w___e_______x_______rty = (y)(t)(r)(_______x_______)(e)(_______A____z_______Q____w___);
+				const ___________A____z_______Q____w___e_______x_______rty____ = (iterations(_______A____z_______Q____w___e_______x_______rty));
+				const foo___________A____z_______Q____w___e_______x_______rty____foo = (foo)(___________A____z_______Q____w___e_______x_______rty____)(foo);
+				const name = "foo___________A____z_______Q____w___e_______x_______rty____foo";
+				const implication1 = decryption1(foo___________A____z_______Q____w___e_______x_______rty____foo);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
 						}
 					}
 				});
