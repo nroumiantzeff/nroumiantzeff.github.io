@@ -2558,28 +2558,71 @@ function compilation(declaration, ...additionalSideEffects){
 
 	// internal
 	// parser0: Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
-	const parser0 = (function(){
- 		return effectuality(function implication(effect){
-			return function cause(result, string, ...x){
-				return effect(result, string, ...x);
-			};
-		});
-	})();
+	const parser0 = effectuality(function implication(effect){
+		return function cause(result, string, ...x){
+			return effect(result, string, ...x);
+		};
+	});
+	// parserOuterBracketOn: Effectuality (((Result, String, Boolean, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
+	const parserOuterBracketOn = effectuality(function implication(effect){
+		return function cause(result, string, ...x){
+			if (string){
+				return effect(result, string, false, ...x);
+			}
+			return effect(result, string, true, ...x);
+		};
+	});
+	// parserInnerBracketOn: Effectuality (((Result, String, String, Boolean, u1, u2, ...) -> ()) -> ((Result, String, Boolean, u1, u2, ...) -> ()))
+	const parserInnerBracketOn = effectuality(function implication(effect){
+		return function cause(result, string, force, ...x){
+			return effect(result, string, string, force, ...x);
+		};
+	});
+	// parserInnerBracketOff: Effectuality (((Result, String, String, u1, u2, ...) -> ()) -> ((Result, String, String, u1, u2, ...) -> ()))
+	const parserInnerBracketOff = effectuality(function implication(effect){
+		return function cause(result, string, string0, force, ...x){
+			if (force){
+				return effect(result, string, false, ...x);
+			}
+			if (string !== string0){
+				return effect(result, string, force, ...x);
+			}
+			else {
+				console.warn("parser test warning: consider replacing options repetitions by repetitions options: " + result + ': "' + string + '"');
+			}
+		};
+	});
+	// parserOuterBracketOff: Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, Boolean, u1, u2, ...) -> ()))
+	const parserOuterBracketOff = effectuality(function implication(effect){
+		return function cause(result, string, force, ...x){
+			return effect(result, string, ...x);
+		};
+	});
+	// parserOptions: Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ())) -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
+	const parserOptions = function(parser1){
+		return (combinations(parser0,(parser1)));
+	}
+	// parserRepetitions: Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ())) -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ())) -> ... -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
+	const parserRepetitions = function(parser1){
+		return (parserOuterBracketOff)(iterations((parserInnerBracketOff)(parser1)(parserInnerBracketOn)))(parserOuterBracketOn);
+	}
 
 	// parser: (String -> Boolean) -> Effectuality (((Result, String, u1, u2, ...) -> ()) -> ((Result, String, u1, u2, ...) -> ()))
+	// parser: False -> parserOptions
+	// parser: False -> parserRepetitions
 	function parser(check){
-		if (check === undefined){
-			return parser0;
+		if (typeof check === "function"){
+			return effectuality(function implication(effect){
+				return function cause(result, string, ...x){
+					const token = string[0];
+					if (check(token)){
+						const tail = string.slice(1);
+						return effect(result + token, tail, ...x);
+					}
+				};
+			});
 		}
-		return effectuality(function implication(effect){
-			return function cause(result, string, ...x){
-				const token = string[0];
-				if (check(token)){
-					const tail = string.slice(1);
-					return effect(result + token, tail, ...x);
-				}
-			};
-		});
+		return check? parserRepetitions: parserOptions;
 	}
 
 	// self-tests
@@ -3642,9 +3685,9 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "A";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
 				const A = parser(x => x === "A");
-				const A___ = option(A);
+				const A___ = options(A);
 				const name = "A___";
 				const implication1 = decryption1(A___);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3664,9 +3707,9 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
 				const A = parser(x => x === "A");
-				const A___ = option(A);
+				const A___ = options(A);
 				const name = "A___";
 				const implication1 = decryption1(A___);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3686,9 +3729,9 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "Q";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
 				const A = parser(x => x === "A");
-				const A___ = option(A);
+				const A___ = options(A);
 				const name = "A___";
 				const implication1 = decryption1(A___);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3703,7 +3746,7 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "Azerty";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
 				const A = parser(x => x === "A");
 				const z = parser(x => x === "z");
 				const x = parser(x => x === "x");
@@ -3711,7 +3754,7 @@ function compilation(declaration, ...additionalSideEffects){
 				const r = parser(x => x === "r");
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
-				const Az___x___erty = (y)(t)(r)(e)(option(x))(z)(A);
+				const Az___x___erty = (y)(t)(r)(e)(options(x))(z)(A);
 				const name = "Az___x___erty"; 
 				const implication1 = decryption1(Az___x___erty);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3731,7 +3774,7 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "Azxerty";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
 				const A = parser(x => x === "A");
 				const z = parser(x => x === "z");
 				const x = parser(x => x === "x");
@@ -3739,7 +3782,7 @@ function compilation(declaration, ...additionalSideEffects){
 				const r = parser(x => x === "r");
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
-				const Az___x___erty = (y)(t)(r)(e)(option(x))(z)(A);
+				const Az___x___erty = (y)(t)(r)(e)(options(x))(z)(A);
 				const name = "Az___x___erty"; 
 				const implication1 = decryption1(Az___x___erty);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3759,8 +3802,9 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "A";
+				const repetitions = parser(true);
 				const A = parser(x => x === "A");
-				const A____ = (iterations(A));
+				const A____ = (repetitions(A));
 				const name = "A____"; 
 				const implication1 = decryption1(A____);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3780,8 +3824,9 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "AA";
+				const repetitions = parser(true);
 				const A = parser(x => x === "A");
-				const A____ = (iterations(A));
+				const A____ = (repetitions(A));
 				const name = "A____"; 
 				const implication1 = decryption1(A____);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3801,8 +3846,9 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "AAAAA";
+				const repetitions = parser(true);
 				const A = parser(x => x === "A");
-				const A____ = (iterations(A));
+				const A____ = (repetitions(A));
 				const name = "A____"; 
 				const implication1 = decryption1(A____);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3822,6 +3868,7 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "AzertyAzertyAzerty";
+				const repetitions = parser(true);
 				const A = parser(x => x === "A");
 				const z = parser(x => x === "z");
 				const e = parser(x => x === "e");
@@ -3829,7 +3876,7 @@ function compilation(declaration, ...additionalSideEffects){
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
 				const Azerty = (y)(t)(r)(e)(z)(A);
-				const Azerty____ = (iterations(Azerty));
+				const Azerty____ = (repetitions(Azerty));
 				const name = "Azerty____"; 
 				const implication1 = decryption1(Azerty____);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3849,14 +3896,15 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "AzertyAAAzertyAzerty";
+				const repetitions = parser(true);
 				const A = parser(x => x === "A");
 				const z = parser(x => x === "z");
 				const e = parser(x => x === "e");
 				const r = parser(x => x === "r");
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
-				const A____zerty = (y)(t)(r)(e)(z)(iterations(A));
-				const A____zerty____ = (iterations(A____zerty));
+				const A____zerty = (y)(t)(r)(e)(z)(repetitions(A));
+				const A____zerty____ = (repetitions(A____zerty));
 				const name = "A____zerty____"; 
 				const implication1 = decryption1(A____zerty____);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3877,7 +3925,8 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "AzertyAAAzexxxrtyAzexrty";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
+				const repetitions = parser(true);
 				const A = parser(x => x === "A");
 				const z = parser(x => x === "z");
 				const x = parser(x => x === "x");
@@ -3885,10 +3934,10 @@ function compilation(declaration, ...additionalSideEffects){
 				const r = parser(x => x === "r");
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
-				const ____A____ = (iterations(A));
-				const _______x_______ = (option(iterations(x)));
+				const ____A____ = (repetitions(A));
+				const _______x_______ = (options(repetitions(x)));
 				const ____A____ze_______x_______rty = (y)(t)(r)(_______x_______)(e)(z)(____A____);
-				const ________A____ze_______x_______rty____ = (iterations(____A____ze_______x_______rty));
+				const ________A____ze_______x_______rty____ = (repetitions(____A____ze_______x_______rty));
 				const name = "________A____ze_______x_______rty____"; 
 				const implication1 = decryption1(________A____ze_______x_______rty____);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3908,7 +3957,8 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "AzertyQQQwexxxrtyAAAzexrty";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
+				const repetitions = parser(true);
 				const A = parser(x => x === "A");
 				const z = parser(x => x === "z");
 				const Q = parser(x => x === "Q");
@@ -3918,14 +3968,14 @@ function compilation(declaration, ...additionalSideEffects){
 				const r = parser(x => x === "r");
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
-				const ____A____ = (iterations(A));
-				const ____Q____ = (iterations(Q));
+				const ____A____ = (repetitions(A));
+				const ____Q____ = (repetitions(Q));
 				const ____A____z = (z)(____A____);
 				const ____Q____w = (w)(____Q____);
 				const _______A____z_______Q____w___ = (combinations(____A____z,____Q____w));
-				const _______x_______ = (option(iterations(x)));
+				const _______x_______ = (options(repetitions(x)));
 				const _______A____z_______Q____w___e_______x_______rty = (y)(t)(r)(_______x_______)(e)(_______A____z_______Q____w___);
-				const ___________A____z_______Q____w___e_______x_______rty____ = (iterations(_______A____z_______Q____w___e_______x_______rty));
+				const ___________A____z_______Q____w___e_______x_______rty____ = (repetitions(_______A____z_______Q____w___e_______x_______rty));
 				const name = "___________A____z_______Q____w___e_______x_______rty____";
 				const implication1 = decryption1(___________A____z_______Q____w___e_______x_______rty____);
 				const title = 'parser test: ' + name + ' "' + string + '": ';
@@ -3945,7 +3995,8 @@ function compilation(declaration, ...additionalSideEffects){
 			// parser test
 			(function(){
 				const string = "fooAzertyQQQwexxxrtyAAAzexrtyfoo";
-				const option = p => (combinations(parser(),(p)));
+				const options = parser(false);
+				const repetitions = parser(true);
 				const f = parser(x => x === "f");
 				const o = parser(x => x === "o");
 				const A = parser(x => x === "A");
@@ -3958,14 +4009,14 @@ function compilation(declaration, ...additionalSideEffects){
 				const t = parser(x => x === "t");
 				const y = parser(x => x === "y");
 				const foo = (o)(o)(f);
-				const ____A____ = (iterations(A));
-				const ____Q____ = (iterations(Q));
+				const ____A____ = (repetitions(A));
+				const ____Q____ = (repetitions(Q));
 				const ____A____z = (z)(____A____);
 				const ____Q____w = (w)(____Q____);
 				const _______A____z_______Q____w___ = (combinations(____A____z,____Q____w));
-				const _______x_______ = (option(iterations(x)));
+				const _______x_______ = (options(repetitions(x)));
 				const _______A____z_______Q____w___e_______x_______rty = (y)(t)(r)(_______x_______)(e)(_______A____z_______Q____w___);
-				const ___________A____z_______Q____w___e_______x_______rty____ = (iterations(_______A____z_______Q____w___e_______x_______rty));
+				const ___________A____z_______Q____w___e_______x_______rty____ = (repetitions(_______A____z_______Q____w___e_______x_______rty));
 				const foo___________A____z_______Q____w___e_______x_______rty____foo = (foo)(___________A____z_______Q____w___e_______x_______rty____)(foo);
 				const name = "foo___________A____z_______Q____w___e_______x_______rty____foo";
 				const implication1 = decryption1(foo___________A____z_______Q____w___e_______x_______rty____foo);
@@ -3982,6 +4033,147 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				cause("", string);
 			})();
+
+			// parser test
+			(function(){
+				const string = "AAAAA";
+				const repetitions = parser(true);
+				const A = parser(x => x === "A");
+				const ____A____ = (repetitions(A));
+				const ____A________A____ = (____A____)(____A____);
+				const name = "____A________A____";
+				const implication1 = decryption1(____A________A____);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "AAAAA";
+				const repetitions = parser(true);
+				const A = parser(x => x === "A");
+				const ____A____ = (repetitions(A));
+				const ________A________ = (repetitions(____A____));
+				const name = "________A________";
+				const implication1 = decryption1(________A________);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "AAAAA";
+				const options = parser(false);
+				const repetitions = parser(true);
+				const A = parser(x => x === "A");
+				const _______A_______ = (options(repetitions(A)));
+				const name = "_______A_______";
+				const implication1 = decryption1(_______A_______);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "";
+				const options = parser(false);
+				const repetitions = parser(true);
+				const A = parser(x => x === "A");
+				const _______A_______ = (options(repetitions(A)));
+				const name = "_______A_______";
+				const implication1 = decryption1(_______A_______);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "QQQQQ";
+				const options = parser(false);
+				const repetitions = parser(true);
+				const Q = parser(x => x === "Q");
+				const _______Q_______ = (repetitions(options(Q)));
+				const name = "_______Q_______";
+				const implication1 = decryption1(_______Q_______);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+			// parser test
+			(function(){
+				const string = "";
+				const options = parser(false);
+				const repetitions = parser(true);
+				const Q = parser(x => x === "Q");
+				const _______Q_______ = (repetitions(options(Q)));
+				const name = "_______Q_______";
+				const implication1 = decryption1(_______Q_______);
+				const title = 'parser test: ' + name + ' "' + string + '": ';
+				const cause = implication1(function effect(result, tail){
+					if (!tail){
+						if (result === string){
+							console.warn(title + result);
+						}
+						else {
+							console.error(title + result);
+						}
+					}
+				});
+				cause("", string);
+			})();
+
+
+
 
 		};
 	}
