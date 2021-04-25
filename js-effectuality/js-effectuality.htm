@@ -4415,10 +4415,10 @@ function effectualityConcurrenceEither(effectuality, concurrence){
 	};
 }
 
-// effectualityStore: Effectuality -> True -> Key, Key, ... -> Effectuality ((Store, s, u1, u2, ...) -> ()) -> ((s, u1, u2, ...) -> ()))
-// effectualityStore: Effectuality -> False -> Key, Key, ... -> Effectuality ((s, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
-// effectualityStore: Effectuality -> True -> True, True, ... -> Effectuality ((Store, Key, Key, ..., s, u1, u2, ...) -> ()) -> ((Key, Key, ..., s, u1, u2, ...) -> ()))
-// effectualityStore: Effectuality -> False -> True, True, ... -> Effectuality ((s, Key, Key, ..., u1, u2, ...) -> ()) -> ((Key, Key, ..., u1, u2, ...) -> ()))
+// effectualityStore: Effectuality -> True -> Key, Key, ... -> Effectuality ((Store, s, u1, u2, ...) -> ()) -> ((s, u1, u2, ...) -> ())) // store with static keys
+// effectualityStore: Effectuality -> False -> Key, Key, ... -> Effectuality ((s, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) // restore with static keys
+// effectualityStore: Effectuality -> True -> True, True, ... -> Effectuality ((Store, Key, Key, ..., s, u1, u2, ...) -> ()) -> ((Key, Key, ..., s, u1, u2, ...) -> ())) // store with dynamic keys
+// effectualityStore: Effectuality -> False -> True, True, ... -> Effectuality ((s, Key, Key, ..., u1, u2, ...) -> ()) -> ((Key, Key, ..., u1, u2, ...) -> ())) // restore with dyamic keys
 const effectualityStore = (function(){
 	const symbol = Symbol("stores");
 	const stores = Object.create(null, {
@@ -4621,6 +4621,86 @@ const effectualityTag = (function(){
 
 				};
 			};
+		};
+	};
+})();
+
+// effectualityException: Effectuality -> Log(Level) -> ExceptionAssertion -> Effectuality ((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()) // potentialy throws exception
+// effectualityException: Effectuality -> Log(Level) -> () -> ExceptionEscalation -> Effectuality ((Exception, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()) // potentialy handle exception
+// effectualityException: Effectuality -> Log(Level) -> ExceptionAssertion -> ExceptionEscalation -> Effectuality ((Exception, u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()) // potentialy throws exception and potentialy handle exception
+const effectualityException = (function(){
+	const symbol = Symbol("exception");
+	const exceptions = Object.create(null, {
+		[symbol]: {
+			value: true, 
+		}
+	});
+	function find(x){
+		const found = x.reduce(function(accumulator, item, index){
+			return accumulator || (typeof item === "object" && item !== null && item[symbol]? item: undefined);
+		}, undefined);
+		return found;
+	}
+	function handle(values, escalation){
+		const previous = find(values);
+		return Object.create(exceptions, {
+			previous:{
+				value: previous,
+			},
+			values:{
+				value: values,
+			},
+			escalation:{
+				value: escalation,
+			},
+		});
+	}
+	function assert(assertion){
+		return function format(...x){
+			const message = assertion(...x);
+			if (message){
+				const messages = escalate([message], x);
+				return messages.join('\n');
+			}
+		};
+	}
+	function escalate(messages, values){
+		const handler = find(values);
+		if (handler){
+			const message = handler.escalation(...handler.values);
+			return escalate([message, ...messages], handler.values);
+		}
+		return messages;
+	}
+	return function(effectuality, log){
+		return function exception(assertion, escalation){
+			if (assertion === undefined){
+				return effectuality(function implication(effect){
+					return function cause(...x){
+						const handler = handle(x, escalation);
+						return effect(handler, ...x);
+					};
+				});
+			}
+			if (escalation === undefined){
+				return effectuality(function implication(effect){
+					return function cause(...x){
+						const message = assertion(...x);
+						if (message === undefined){
+							return effect(...x);
+						}
+					};
+				})(log(assert(assertion)));
+			}
+			return effectuality(function implication(effect){
+				return function cause(...x){
+					const message = assertion(...x);
+					if (message === undefined){
+						const handler = handle(x, escalation);
+						return effect(handler, ...x);
+					}
+				};
+			})(log(assert(assertion)));
 		};
 	};
 })();
@@ -6045,13 +6125,54 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 // run tag test
 runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
 	const tag = effectualityTag(effectuality);
-	const lift = effectualityLift(effectuality);
 	const initialization = effectualityInitialization(effectuality);
+	const lift = effectualityLift(effectuality);
 	const multiplication = lift(function cause(x, y){
 		return x * y;
 	});
 	const expected = [1764,{"result":1764},1764,252,7,{"operands.first":252},{"result":252},252,6,42,{"result":42},42,6,7,123,456,789,{"operands.first":6,"operands.second":7},6,7,[]];
 	return check(effectuality, log, "tag test", [6,7], [expected], ((tag()("result")())(tag("result")("operands.first","operands.second")(multiplication))(tag("operands.first")("result")())(tag("result")("operands.first","result")(multiplication))(tag("result")("operands.first","operands.second")(multiplication))(initialization(123,456,789))(tag("operands.first","operands.second")()())));
+})();
+
+// run success exception test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
+	const exception = effectualityException(effectuality, log(2));
+	const escalation = exception(undefined, function(...x){
+		return "success exception test: exception: " + x;
+	});
+	const assertion = exception(function(x, y){
+		return x === 0? "cannot divide " + y + " by zero": undefined;
+	});
+	const initialization = effectualityInitialization(effectuality);
+	const lift = effectualityLift(effectuality);
+	const division = lift(function cause(x, y){
+		return y / x;
+	});
+	const duplication = lift(function cause(handler, x){
+		return x;
+	});
+	const expected = [2,5,10,3,30,2,60,{},60,[]];
+	return check(effectuality, log, "success exception test", [60], [expected], (division)(assertion)(initialization(5))(division)(assertion)(initialization(3))(division)(assertion)(initialization(2))(duplication)(escalation));
+})();
+
+// run failure exception test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
+	const exception = effectualityException(effectuality, log(1));
+	const escalation = exception(undefined, function(...x){
+		return "failure exception test: exception: " + x;
+	});
+	const assertion = exception(function(x, y){
+		return x === 0? "cannot divide " + y + " by zero": undefined;
+	});
+	const initialization = effectualityInitialization(effectuality);
+	const lift = effectualityLift(effectuality);
+	const division = lift(function cause(x, y){
+		return y / x;
+	});
+	const duplication = lift(function cause(handler, x){
+		return x;
+	});
+	return check(effectuality, log, "failure exception test", [60], [], (division)(assertion)(initialization(5))(division)(assertion)(initialization(0))(division)(assertion)(initialization(2))(duplication)(escalation));
 })();
 
 // run output constant-rate-signal input test
