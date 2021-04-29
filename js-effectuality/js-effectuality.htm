@@ -294,13 +294,15 @@ function Effectuality(encryption, decryption1, decryption2){
 				return zero;
 			}
 			// return: Effectuality (((t1, t2, ...) -> ()) -> ((r1, r2, ...) -> ()))
-			return effectuality(function(effect){
-				// effect: (t1, t2, ...) -> ()
+			return effectuality(function(effect1, ...effects){
+				// effect1: (t1, t2, ...) -> ()
 				// implication: ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())
-				const cause = implication(effect);
-				// cause: (s1, s2, ...) -> ()
-				// return: (r1, r2, ...) -> ()
-				return compositionImplication(cause);
+				const cause = implication(effect1, ...effects);
+				const [cause1, ...causes] = Array.isArray(cause)? cause: [cause, ...effects];
+				// cause1: (s1, s2, ...) -> ()
+				// compositionCause1: (r1, r2, ...) -> ()
+				const compositionCause = compositionImplication(cause1, ...causes);
+				return Array.isArray(compositionCause)? compositionCause.length === 1? compositionCause[0]: compositionCause: causes.length === 0? compositionCause: [compositionCause, ...causes];
 			});
 		}
 	};
@@ -4172,8 +4174,215 @@ function compilation(declaration, ...additionalSideEffects){
 				cause("", string);
 			})();
 
+			// effectuality branch 1 test
+			(function(){
+				const division = effectuality(function implication(effect1, effect2){
+					return function cause(x1, x2, ...x){
+						if (x2 === 0){
+							return effect2(x1, x2, ...x);
+						}
+						return effect1(x1 / x2, ...x);
+					};
+				});
+				const addition = effectuality(function implication(effect){
+					return function cause(x1, x2, ...x){
+						return effect(x1 + x2, ...x);
+					};
+				});
+				const effectuality1 = (addition)(division)(addition);
+				const implication1 = decryption1(effectuality1);
+				const causes = implication1(function effect1(...x){
+					if (x[0] === 11){
+						console.warn("effectuality branch 1 test: " + x);
+					}
+					else {
+						console.error("effectuality branch 1 test: error: expected 11: got " + x);
+					}
+				}, function effect2(...x){
+					console.error("effectuality branch 1 test: error: unexpected branch 2: got " + x);
+				});
+				causes[0](3, 5, 2, 7);
+			})();
 
+			// effectuality branch 2 test
+			(function(){
+				const division = effectuality(function implication(effect1, effect2){
+					return function cause(x1, x2, ...x){
+						if (x2 === 0){
+							return effect2(x1, x2, ...x);
+						}
+						return effect1(x1 / x2, ...x);
+					};
+				});
+				const addition = effectuality(function implication(effect){
+					return function cause(x1, x2, ...x){
+						return effect(x1 + x2, ...x);
+					};
+				});
+				const effectuality1 = (addition)(division)(addition);
+				const implication1 = decryption1(effectuality1);
+				const causes = implication1(function effect1(...x){
+					console.error("effectuality branch 2 test: error: unexpected branch 1: got " + x);
+				}, function effect2(...x){
+					if (x[0] === 8 && x[1] === 0 && x[2] === 7){
+						console.warn("effectuality branch 2 test: " + x);
+					}
+					else {
+						console.error("effectuality branch 2 test: error: expected 8, 0, 7: got " + x);
+					}
+				});
+				causes[0](3, 5, 0, 7);
+			})();
 
+			// effectuality branch 1 and 2 test
+			(function(){
+				const double = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						return effect(x1 * 2, x1, ...x);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						return effect(x1 * x1, x1, ...x);
+					};
+				});
+				const incrementation = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						return effect(x1 + 1, x1, ...x);
+					};
+				});
+				const addition = effectuality(function implication(effect){
+					return function cause(y, x1, ...x){
+						return effect(y[0] + x1, y, x1, ...x);
+					};
+				});
+				const multiplication = effectuality(function implication(effect){
+					return function cause(x1, x2, x3, x4, x5, x6, ...x){
+						return effect(x1 * x6, x1, x2, x3, x4, x5, x6, ...x);
+					};
+				});
+				const swap = effectuality(function implication(effect1, effect2, ...effects){
+					if(effect2 === undefined){
+						return [effect1, ...effects];
+					}
+					return [effect2, effect1, ...effects];
+				});
+				const divergence = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
+					function cause(...x){
+						return [effect1, effect2].reduce(function(accumulator, effect){
+							return effect(...x);
+						}, undefined);
+					};
+					return [cause, ...effects];
+				});
+				const convergence = effectuality(function implication(effect, ...effects){ //todo move to the framework
+					let values1, values2; //todo immutability
+					function cause1(...x){
+						if (values2){
+							return effect(values2, ...x);
+						}
+						values1 = x; //todo immutability
+					};
+					function cause2(...y){
+						if (values1){
+							return effect(y, ...values1);
+						}
+						values2 = y; //todo immutability
+					}
+					return [cause1, cause2, ...effects];
+				});
+				const effectuality1 = (multiplication)(addition)(convergence)(square)(swap)(double)(divergence)(incrementation);
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect1(...x){
+					if (x[0] === 360){
+						console.warn("effectuality branch 1 and 2 test: " + x);
+					}
+					else {
+						console.error("effectuality branch 1 and 2 test: error: expected 360: got " + x);
+					}
+				});
+				cause(9, 3);
+			})();
+
+			// effectuality asynchronous branch 1 and 2 test
+			(function(){
+				const double = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						setTimeout(function(){
+							return effect(x1 * 2, x1, ...x);
+						}, 3000);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						setTimeout(function(){
+							return effect(x1 * x1, x1, ...x);
+						}, 2000);
+					};
+				});
+				const incrementation = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						setTimeout(function(){
+							return effect(x1 + 1, x1, ...x);
+						}, 1000);
+					};
+				});
+				const addition = effectuality(function implication(effect){
+					return function cause(y, x1, ...x){
+						setTimeout(function(){
+							return effect(y[0] + x1, y, x1, ...x);
+						}, 1000);
+					};
+				});
+				const multiplication = effectuality(function implication(effect){
+					return function cause(x1, x2, x3, x4, x5, x6, ...x){
+						setTimeout(function(){
+							return effect(x1 * x6, x1, x2, x3, x4, x5, x6, ...x);
+						}, 1000);
+					};
+				});
+				const swap = effectuality(function implication(effect1, effect2, ...effects){
+					if(effect2 === undefined){
+						return [effect1, ...effects];
+					}
+					return [effect2, effect1, ...effects];
+				});
+				const divergence = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
+					function cause(...x){
+						return [effect1, effect2].reduce(function(accumulator, effect){
+							return effect(...x);
+						}, undefined);
+					};
+					return [cause, ...effects];
+				});
+				const convergence = effectuality(function implication(effect, ...effects){ //todo move to the framework
+					let values1, values2; //todo immutability
+					function cause1(...x){
+						if (values2){
+							return effect(values2, ...x);
+						}
+						values1 = x; //todo immutability
+					};
+					function cause2(...y){
+						if (values1){
+							return effect(y, ...values1);
+						}
+						values2 = y; //todo immutability
+					}
+					return [cause1, cause2, ...effects];
+				});
+				const effectuality1 = (multiplication)(addition)(convergence)(square)(swap)(double)(divergence)(incrementation);
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect1(...x){
+					if (x[0] === 360){
+						console.warn("effectuality asynchronous branch 1 and 2 test: " + x);
+					}
+					else {
+						console.error("effectuality asynchronous branch 1 and 2 test: error: expected 360: got " + x);
+					}
+				});
+				cause(9, 3);
+			})();
 
 		};
 	}
@@ -4197,15 +4406,16 @@ function compilation(declaration, ...additionalSideEffects){
 			const implication = decryption1(interpretationEffectuality);
 			if (implication !== undefined){
 				const probe = [];
-				let count = 0;
-				const cause = implication(function effect(...y){
-					if (++count > 1){
+				let count = 0; //debug consistency check
+				const causes = implication(function effect(...y){
+					if (++count > 1){ //debug conistency check
 						console.error("Effectuality error: an effect should not be called more than once: " + count);
 					}
 					if (y[y.length - 1] !== probe){
 						console.error("Effectuality error: cause arguments should be passed to the effect: " + y);
 					}
 				});
+				const cause = Array.isArray(causes)? causes[0]: causes;
 				return cause(...x, probe);
 			}
 		};
