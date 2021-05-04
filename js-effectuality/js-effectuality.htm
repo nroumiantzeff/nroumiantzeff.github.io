@@ -32,6 +32,7 @@ Effectuality is a circumvention: Effectuality circumvent the functional programm
 Effectuality is a computation: Effectuality, like the Hughes Arrow and unlike Monads, may express any computation, including recursive computations
 Effectuality is an abduction: an Effectuality infers the cause from the effect
 Effectuality is an inversion: Effectuality composition is right to left, the cause Effectuality appears after the effect Effectuality implied by that cause, Effectuality conjunction is a right to left
+Effectuality is a flow: Effectuality can model Flow Based Programming, see https://jpaulm.github.io/fbp/morrison_2005.htm
 Effectuality is a strategy: Effectuality is a top-down startegy, Effectuality is a goal oriented strategy
 Effectuality is a library: Effectuality is a nano, standalone, single-function JavaScript library with support for composition
 Effectuality is a framework: Effectuality comes with a sample mini-framework exposing web-application typical side-effects such as concurrence, recurrence, conjunction, injunction, disjunction, injunction, log, observation, stream, delay, signal, request, HTML components
@@ -4234,6 +4235,71 @@ function compilation(declaration, ...additionalSideEffects){
 				causes[0](3, 5, 0, 7);
 			})();
 
+			// effectuality asynchronous branch 1 or 2 test
+			(function(){
+				const double = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 <= 10? 3000: 1000;
+						setTimeout(function(){
+							return effect(x1 * 2, x1, ...x);
+						}, delay);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = 2000;
+						setTimeout(function(){
+							return effect(x1 * x1, x1, ...x);
+						}, delay);
+					};
+				});
+				const incrementation = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						setTimeout(function(){
+							return effect(x1 + 1, x1, ...x);
+						}, 1000);
+					};
+				});
+				const multiplication = effectuality(function implication(effect){
+					return function cause(x1, x2, x3, x4, ...x){
+						setTimeout(function(){
+							return effect(x1 * x4, x1, x2, x3, x4, ...x);
+						}, 1000);
+					};
+				});
+				const swap = effectuality(function implication(effect1, effect2, ...effects){
+					if(effect2 === undefined){
+						return [effect1, ...effects];
+					}
+					return [effect2, effect1, ...effects];
+				});
+				const divergence = effectuality(function implication(effect1, effect2, ...effects){
+					function cause(...x){
+						return [effect1, effect2].reduce(function(accumulator, effect){
+							return effect(...x);
+						}, undefined);
+					};
+					return [cause, ...effects];
+				});
+				const convergence = effectuality(function implication(effect, ...effects){
+					function cause(...x){
+						return effect(...x);
+					};
+					return [cause, cause, ...effects];
+				});
+				const effectuality1 = (multiplication)(convergence)(square)(swap)(double)(divergence)(incrementation);
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect(...x){
+					if (x[0] === 546 || x[0] === 24843){
+						console.warn("effectuality asynchronous branch 1 or 2 test: " + x);
+					}
+					else {
+						console.error("effectuality asynchronous branch 1 or 2 test: error: expected 546 or 24843: got " + x);
+					}
+				});
+				cause(90, 3);
+			})();
+
 			// effectuality branch 1 and 2 test
 			(function(){
 				const double = effectuality(function implication(effect){
@@ -4267,7 +4333,7 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 					return [effect2, effect1, ...effects];
 				});
-				const divergence = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
+				const dissonance = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
 					function cause(...x){
 						return [effect1, effect2].reduce(function(accumulator, effect){
 							return effect(...x);
@@ -4275,7 +4341,7 @@ function compilation(declaration, ...additionalSideEffects){
 					};
 					return [cause, ...effects];
 				});
-				const convergence = effectuality(function implication(effect, ...effects){ //todo move to the framework
+				const consonance = effectuality(function implication(effect, ...effects){ //todo move to the framework
 					let values1, values2; //todo immutability
 					function cause1(...x){
 						if (values2){
@@ -4291,9 +4357,9 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 					return [cause1, cause2, ...effects];
 				});
-				const effectuality1 = (multiplication)(addition)(convergence)(square)(swap)(double)(divergence)(incrementation);
+				const effectuality1 = (multiplication)(addition)(consonance)(square)(swap)(double)(dissonance)(incrementation);
 				const implication1 = decryption1(effectuality1);
-				const cause = implication1(function effect1(...x){
+				const cause = implication1(function effect(...x){
 					if (x[0] === 360){
 						console.warn("effectuality branch 1 and 2 test: " + x);
 					}
@@ -4308,16 +4374,18 @@ function compilation(declaration, ...additionalSideEffects){
 			(function(){
 				const double = effectuality(function implication(effect){
 					return function cause(x1, ...x){
+						const delay = x1 <= 10? 3000: 1000;
 						setTimeout(function(){
 							return effect(x1 * 2, x1, ...x);
-						}, 3000);
+						}, delay);
 					};
 				});
 				const square = effectuality(function implication(effect){
 					return function cause(x1, ...x){
+						const delay = 2000;
 						setTimeout(function(){
 							return effect(x1 * x1, x1, ...x);
-						}, 2000);
+						}, delay);
 					};
 				});
 				const incrementation = effectuality(function implication(effect){
@@ -4347,7 +4415,7 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 					return [effect2, effect1, ...effects];
 				});
-				const divergence = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
+				const dissonance = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
 					function cause(...x){
 						return [effect1, effect2].reduce(function(accumulator, effect){
 							return effect(...x);
@@ -4355,25 +4423,31 @@ function compilation(declaration, ...additionalSideEffects){
 					};
 					return [cause, ...effects];
 				});
-				const convergence = effectuality(function implication(effect, ...effects){ //todo move to the framework
+				const consonance = effectuality(function implication(effect, ...effects){ //todo move to the framework
 					let values1, values2; //todo immutability
 					function cause1(...x){
-						if (values2){
-							return effect(values2, ...x);
+						if (values1 === undefined)
+						{
+							if (values2){
+								return effect(values2, ...x);
+							}
+							values1 = x; //todo immutability
 						}
-						values1 = x; //todo immutability
 					};
 					function cause2(...y){
-						if (values1){
-							return effect(y, ...values1);
+						if (values2 === undefined)
+						{
+							if (values1){
+								return effect(y, ...values1);
+							}
+							values2 = y; //todo immutability
 						}
-						values2 = y; //todo immutability
 					}
 					return [cause1, cause2, ...effects];
 				});
-				const effectuality1 = (multiplication)(addition)(convergence)(square)(swap)(double)(divergence)(incrementation);
+				const effectuality1 = (multiplication)(addition)(consonance)(square)(swap)(double)(dissonance)(incrementation);
 				const implication1 = decryption1(effectuality1);
-				const cause = implication1(function effect1(...x){
+				const cause = implication1(function effect(...x){
 					if (x[0] === 360){
 						console.warn("effectuality asynchronous branch 1 and 2 test: " + x);
 					}
@@ -4382,6 +4456,16 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 				});
 				cause(9, 3);
+				//todo there should be no need of the reinterpretation (passing subliminal argments) 
+				const cause2 = implication1(function effect(...x){
+					if (x[0] === 25389){
+						console.warn("effectuality asynchronous branch 1 and 2 test: " + x);
+					}
+					else {
+						console.error("effectuality asynchronous branch 1 and 2 test: error: expected 25389: got " + x);
+					}
+				});
+				cause2(90, 3);
 			})();
 
 		};
