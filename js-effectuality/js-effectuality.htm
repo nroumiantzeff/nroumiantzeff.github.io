@@ -654,18 +654,18 @@ function compilation(declaration, ...additionalSideEffects){
 				const concurrenceEffect = concurrenceImplication(effect);
 				// cause: ([s11, s12, ...], [s21, s22, ...], ...) -> ()
 				return function cause(...x){
-					// x: (s1, s2 ...)
+					// x: s1, s2 ...
 					// values: [[[ti1, ti2, ...], CountN, IndexNi], ...]
-					let values = [];
+					let values = []; //todo release resources after use (caution: concurrence currently supports non-determinism)
 					effectualities.reduceRight(function(accumulator, item, index){ // unpure
-						// x1: (s11, s12, ...)
+						// x1: s11, s12, ...
 						const x1 = index < x.length? x[index]: [];
 						// concurrentEffect: (t11, t12, ...) -> ()
 						function concurrentEffect(...yi){
 							// yi: (ti1, ti2, ...)
 							// value: [[ti1, ti2, ...], CountN, IndexNi]
 							const value = [yi.length > x.length? yi.slice(0, yi.length - x.length): [], effectualities.length, index, x];
-							values.push(value); // unpure
+							values.push(value); // unpure //todo values[index] = value; // todo remover sort from effectualityConcurrenceAll
 							return concurrenceEffect(values);
 						}
 						// occurenceCause: (s11, s12, ...) -> ()
@@ -677,6 +677,55 @@ function compilation(declaration, ...additionalSideEffects){
 			return occurenceEffectuality;
 		};
 	}
+
+	// entanglement: Effectuality (((t11, t12, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality ((([t11, t12, ...], [t21, t22, ...], s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+	function entanglement(...effectualities){ // alternative to concurrence (only supports "all", resource optimization, does not support non-determinism)
+		const implications = effectualities.map(function(item){
+			if (item === effectuality()){
+				return undefined;
+			}
+			return decryption1(item);
+		}).filter(function (application){
+			if (application === undefined){
+				return false;
+			}
+			return true;
+		});
+		if (implications.length === 0){
+			return effectuality();
+		}
+		return effectuality(function conjunctionImplication(effect){
+			// effect: ([t11, t12, ...], [t21, t22, ...], ..., s1, s2, ...) -> ()
+			// cause: (s1, s2, ...) -> ()
+			return function cause(...x){
+				// x: s1, s2, ...
+				// measures: [[t11, t12, ...], [t21, t22, ...], ...]
+				let countdown = implications.length;
+				let measures = [];
+				return implications.reduceRight(function(accumulator, implication, index){
+					// y: ti1, ti2, ...
+					function entanglementEffect(...y){
+						// y: ti1, ti2, ...
+						if (measures !== undefined && measures[index] === undefined){ // note: does not support undeterminism (effect never called or called more than once)
+							measures[index] = y; // unpure
+							countdown -= 1; // unpure
+							if (countdown === 0){
+								const z = measures;
+								measures = undefined; // release resources // unpure
+								return effect(...z, ...x);
+							}
+						}
+					}
+					const entanglementCause = implication(entanglementEffect);
+					return entanglementCause(...x);
+				}, undefined);
+			};
+		});
+	}
+	//todo expose entanglement
+	//todo expose combinators using an object rather than with multiple arguments
+	//todo implement "any" as an alternative to effectualityConcurrenceAny
+	//todo implement "either" as an alternative to effectualityConcurenceEither
 
 	// conjunction: Effectuality (((t11, t12, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t21, t22, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality (((t11, t12, ..., t21, t22, ..., s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 	function conjunction(...effectualities){
@@ -3105,7 +3154,7 @@ function compilation(declaration, ...additionalSideEffects){
 				cause(6);
 			})();
 
-			// addition dupliction addition duplication test
+			// addition duplication addition duplication test
 			(function(){
 				const addition = effectuality(function implication(effect){
 					return function cause(x1, x2, ...x){
@@ -3326,6 +3375,55 @@ function compilation(declaration, ...additionalSideEffects){
 				else {
 					console.error("delay test synchronous output: error: expected : got " + output01);
 				}
+			})();
+
+
+			// entanglement test
+			(function(){
+				const addition = effectuality(function implication(effect){
+					return function cause(x1, x2, x3, ...x){
+						const delay = 100;
+						setTimeout(function(){
+							return effect(x1[0] + x2[0] + x3[0], x1, x2, x3, ...x);
+						}, delay);
+					};
+				});
+				const tenth = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = 200;
+						setTimeout(function(){
+							return effect(x1 / 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 300; // check that there is no concurrency issue with entanglement implementation
+						setTimeout(function(){
+							return effect(x1 * x1, x1, ...x);
+						}, delay);
+					};
+				});
+				const times10 = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = 400;
+						setTimeout(function(){
+							return effect(x1 * 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const effectuality1 = (addition)(entanglement((tenth),(square),(times10)));
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect(...x){
+					if (x[0] === 96.6 || x[0] === 4206){
+						console.warn("entanglement test: " + x);
+					}
+					else {
+						console.error("entanglement test: error: expected 96.6 or 4206: got " + x);
+					}
+				});
+				cause(6);
+				cause(60); // check that there is no concurrency issue with entanglement implementation
 			})();
 
 			// request test
@@ -4298,174 +4396,6 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 				});
 				cause(90, 3);
-			})();
-
-			// effectuality branch 1 and 2 test
-			(function(){
-				const double = effectuality(function implication(effect){
-					return function cause(x1, ...x){
-						return effect(x1 * 2, x1, ...x);
-					};
-				});
-				const square = effectuality(function implication(effect){
-					return function cause(x1, ...x){
-						return effect(x1 * x1, x1, ...x);
-					};
-				});
-				const incrementation = effectuality(function implication(effect){
-					return function cause(x1, ...x){
-						return effect(x1 + 1, x1, ...x);
-					};
-				});
-				const addition = effectuality(function implication(effect){
-					return function cause(y, x1, ...x){
-						return effect(y[0] + x1, y, x1, ...x);
-					};
-				});
-				const multiplication = effectuality(function implication(effect){
-					return function cause(x1, x2, x3, x4, x5, x6, ...x){
-						return effect(x1 * x6, x1, x2, x3, x4, x5, x6, ...x);
-					};
-				});
-				const swap = effectuality(function implication(effect1, effect2, ...effects){
-					if(effect2 === undefined){
-						return [effect1, ...effects];
-					}
-					return [effect2, effect1, ...effects];
-				});
-				const dissonance = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
-					function cause(...x){
-						return [effect1, effect2].reduce(function(accumulator, effect){
-							return effect(...x);
-						}, undefined);
-					};
-					return [cause, ...effects];
-				});
-				const consonance = effectuality(function implication(effect, ...effects){ //todo move to the framework
-					let values1, values2; //todo immutability
-					function cause1(...x){
-						if (values2){
-							return effect(values2, ...x);
-						}
-						values1 = x; //todo immutability
-					};
-					function cause2(...y){
-						if (values1){
-							return effect(y, ...values1);
-						}
-						values2 = y; //todo immutability
-					}
-					return [cause1, cause2, ...effects];
-				});
-				const effectuality1 = (multiplication)(addition)(consonance)(square)(swap)(double)(dissonance)(incrementation);
-				const implication1 = decryption1(effectuality1);
-				const cause = implication1(function effect(...x){
-					if (x[0] === 360){
-						console.warn("effectuality branch 1 and 2 test: " + x);
-					}
-					else {
-						console.error("effectuality branch 1 and 2 test: error: expected 360: got " + x);
-					}
-				});
-				cause(9, 3);
-			})();
-
-			// effectuality asynchronous branch 1 and 2 test
-			(function(){
-				const double = effectuality(function implication(effect){
-					return function cause(x1, ...x){
-						const delay = x1 <= 10? 3000: 1000;
-						setTimeout(function(){
-							return effect(x1 * 2, x1, ...x);
-						}, delay);
-					};
-				});
-				const square = effectuality(function implication(effect){
-					return function cause(x1, ...x){
-						const delay = 2000;
-						setTimeout(function(){
-							return effect(x1 * x1, x1, ...x);
-						}, delay);
-					};
-				});
-				const incrementation = effectuality(function implication(effect){
-					return function cause(x1, ...x){
-						setTimeout(function(){
-							return effect(x1 + 1, x1, ...x);
-						}, 1000);
-					};
-				});
-				const addition = effectuality(function implication(effect){
-					return function cause(y, x1, ...x){
-						setTimeout(function(){
-							return effect(y[0] + x1, y, x1, ...x);
-						}, 1000);
-					};
-				});
-				const multiplication = effectuality(function implication(effect){
-					return function cause(x1, x2, x3, x4, x5, x6, ...x){
-						setTimeout(function(){
-							return effect(x1 * x6, x1, x2, x3, x4, x5, x6, ...x);
-						}, 1000);
-					};
-				});
-				const swap = effectuality(function implication(effect1, effect2, ...effects){
-					if(effect2 === undefined){
-						return [effect1, ...effects];
-					}
-					return [effect2, effect1, ...effects];
-				});
-				const dissonance = effectuality(function implication(effect1, effect2, ...effects){ //todo move to the framework
-					function cause(...x){
-						return [effect1, effect2].reduce(function(accumulator, effect){
-							return effect(...x);
-						}, undefined);
-					};
-					return [cause, ...effects];
-				});
-				const consonance = effectuality(function implication(effect, ...effects){ //todo move to the framework
-					let values1, values2; //todo immutability
-					function cause1(...x){
-						if (values1 === undefined)
-						{
-							if (values2){
-								return effect(values2, ...x);
-							}
-							values1 = x; //todo immutability
-						}
-					};
-					function cause2(...y){
-						if (values2 === undefined)
-						{
-							if (values1){
-								return effect(y, ...values1);
-							}
-							values2 = y; //todo immutability
-						}
-					}
-					return [cause1, cause2, ...effects];
-				});
-				const effectuality1 = (multiplication)(addition)(consonance)(square)(swap)(double)(dissonance)(incrementation);
-				const implication1 = decryption1(effectuality1);
-				const cause = implication1(function effect(...x){
-					if (x[0] === 360){
-						console.warn("effectuality asynchronous branch 1 and 2 test: " + x);
-					}
-					else {
-						console.error("effectuality asynchronous branch 1 and 2 test: error: expected 360: got " + x);
-					}
-				});
-				cause(9, 3);
-				//todo there should be no need of the reinterpretation (passing subliminal argments) 
-				const cause2 = implication1(function effect(...x){
-					if (x[0] === 25389){
-						console.warn("effectuality asynchronous branch 1 and 2 test: " + x);
-					}
-					else {
-						console.error("effectuality asynchronous branch 1 and 2 test: error: expected 25389: got " + x);
-					}
-				});
-				cause2(90, 3);
 			})();
 
 		};
