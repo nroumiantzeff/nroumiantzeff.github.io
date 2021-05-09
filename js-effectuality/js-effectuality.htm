@@ -679,7 +679,7 @@ function compilation(declaration, ...additionalSideEffects){
 	}
 
 	// entanglement: Effectuality (((t11, t12, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality ((([t11, t12, ...], [t21, t22, ...], s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
-	function entanglement(...effectualities){ // alternative to concurrence (only supports "all", resource optimization, does not support non-determinism)
+	function entanglement(...effectualities){ // alternative to concurrence (only supports "all", resource optimization, does not support internal non-determinism)
 		const implications = effectualities.map(function(item){
 			if (item === effectuality()){
 				return undefined;
@@ -706,12 +706,12 @@ function compilation(declaration, ...additionalSideEffects){
 					// y: ti1, ti2, ...
 					function entanglementEffect(...y){
 						// y: ti1, ti2, ...
-						if (measures !== undefined && measures[index] === undefined){ // note: does not support undeterminism (effect never called or called more than once)
+						if (measures[index] === undefined){ // note: does not support internal undeterminism (effect called more than once by argument effectualities)
 							measures[index] = y; // unpure
 							countdown -= 1; // unpure
 							if (countdown === 0){
 								const z = measures;
-								measures = undefined; // release resources // unpure
+								measures = []; // release resources // unpure
 								return effect(...z, ...x);
 							}
 						}
@@ -3377,7 +3377,6 @@ function compilation(declaration, ...additionalSideEffects){
 				}
 			})();
 
-
 			// entanglement test
 			(function(){
 				const addition = effectuality(function implication(effect){
@@ -3424,6 +3423,122 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				cause(6);
 				cause(60); // check that there is no concurrency issue with entanglement implementation
+			})();
+
+			// re-entrant entanglement test
+			(function(){
+				const multiplication = effectuality(function implication(effect){
+					return function cause(x1, x2, ...x){
+						return effect(x1[0] * x2[0], x1, x2, ...x);
+					};
+				});
+				const addition = effectuality(function implication(effect){
+					return function cause(x1, x2, x3, ...x){
+						const delay = 100;
+						setTimeout(function(){
+							return effect(x1[0] + x2[0] + x3[0], x1, x2, x3, ...x);
+						}, delay);
+					};
+				});
+				const tenth = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = 200;
+						setTimeout(function(){
+							return effect(x1 / 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 300; // check that there is no concurrency issue with entanglement implementation
+						setTimeout(function(){
+							return effect(x1 * x1, x1, ...x);
+						}, delay);
+					};
+				});
+				const times10 = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = 400;
+						setTimeout(function(){
+							return effect(x1 * 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const initialization6 = effectuality(function implication(effect){
+					return function cause(...x){
+						return effect(6, ...x);
+					};
+				});
+				const initialization60 = effectuality(function implication(effect){
+					return function cause(...x){
+						return effect(60, ...x);
+					};
+				});
+				const entanglement1 = (entanglement((tenth),(square),(times10)))
+				const effectuality1 = (multiplication)(entanglement((addition)(entanglement1)(initialization6),(addition)(entanglement1)(initialization60)));
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect(...x){
+					if (x[0] === 406299.6){
+						console.warn("re-entrant entanglement test: " + x);
+					}
+					else {
+						console.error("re-entrant entanglement test: error: expected 406299.6: got " + x);
+					}
+				});
+				cause();
+			})();
+
+			// recurrent entanglement test
+			(function(){
+				const feedback = effectuality(function implication(effect){
+					return function cause(x0, ...x){
+						return effect(x0 <= 100, x0, ...x);
+					};
+				});
+				const addition = effectuality(function implication(effect){
+					return function cause(x1, x2, x3, ...x){
+						const delay = 100;
+						setTimeout(function(){
+							return effect(x1[0] + x2[0] + x3[0], x1, x2, x3, ...x);
+						}, delay);
+					};
+				});
+				const tenth = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = 200;
+						setTimeout(function(){
+							return effect(x1 / 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 300; // check that there is no concurrency issue with entanglement implementation
+						setTimeout(function(){
+							return effect(x1 * x1, x1, ...x);
+						}, delay);
+					};
+				});
+				const times10 = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = 400;
+						setTimeout(function(){
+							return effect(x1 * 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const entanglement1 = (entanglement((tenth),(square),(times10)))
+				const effectuality1 = (recurrence((feedback),(addition)(entanglement((tenth),(square),(times10)))));
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect(...x){
+					if (x[0] === 10307.22){
+						console.warn("recurrent entanglement test: " + x);
+					}
+					else {
+						console.error("recurrent entanglement test: error: expected 10307.22: got " + x);
+					}
+				});
+				cause(6);
 			})();
 
 			// request test
@@ -4397,6 +4512,34 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				cause(90, 3);
 			})();
+
+
+
+/* //debug
+			effect1 --E1--> cause1
+			effect2 --E2--> cause2
+			[effect, ...effects] ---EA1oE1oEB1---> [cause1, ...effects] --EA2oE2oEB2--> [cause1, cause2, ...effects] --EC--> [cause, ...effects]
+			[effect, ...effects] --EA1--> effect
+			cause1 --EB1--> [cause1, ...effects]
+			[cause1, ...effects] --EA2--> effect
+			cause2 --EB2--> [cause1, cause2, ...effects]
+			[cause1, cause2, ...effects] --EC--> [cause, ...effects]
+			function EAB1(){
+				let 
+				function EA1(effect, ...effects){
+					return [effect];
+				}
+				return [effectuality(EA1), effectuality(EB1)];
+			}
+			const EC = effectuality(function implication(cause1, cause2, ...effects){
+				function cause(...x){
+					[cause1, cause2].reduce(function(accumulator, item){
+						return item(...x);
+					}, undefined);
+				};
+				return [cause, ...effects];
+			});
+*/ //debug
 
 		};
 	}
