@@ -4388,7 +4388,7 @@ function compilation(declaration, ...additionalSideEffects){
 				cause("", string);
 			})();
 
-			// effectuality branch 1 test
+			// effectuality path 1 multipath test
 			(function(){
 				const division = effectuality(function implication(effect1, effect2){
 					return function cause(x1, x2, ...x){
@@ -4407,18 +4407,18 @@ function compilation(declaration, ...additionalSideEffects){
 				const implication1 = decryption1(effectuality1);
 				const causes = implication1(function effect1(...x){
 					if (x[0] === 11){
-						console.warn("effectuality branch 1 test: " + x);
+						console.warn("effectuality path 1 multipath test: " + x);
 					}
 					else {
-						console.error("effectuality branch 1 test: error: expected 11: got " + x);
+						console.error("effectuality path 1 multipath test: error: expected 11: got " + x);
 					}
 				}, function effect2(...x){
-					console.error("effectuality branch 1 test: error: unexpected branch 2: got " + x);
+					console.error("effectuality path 1 multipath test: error: unexpected path 2: got " + x);
 				});
 				causes[0](3, 5, 2, 7);
 			})();
 
-			// effectuality branch 2 test
+			// effectuality path 2 multipath test
 			(function(){
 				const division = effectuality(function implication(effect1, effect2){
 					return function cause(x1, x2, ...x){
@@ -4436,19 +4436,19 @@ function compilation(declaration, ...additionalSideEffects){
 				const effectuality1 = (addition)(division)(addition);
 				const implication1 = decryption1(effectuality1);
 				const causes = implication1(function effect1(...x){
-					console.error("effectuality branch 2 test: error: unexpected branch 1: got " + x);
+					console.error("effectuality path 2 multipath test: error: unexpected path 1: got " + x);
 				}, function effect2(...x){
 					if (x[0] === 8 && x[1] === 0 && x[2] === 7){
-						console.warn("effectuality branch 2 test: " + x);
+						console.warn("effectuality path 2 multipath test: " + x);
 					}
 					else {
-						console.error("effectuality branch 2 test: error: expected 8, 0, 7: got " + x);
+						console.error("effectuality path 2 multipath test: error: expected 8, 0, 7: got " + x);
 					}
 				});
 				causes[0](3, 5, 0, 7);
 			})();
 
-			// effectuality asynchronous branch 1 or 2 test
+			// effectuality asynchronous path 1 or 2 multipath test
 			(function(){
 				const double = effectuality(function implication(effect){
 					return function cause(x1, ...x){
@@ -4495,51 +4495,20 @@ function compilation(declaration, ...additionalSideEffects){
 					return [cause, ...effects];
 				});
 				const convergence = effectuality(function implication(effect, ...effects){
-					function cause(...x){
-						return effect(...x);
-					};
-					return [cause, cause, ...effects];
+					return [effect, effect, ...effects];
 				});
 				const effectuality1 = (multiplication)(convergence)(square)(swap)(double)(divergence)(incrementation);
 				const implication1 = decryption1(effectuality1);
 				const cause = implication1(function effect(...x){
 					if (x[0] === 546 || x[0] === 24843){
-						console.warn("effectuality asynchronous branch 1 or 2 test: " + x);
+						console.warn("effectuality asynchronous path 1 or 2 multipath test: " + x);
 					}
 					else {
-						console.error("effectuality asynchronous branch 1 or 2 test: error: expected 546 or 24843: got " + x);
+						console.error("effectuality asynchronous path 1 or 2 multipath test: error: expected 546 or 24843: got " + x);
 					}
 				});
 				cause(90, 3);
 			})();
-
-
-
-/* //debug
-			effect1 --E1--> cause1
-			effect2 --E2--> cause2
-			[effect, ...effects] ---EA1oE1oEB1---> [cause1, ...effects] --EA2oE2oEB2--> [cause1, cause2, ...effects] --EC--> [cause, ...effects]
-			[effect, ...effects] --EA1--> effect
-			cause1 --EB1--> [cause1, ...effects]
-			[cause1, ...effects] --EA2--> effect
-			cause2 --EB2--> [cause1, cause2, ...effects]
-			[cause1, cause2, ...effects] --EC--> [cause, ...effects]
-			function EAB1(){
-				let 
-				function EA1(effect, ...effects){
-					return [effect];
-				}
-				return [effectuality(EA1), effectuality(EB1)];
-			}
-			const EC = effectuality(function implication(cause1, cause2, ...effects){
-				function cause(...x){
-					[cause1, cause2].reduce(function(accumulator, item){
-						return item(...x);
-					}, undefined);
-				};
-				return [cause, ...effects];
-			});
-*/ //debug
 
 		};
 	}
@@ -5069,6 +5038,74 @@ const effectualityException = (function(){
 				};
 			})(log(assert(assertion)));
 		};
+	};
+})();
+
+// FlowGraphEffectualityIds: [[FlowGraphEffectIds, ...], [[FlowGraphCauseIds, ...], ...]]
+// FlowGraphIds: [[FlowGraphEffectIds, ...]]
+// FlowGraph: [FlowGraphEffectualityIds, ..., FlowGraphIds]
+// effectualityFlow: Effectuality -> FlowGraph -> Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+const effectualityFlow = (function(){
+	// evanescence: (s1, s2, ...) -> () 
+	function evanescence(){
+	}
+	return function(effectuality){
+		// graph: FlowGraph
+		// effectualities: [Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())), Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())), ...]
+		return function(graph, ...effectualities){
+			if (effectualities.length === 0){
+				return effectuality();
+			}
+			// accumulator: [Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())), [FlowGraphEffectIds, ...]]
+			const accumulator = effectualities.reduce(function(accumulator, item, index){
+				const effectuality1 = accumulator[0];
+				const ids1 = graph[index][1];
+				const ids2 = accumulator[1].slice(graph[index][0].length);
+				const ids3 = ids2.length === 0 ? ids1: [...ids1, ...ids2];
+				const ids4 = graph[index + 1][0];
+				const selection = ids4.map(function(id){
+					return ids3.reduce(function(accumulator, item, index){
+						if (item === id || Array.isArray(item) && item.indexOf(id) >= 0){
+							return accumulator.concat(index);
+						}
+						return accumulator;
+					}, []);	
+				});
+				const effectuality2 = effectuality(function implication(...effects){
+					const causes = selection.map(function(item){
+						if (item.length === 0){
+							return evanescence;
+						}
+						if (item.length === 1){
+							return effects[item[0]];
+						}
+						// multiplex
+						return function cause(...x){
+							return item.reduce(function(accumulator, index){
+								return effects[index](...x);
+							}, undefined); 
+						};
+					});
+					return [...causes, ...effects];
+				});
+				const effectuality3 = effectuality1 === undefined? (effectualities[index])(effectuality2): (effectuality1)(effectualities[index])(effectuality2);
+				const ids5 = [...ids4, ...ids3];
+				return [effectuality3, ids5];
+			}, [undefined, graph[0][0]]);
+			const ids = accumulator[1];
+			const length = graph[graph.length - 1][0].length;
+			if (ids.length <= length){
+				return accumulator[0];
+			}
+			// vanish supplementary effects
+			const effectuality3 = effectuality(function implication(...effects){
+				const causes1 = effects.slice(0, length);
+				const causes2 = effects.slice(ids.length);
+				return causes2.length === 0? causes1: [...causes1, ...causes2];
+			});
+			return (accumulator[0])(effectuality3);
+		};
+		//todo scalability (do not duplicate selected effects)
 	};
 })();
 
@@ -6968,6 +7005,96 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 	}));
 	const expected = ["AtlasIntercom","AtlasIntercom",0,"AtlasIntercom",[{"shipToNumber":6,"shipToName":"AtlasIntercom","shipToAddress":"3 Steep street, 81234 San Alonzo, USA","soldToNumber":6}],0,"SELECT * FROM shipTo WHERE shipToNumber = 6",1,0,"SELECT * FROM material WHERE materialNumber = 6","SELECT * FROM shipTo WHERE shipToNumber = 6","SELECT * FROM soldTo WHERE soldToNumber = 6","6",[]];
 	return check(effectuality, log, "output request canceled-any input test output", [], [expected], (input("output13"))(output("output13"))(valueDuplication)(cancellation)(idDuplication)(any(...indexation((materialName)(materialRequest)(filterDuplication),(shipToName)(shipToRequest)(filterDuplication),(soldToName)(soldToRequest)(filterDuplication))))(registration)(conjunction((materialFilter),(shipToFilter),(soldToFilter)))(input("input13")));
+})();
+
+// run first path flow test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
+	const flow = effectualityFlow(effectuality);
+	const graph = [
+		[["half0"], [["increment0", "square0"]]], // half
+		[["increment0"], [["thrice0"]]], // increment
+		[["thrice0"], [["oddity0"]]], // thrice
+		[["square0"], [["oddity1"]]], // square
+		[["oddity0", "oddity1"], [["cause1"]]], // oddity
+		[["cause1"]]
+	];
+	const oddity = effectuality(function implication(effect1, effect2, ...effects){
+		function cause1(x1, ...x){
+			if (x1 % 2 === 1){
+				return effect1(x1, ...x);
+			}
+			return effect2(x1, ...x);
+		};
+		return [cause1, ...effects];
+	});
+	const thrice = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 * 3, x1, ...x);
+		};
+	});
+	const square = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 * x1, x1, ...x);
+		};
+	});
+	const increment = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 + 1, x1, ...x);
+		};
+	});
+	const half = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 / 2, x1, ...x);
+		};
+	});
+	const flow1 = flow(graph, half, increment, thrice, square, oddity);
+	const expected = [32,64,8,[]];
+	return check(effectuality, log, "first path flow test", [8], [expected], (flow1));
+})();
+
+// run second path flow test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
+	const flow = effectualityFlow(effectuality);
+	const graph = [
+		[["half0"], [["increment0", "square0"]]], // half
+		[["increment0"], [["thrice0"]]], // increment
+		[["thrice0"], [["oddity0"]]], // thrice
+		[["square0"], [["oddity1"]]], // square
+		[["oddity0", "oddity1"], [["cause1"]]], // oddity
+		[["cause1"]]
+	];
+	const oddity = effectuality(function implication(effect1, effect2, ...effects){
+		function cause1(x1, ...x){
+			if (x1 % 2 === 1){
+				return effect1(x1, ...x);
+			}
+			return effect2(x1, ...x);
+		};
+		return [cause1, ...effects];
+	});
+	const thrice = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 * 3, x1, ...x);
+		};
+	});
+	const square = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 * x1, x1, ...x);
+		};
+	});
+	const increment = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 + 1, x1, ...x);
+		};
+	});
+	const half = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 / 2, x1, ...x);
+		};
+	});
+	const flow1 = flow(graph, half, increment, thrice, square, oddity);
+	const expected = [20,40,39,13,[]];
+	return check(effectuality, log, "second path flow test", [13], [expected], (flow1));
 })();
 
 </script>
