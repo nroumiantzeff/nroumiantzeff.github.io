@@ -5037,19 +5037,17 @@ const effectualityException = (function(){
 	};
 })();
 
-//todo FlowGraphIds: FlowGraphId
-//todo FlowGraphIds: [FlowGraphId, ...]
-//todo FlowGraphCauseIds: FlowGraphIds
-//todo FlowGraphCausesIds: [FlowGraphCauseIds, ...]
-//todo FlowGraphEffectsIds: [FlowGraphEffectIds, ...]
-// FlowGraphEffectualityIds: [[FlowGraphEffectsIds, FlowGraphCauseIds], ...]
-//todo FlowGraph: { effects: FlowGraphEffectsIds, effectualities: FlowGraphEffectualitiesIds, causes: FlowGraphCausesIds]
-// FlowGraphEffectualityIds: [[FlowGraphEffectIds, ...], [[FlowGraphCauseIds, ...], ...]]
-// FlowGraphIds: [[FlowGraphEffectIds, ...]]
-// FlowGraph: [FlowGraphEffectualityIds, ..., FlowGraphIds]
+// FlowGraphIds: FlowGraphId
+// FlowGraphIds: [FlowGraphId, ...]
+// FlowGraphCauseIds: FlowGraphIds
+// FlowGraphCausesIds: [FlowGraphCauseIds, ...]
+// FlowGraphEffectsIds: [FlowGraphEffectIds, ...]
+// FlowGraphEffectualityIds: { effects: FlowGraphEffectsIds, causes: FlowGraphCauseIds }
+// FlowGraphEffectualitiesIds: [FlowGraphEffectualityIds, ...]
+// FlowGraph: { effects: FlowGraphEffectsIds, effectualities: FlowGraphEffectualitiesIds, causes: FlowGraphCausesIds }
 // effectualityFlow: Effectuality -> FlowGraph -> Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()))
 const effectualityFlow = (function(){
-	// evanescence: (s1, s2, ...) -> () 
+	// evanescence: (s1, s2, ...) -> ()
 	function evanescence(){
 	}
 	return function(effectuality){
@@ -5059,14 +5057,33 @@ const effectualityFlow = (function(){
 			if (effectualities.length === 0){
 				return effectuality();
 			}
-			// accumulator: [Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())), [FlowGraphEffectIds, ...]]
+			const connections = graph.effectualities || graph;
+			// accumulator: { effectuality: Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())), effects: [FlowGraphEffectIds, ...] }
 			const accumulator = effectualities.reduce(function(accumulator, item, index){
-				const effectuality1 = accumulator[0];
-				const ids1 = graph[index][1];
-				const ids2 = accumulator[1].slice(graph[index][0].length);
+				const effectuality1 = accumulator.effectuality;
+				const ids1 = connections[index].causes;
+				const ids2 = accumulator.effects.slice(connections[index].effects.length);
 				const ids3 = ids2.length === 0 ? ids1: [...ids1, ...ids2];
-				const ids4 = graph[index + 1][0];
-				const selection = ids4.map(function(id){ //todo support id of array type (for symetry between cause and effects) 
+				const ids4 = (index === connections.length - 1)? (graph.causes || connections[index].causes): connections[index + 1].effects;
+				const selection = ids4.map(function(id){
+					if (Array.isArray(id)){
+						return ids3.reduce(function(accumulator, item, index){
+							if (!Array.isArray(item)){
+								if(id.indexOf(item) >= 0){
+									return accumulator.concat(index);
+								}
+								return accumulator;		
+							}
+							// caution: avoid using multiple-valued ids for both causes and effects O(3)
+							const match = item.reduce(function(match, item){
+								return match || id.indexOf(item) >= 0;
+							}, false);
+							if (match){							
+								return accumulator.concat(index);
+							}
+							return accumulator;		
+						}, []);	
+					}
 					return ids3.reduce(function(accumulator, item, index){
 						if (item === id || Array.isArray(item) && item.indexOf(id) >= 0){
 							return accumulator.concat(index);
@@ -5075,7 +5092,7 @@ const effectualityFlow = (function(){
 					}, []);	
 				});
 				const effectuality2 = effectuality(function implication(...effects){
-					const causes = selection.map(function(item){ //todo support item of non-array type (for symetry between cause and effects)
+					const causes = selection.map(function(item){
 						if (item.length === 0){
 							return evanescence;
 						}
@@ -5093,12 +5110,12 @@ const effectualityFlow = (function(){
 				});
 				const effectuality3 = effectuality1 === undefined? (effectualities[index])(effectuality2): (effectuality1)(effectualities[index])(effectuality2);
 				const ids5 = [...ids4, ...ids3];
-				return [effectuality3, ids5];
-			}, [undefined, graph[0][0]]);
-			const ids = accumulator[1];
-			const length = graph[graph.length - 1][0].length;
+				return { effectuality: effectuality3, effects: ids5 };
+			}, { effectuality: undefined, effects: graph.effects || connections[0].effects });
+			const ids = accumulator.effects;
+			const length = connections[connections.length - 1].effects.length;
 			if (ids.length <= length){
-				return accumulator[0];
+				return accumulator.effectuality;
 			}
 			// vanish supplementary effects
 			const effectuality3 = effectuality(function implication(...effects){
@@ -5106,9 +5123,8 @@ const effectualityFlow = (function(){
 				const causes2 = effects.slice(ids.length);
 				return causes2.length === 0? causes1: [...causes1, ...causes2];
 			});
-			return (accumulator[0])(effectuality3);
+			return (accumulator.effectuality)(effectuality3);
 		};
-		//todo scalability (do not duplicate selected effects)
 	};
 })();
 
@@ -7013,14 +7029,17 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 // run first path flow test
 runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
 	const flow = effectualityFlow(effectuality);
-	const graph = [
-		[["half0"], [["increment0", "oddity1", "square0"]]], // half
-		[["increment0"], ["thrice0"]], // increment
-		[["thrice0"], ["oddity0"]], // thrice
-		[["square0"], ["oddity1"]], // square
-		[["oddity0", "oddity1"], ["cause1"]], // oddity
-		[["cause1"]]
-	];
+	const graph = {
+		//debug effects: ["half0"],
+		effectualities: [
+			{ effects: ["half0"], causes: [["increment0", "oddity1", "square0"]] }, // half
+			{ effects: ["increment0"], causes: ["thrice0"] }, // increment
+			{ effects: ["thrice0"], causes: ["oddity0"] }, // thrice
+			{ effects: ["square0"], causes: ["oddity1"] }, // square
+			{ effects: ["oddity0", "oddity1"], causes: ["cause1"] }, // oddity
+		],
+		//debug causes: ["cause1"], 
+	};
 	const oddity = effectuality(function implication(effect1, effect2, ...effects){
 		function cause1(x1, ...x){
 			if (x1 % 2 === 1){
@@ -7058,14 +7077,17 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 // run second path flow test
 runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
 	const flow = effectualityFlow(effectuality);
-	const graph = [
-		[["half0"], [["increment0", "oddity1", "square0"]]], // half
-		[["increment0"], ["thrice0"]], // increment
-		[["thrice0"], ["oddity0"]], // thrice
-		[["square0"], ["oddity1"]], // square
-		[["oddity0", "oddity1"], ["cause1"]], // oddity
-		[["cause1"]]
-	];
+	const graph = {
+		effects: ["half0"],
+		effectualities: [
+			{ effects: ["half0"], causes: [["increment0", "oddity1", "square0"]] }, // half
+			{ effects: ["increment0"], causes: ["thrice0"] }, // increment
+			{ effects: ["thrice0"], causes: ["oddity0"] }, // thrice
+			{ effects: ["square0"], causes: ["oddity1"] }, // square
+			{ effects: ["oddity0", "oddity1"], causes: ["cause1"] }, // oddity
+		],
+		causes: ["cause1"], 
+	};
 	const oddity = effectuality(function implication(effect1, effect2, ...effects){
 		function cause1(x1, ...x){
 			if (x1 % 2 === 1){
