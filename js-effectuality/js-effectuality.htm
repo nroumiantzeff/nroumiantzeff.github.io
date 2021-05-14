@@ -46,8 +46,8 @@ Effectuality is an endomorphism: composition of Effectuality instances returns a
 Effectuality is an idea: Effectuality ((t -> ()) -> (s -> ())
 Effectuality is a patern: effectuality(function implication(effect){ return function cause(...x){ ... return effect(...y, ...x); }; })
 Effectuality is a collection: the cause and effect arguments correspond to a conservative stack (no removal)
-Effectuality is a commitment: arguments shant be consumed
-Effectuality is a rule: from a cause an effect shall be called once and once only
+Effectuality is a commitment: arguments shant be consumed (conservative stack)
+Effectuality is self-determination: effectuality may either be deterministic (from a cause an effect is called once and once only) or non-deterministic (from a cause an effect is call any number of times: 0, 1, 2, ...)
 Effectuality is a convention: Effectuality instances are distinguished in the code by surounding parentheses, (effectuality1), which leads to Effectuality composition a peculiar JavaScript syntax: (effectuality1)(effectuality2)(effectuality3)
 Effectuality is a mitigation: unlike when debugging a standard functional program composition, the call stack of an Effectuality program is comprehensible
 Effectuality is a function: Effectuality core implementation is a single function of less than 30 lines of native functional JavaScript (not counting comments)
@@ -4532,11 +4532,7 @@ function compilation(declaration, ...additionalSideEffects){
 			const implication = decryption1(interpretationEffectuality);
 			if (implication !== undefined){
 				const probe = [];
-				let count = 0; //debug consistency check
 				const causes = implication(function effect(...y){
-					if (++count > 1){ //debug conistency check
-						console.error("Effectuality error: an effect should not be called more than once: " + count);
-					}
 					if (y[y.length - 1] !== probe){
 						console.error("Effectuality error: cause arguments should be passed to the effect: " + y);
 					}
@@ -5041,6 +5037,13 @@ const effectualityException = (function(){
 	};
 })();
 
+//todo FlowGraphIds: FlowGraphId
+//todo FlowGraphIds: [FlowGraphId, ...]
+//todo FlowGraphCauseIds: FlowGraphIds
+//todo FlowGraphCausesIds: [FlowGraphCauseIds, ...]
+//todo FlowGraphEffectsIds: [FlowGraphEffectIds, ...]
+// FlowGraphEffectualityIds: [[FlowGraphEffectsIds, FlowGraphCauseIds], ...]
+//todo FlowGraph: { effects: FlowGraphEffectsIds, effectualities: FlowGraphEffectualitiesIds, causes: FlowGraphCausesIds]
 // FlowGraphEffectualityIds: [[FlowGraphEffectIds, ...], [[FlowGraphCauseIds, ...], ...]]
 // FlowGraphIds: [[FlowGraphEffectIds, ...]]
 // FlowGraph: [FlowGraphEffectualityIds, ..., FlowGraphIds]
@@ -5063,7 +5066,7 @@ const effectualityFlow = (function(){
 				const ids2 = accumulator[1].slice(graph[index][0].length);
 				const ids3 = ids2.length === 0 ? ids1: [...ids1, ...ids2];
 				const ids4 = graph[index + 1][0];
-				const selection = ids4.map(function(id){
+				const selection = ids4.map(function(id){ //todo support id of array type (for symetry between cause and effects) 
 					return ids3.reduce(function(accumulator, item, index){
 						if (item === id || Array.isArray(item) && item.indexOf(id) >= 0){
 							return accumulator.concat(index);
@@ -5072,7 +5075,7 @@ const effectualityFlow = (function(){
 					}, []);	
 				});
 				const effectuality2 = effectuality(function implication(...effects){
-					const causes = selection.map(function(item){
+					const causes = selection.map(function(item){ //todo support item of non-array type (for symetry between cause and effects)
 						if (item.length === 0){
 							return evanescence;
 						}
@@ -7011,11 +7014,11 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
 	const flow = effectualityFlow(effectuality);
 	const graph = [
-		[["half0"], [["increment0", "square0"]]], // half
-		[["increment0"], [["thrice0"]]], // increment
-		[["thrice0"], [["oddity0"]]], // thrice
-		[["square0"], [["oddity1"]]], // square
-		[["oddity0", "oddity1"], [["cause1"]]], // oddity
+		[["half0"], [["increment0", "oddity1", "square0"]]], // half
+		[["increment0"], ["thrice0"]], // increment
+		[["thrice0"], ["oddity0"]], // thrice
+		[["square0"], ["oddity1"]], // square
+		[["oddity0", "oddity1"], ["cause1"]], // oddity
 		[["cause1"]]
 	];
 	const oddity = effectuality(function implication(effect1, effect2, ...effects){
@@ -7048,19 +7051,19 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 		};
 	});
 	const flow1 = flow(graph, half, increment, thrice, square, oddity);
-	const expected = [32,64,8,[]];
-	return check(effectuality, log, "first path flow test", [8], [expected], (flow1));
+	const expected1 = [20,40,39,13,[]];
+	return check(effectuality, log, "first path flow test", [13], [expected1], (flow1));
 })();
 
 // run second path flow test
 runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, request, component, input, output){
 	const flow = effectualityFlow(effectuality);
 	const graph = [
-		[["half0"], [["increment0", "square0"]]], // half
-		[["increment0"], [["thrice0"]]], // increment
-		[["thrice0"], [["oddity0"]]], // thrice
-		[["square0"], [["oddity1"]]], // square
-		[["oddity0", "oddity1"], [["cause1"]]], // oddity
+		[["half0"], [["increment0", "oddity1", "square0"]]], // half
+		[["increment0"], ["thrice0"]], // increment
+		[["thrice0"], ["oddity0"]], // thrice
+		[["square0"], ["oddity1"]], // square
+		[["oddity0", "oddity1"], ["cause1"]], // oddity
 		[["cause1"]]
 	];
 	const oddity = effectuality(function implication(effect1, effect2, ...effects){
@@ -7093,8 +7096,9 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 		};
 	});
 	const flow1 = flow(graph, half, increment, thrice, square, oddity);
-	const expected = [20,40,39,13,[]];
-	return check(effectuality, log, "second path flow test", [13], [expected], (flow1));
+	const expected1 = [4,8,[]];
+	const expected2 = [32,64,8,[]];
+	return check(effectuality, log, "second path flow test", [8], [expected1, expected2], (flow1));
 })();
 
 </script>
