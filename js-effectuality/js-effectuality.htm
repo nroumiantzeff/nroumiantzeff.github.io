@@ -920,6 +920,7 @@ function compilation(declaration, ...additionalSideEffects){
 			return cause;
 		});
 	}
+	//todo remove (use flow)
 
 	// internal
 	// delays: [[TimerId]]
@@ -1623,7 +1624,7 @@ function compilation(declaration, ...additionalSideEffects){
 		});
 		return selection;
 	}
-	// flowCauses: [causeIndex, ...] -> [(t1, t2, ...) -> ()), ...] -> -> [(s1, s2, ...) -> ()), ...]
+	// flowCauses: [causeIndex, ...] -> [(t1, t2, ...) -> ()), ...] -> [(s1, s2, ...) -> ()), ...]
 	function flowCauses(selection, effects){
 		const causes = selection.map(function(item){
 			if (item.length === 0){
@@ -1639,7 +1640,7 @@ function compilation(declaration, ...additionalSideEffects){
 				}, undefined); 
 			};
 		});
-		return [...causes, ...effects];
+		return causes;
 	}
 	// flowCauseFeedbacks: FlowCausesIds -> { FlowId: true, ... } -> { FlowId: true, ... }
 	function flowCauseFeedbacks(ids, causes){
@@ -1703,28 +1704,70 @@ function compilation(declaration, ...additionalSideEffects){
 		}, { causes: flowCauseFeedbacks(causes), effects: null, feedbacks: [] });
 		return accumulator.feedbacks;
 	}
-	// flowAdaptation: FlowEffectsIds -> FlowGraphEffectualitiesIds -> [FlowId, ...] -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()))
-	function flowAdaptation(effects, connections, feedbacks){
-		const selection = (effects === connections[0].effects)? undefined: flowSelection(effects, connections[0].effects); 
-		if (selection === undefined && feedbacks.length === 0){
+	// flowProvision: FlowEffectsIds -> [FlowId, ...] -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+	function flowProvision(ids, feedbacks){
+		if (feedbacks.length === 0){
 			return undefined;
 		}
-		if (feedbacks.length === 0){
-			return effectuality(function implication(...effects){
-				return flowCauses(selection, effects);
-			});
-		}
-		if (selection === undefined){
-			return effectuality(function implication(...effects){
-				const causes = Array(feedbacks.length).fill(flowEvanescence);
-				return [...causes, ...effects];
-			});
-		}
 		return effectuality(function implication(...effects){
-			const causes1 = flowCauses(selection, effects);
+			const causes1 = effects.slice(0, ids.length);
 			const causes2 = Array(feedbacks.length).fill(flowEvanescence);
-			return [...causes1, ...causes2, ...effects];
+			const causes3 = effects.slice(ids.length);
+			return [...causes1, ...causes2, ...causes3];
 		});
+	}
+	// flowCirculation: FlowEffectsIds -> [FlowId, ...] -> FlowCausesIds -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+	function flowCirculation(effectsIds, feedbacks, causesIds, accumulation){
+		if (feedbacks.length === 0){
+			return accumulation;
+		}
+		const length = effectsIds.length;
+		return causesIds.reduce(function(accumulation, causeIds, causeIndex){
+			const feedbacksIndices = feedbacks.map(function(feedback){
+				if (!Array.isArray(causeIds)){
+					return feedback === causeIds;
+				}
+				return causeIds.indexOf(feedback) >= 0;
+			});
+			const found = feedbacksIndices.reduce(function(found, item){
+				return found || item;
+			}, false);
+			if (!found){
+				return accumulation;
+			}
+			const accumulationImplication = decryption1(accumulation);
+			const circulation = effectuality(function implication(...effects){
+				const accumulationCause = accumulationImplication(...effects);
+				function circulationCause(...x){
+					const accumulationEffects = effects.map(function(effect, index){
+						if (index < length || !feedbacksIndices[index - length]){
+							return effect;
+						}
+						return function accumulationEffect(...x){
+							return (circulationCause(...x), effect(...x));
+						}
+					});
+					const accumulationCause = accumulationImplication(...accumulationEffects);
+					if (!Array.isArray(accumulationCause)){
+						if (causeIndex === 0){
+							return accumulationCause(...x);
+						}
+						return accumulationEffects(causeIndex)(...x);
+					}
+					return accumulationCause[causeIndex](...x);
+				};
+				if (!Array.isArray(accumulationCause)){
+					return circulationCause;
+				}
+				return accumulationCause.map(function(cause, index){
+					if (index !== causeIndex){
+						return cause;
+					}
+					return circulationCause;
+				});
+			});
+			return circulation;
+		}, accumulation);
 	}
 
 	// FlowGraphIds: FlowGraphId
@@ -1746,30 +1789,34 @@ function compilation(declaration, ...additionalSideEffects){
 		const connections = graph.effectualities || graph;
 		const effects = graph.effects || connections[0].effects;
 		const causes = graph.causes || connections[connections.length - 1].causes;
-		const adaptation = flowAdaptation(effects, connections, feedbacks);
 		// accumulator: { effectuality: Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())), effects: [FlowGraphEffectIds, ...] }
 		const accumulator = effectualities.reduce(function(accumulator, item, index){
-			console.error("DEBUG 1: flow accumulator ids: " + accumulator.effects); //debug
 			const selection = flowSelection(connections[index].effects, accumulator.effects);
 			const adaptation = effectuality(function implication(...effects){
-				return flowCauses(selection, effects);
+				const causes = flowCauses(selection, effects);
+				return [...causes, ...effects];
 			});
-			console.error("DEBUG 2: flow accumulator ids: " + [...connections[index].causes, ...accumulator.effects]); //debug
-			return { effectuality: (accumulator.effectuality)(adaptation)(effectualities[index]), effects: [...connections[index].causes, ...accumulator.effects] };
-			//todo optimization fo accumulator.effects (filtering out ids not used by remaining effectalities)
-		}, { effectuality: adaptation, effects: feedbacks? [...effects, ...feedbacks]: effects });
-		const ids = accumulator.effects;
-		const length = connections[connections.length - 1].effects.length;
-		if (ids.length <= length){
-			return accumulator.effectuality;
-		}
-		// vanish supplementary effects
-		const effectuality3 = effectuality(function implication(...effects){
-			const causes1 = effects.slice(0, length);
-			const causes2 = effects.slice(ids.length);
-			return causes2.length === 0? causes1: [...causes1, ...causes2];
+			const accumulation = accumulator.effectuality? (accumulator.effectuality)(adaptation)(effectualities[index]): (adaptation)(effectualities[index]);
+			const circulation = flowCirculation(connections[0].effects, feedbacks, connections[index].causes, accumulation);
+			return {
+				effectuality: circulation,
+				effects: [...connections[index].causes, ...accumulator.effects]
+			};
+		}, { effectuality: undefined, effects: feedbacks? [...effects, ...feedbacks]: effects });
+		const selection = flowSelection(causes, accumulator.effects);
+		const initialization = effectuality(function implication(...effects){
+			const causes1 = flowCauses(selection, effects);
+			if (effects.length <= accumulator.effects.length){
+				return causes1;
+			}
+			const causes2 = effects.slice(effects.length - accumulator.effects.length);
+			return [...causes1, ...causes2];
 		});
-		return (accumulator.effectuality)(effectuality3);
+		if (feedbacks.length === 0){
+			return (accumulator.effectuality)(initialization);
+		}
+		const provision = flowProvision(effects, feedbacks);
+		return (provision)(accumulator.effectuality)(initialization);
 	}
 
 	// internal
@@ -7194,58 +7241,6 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 	return check(effectuality, log, "output request canceled-any input test output", [], [expected], (input("output13"))(output("output13"))(valueDuplication)(cancellation)(idDuplication)(any(...indexation((materialName)(materialRequest)(filterDuplication),(shipToName)(shipToRequest)(filterDuplication),(soldToName)(soldToRequest)(filterDuplication))))(registration)(conjunction((materialFilter),(shipToFilter),(soldToFilter)))(input("input13")));
 })();
 
-//debug
-// run first path flow test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
-	const graph = {
-		effects: ["half0"],
-		//debug effects: ["half0", "increment0", "oddity1"], //debug
-		effectualities: [
-			{ effects: ["half0"], causes: [["increment0", "oddity1", "square0"]] }, // half
-			{ effects: ["increment0"], causes: ["thrice0"] }, // increment
-			//debug { effects: ["thrice0"], causes: ["oddity0"] }, // thrice
-			{ effects: ["thrice0", ["oddity1", "oddity0"]], causes: ["oddity0"] }, // thrice //debug
-			{ effects: ["square0"], causes: ["oddity1"] }, // square
-			{ effects: ["oddity0", "oddity1"], causes: ["cause1"] }, // oddity
-		],
-		//debug causes: ["cause1"],
-		causes: ["cause1", "increment0"], //debug 
-		//debug causes: ["cause1", "increment0", ["increment0"]], //debug 
-	};
-	const oddity = effectuality(function implication(effect1, effect2, ...effects){
-		function cause1(x1, ...x){
-			if (x1 % 2 === 1){
-				return effect1(x1, ...x);
-			}
-			return effect2(x1, ...x);
-		};
-		return [cause1, ...effects];
-	});
-	const thrice = effectuality(function implication(effect){
-		return function cause(x1, ...x){
-			return effect(x1 * 3, x1, ...x);
-		};
-	});
-	const square = effectuality(function implication(effect){
-		return function cause(x1, ...x){
-			return effect(x1 * x1, x1, ...x);
-		};
-	});
-	const increment = effectuality(function implication(effect){
-		return function cause(x1, ...x){
-			return effect(x1 + 1, x1, ...x);
-		};
-	});
-	const half = effectuality(function implication(effect){
-		return function cause(x1, ...x){
-			return effect(x1 / 2, x1, ...x);
-		};
-	});
-	const flow1 = flow(graph, half, increment, thrice, square, oddity);
-	const expected1 = [20,40,39,13,[]];
-	return check(effectuality, log, "debug first path flow test", [13], [expected1], (flow1));
-})();
-
 // run first path flow test
 runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const graph = {
@@ -7339,6 +7334,35 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 	const expected1 = [4,8,[]];
 	const expected2 = [32,64,8,[]];
 	return check(effectuality, log, "second path flow test", [8], [expected1, expected2], (flow1));
+})();
+
+// run circular flow test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const graph = {
+		effects: ["oddity0"],
+		effectualities: [
+			{ effects: ["oddity"], causes: ["oddity1"] }, // half
+			{ effects: ["oddity0", "oddity1"], causes: ["oddity"] }, // oddity
+		],
+		causes: ["oddity"],
+	};
+	const oddity = effectuality(function implication(effect1, effect2, ...effects){
+		function cause1(x1, ...x){
+			if (x1 % 2 === 1){
+				return effect1(x1, ...x);
+			}
+			return effect2(x1, ...x);
+		};
+		return [cause1, ...effects];
+	});
+	const half = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 / 2, x1, ...x);
+		};
+	});
+	const flow1 = flow(graph, half, oddity);
+	const expected1 = [3,6,12,24,48,96,192,384,768,1536,3072,[]];
+	return check(effectuality, log, "debug circular flow test", [3072], [expected1], (flow1));
 })();
 
 </script>
