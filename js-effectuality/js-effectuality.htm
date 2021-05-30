@@ -1590,6 +1590,7 @@ function compilation(declaration, ...additionalSideEffects){
 		};
 	}
 
+/* //todo remove
 	// internal
 	// flowEvanescence: (s1, s2, ...) -> ()
 	function flowEvanescence(){
@@ -1817,6 +1818,85 @@ function compilation(declaration, ...additionalSideEffects){
 		}
 		const provision = flowProvision(effects, feedbacks);
 		return (provision)(accumulator.effectuality)(initialization);
+	}
+	//todo: optimization using internal mutation (yet externally pure functional) and support for unordered items
+*/ //todo remove
+
+	// FlowGraphIds: FlowGraphId
+	// FlowGraphIds: [FlowGraphId, ...]
+	// FlowGraphCauseIds: FlowGraphIds
+	// FlowGraphCausesIds: [FlowGraphCauseIds, ...]
+	// FlowGraphEffectsIds: [FlowGraphEffectIds, ...]
+	// FlowGraphEffectualityIds: { effects: FlowGraphEffectsIds, causes: FlowGraphCauseIds }
+	// FlowGraphEffectualitiesIds: [FlowGraphEffectualityIds, ...]
+	// FlowGraph: { effects: FlowGraphEffectsIds, effectualities: FlowGraphEffectualitiesIds, causes: FlowGraphCausesIds }
+	// flow: FlowGraph -> Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ... -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+	function flow(graph, ...effectualities){
+		// graph: FlowGraph
+		// effectualities: [Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())), Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())), ...]
+		if (effectualities.length === 0){
+			return effectuality();
+		}
+		const connections = graph.effectualities || graph;
+		const effectsIds = graph.effects || connections[0].effects;
+		const causesIds = graph.causes || connections[connections.length - 1].causes;
+		return effectuality(function implication(...effects){
+			let keys = Object.create(null); // unpure
+			connections.forEach(function(connection, index){
+				const connectionEffects = connection.effects.map(function(id){
+					const ids = Array.isArray(id)? id: [id];
+					return function(...x){
+						ids.forEach(function(id){
+							const values = keys[id];
+							if (values){
+								return values.reduce(function(accumulator, effect){
+									return effect(...x);
+								}, undefined);
+							}
+						});
+					};
+				});
+				const connectionImplication = decryption1(effectualities[index]);
+				const connectionCause = connectionImplication(...connectionEffects);
+				connection.causes.forEach(function(id, index){
+					const effect = Array.isArray(connectionCause)? connectionCause[index]: index === 0? connectionCause: connectionEffects[index];
+					if (effect){
+						const ids = Array.isArray(id)? id: [id];
+						ids.forEach(function(id){
+							const values = keys[id] || (keys[id] = []); // unpure
+							values.push(effect);
+						});
+					}
+				});
+			});
+			effectsIds.forEach(function(id, index){
+				const effect = effects[index];
+				if (effect){
+					const ids = Array.isArray(id)? id: [id];
+					ids.forEach(function(id){
+						const values = keys[id] || (keys[id] = []); // unpure
+						values.push(effect);
+					});
+				}
+			});
+			const causes = causesIds.map(function(id, index){
+				const ids = Array.isArray(id)? id: [id];
+				return function(...x){
+					ids.forEach(function(id){
+						const values = keys[id];
+						if (values){
+							return values.reduce(function(accumulator, effect){
+								return effect(...x);
+							}, undefined);
+						}
+					});
+				};
+			});
+			if (effects.length <= effectsIds.length){
+				return causes;
+			}
+			return [...causes, effects.slice(effectsIds.length)];
+		});
 	}
 
 	// internal
@@ -7339,16 +7419,48 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 // run circular flow test
 runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const graph = {
-		effects: ["oddity0"],
+		effects: ["flow"],
 		effectualities: [
-			{ effects: ["oddity"], causes: ["oddity1"] }, // half
-			{ effects: ["oddity0", "oddity1"], causes: ["oddity"] }, // oddity
+			{ effects: ["flow"], causes: ["plus"] }, // plus
+			{ effects: ["three"], causes: ["third"] }, // third
+			{ effects: ["third", "plus"], causes: ["three"] }, // three
+			{ effects: ["ten"], causes: ["half"] }, // half
+			{ effects: ["half"], causes: ["fifth"] }, // fifth
+			{ effects: ["fifth", "three"], causes: ["ten"] }, // ten
+			{ effects: ["ten"], causes: ["minus"] }, // minus
 		],
-		causes: ["oddity"],
+		causes: ["minus"],
 	};
-	const oddity = effectuality(function implication(effect1, effect2, ...effects){
+	const two = effectuality(function implication(effect1, effect2, ...effects){
 		function cause1(x1, ...x){
-			if (x1 % 2 === 1){
+			if (x1 % 2 === 0){
+				return effect1(x1, ...x);
+			}
+			return effect2(x1, ...x);
+		};
+		return [cause1, ...effects];
+	});
+	const three = effectuality(function implication(effect1, effect2, ...effects){
+		function cause1(x1, ...x){
+			if (x1 % 3 === 0){
+				return effect1(x1, ...x);
+			}
+			return effect2(x1, ...x);
+		};
+		return [cause1, ...effects];
+	});
+	const five = effectuality(function implication(effect1, effect2, ...effects){
+		function cause1(x1, ...x){
+			if (x1 % 3 === 0){
+				return effect1(x1, ...x);
+			}
+			return effect2(x1, ...x);
+		};
+		return [cause1, ...effects];
+	});
+	const ten = effectuality(function implication(effect1, effect2, ...effects){
+		function cause1(x1, ...x){
+			if (x1 % 10 === 0){
 				return effect1(x1, ...x);
 			}
 			return effect2(x1, ...x);
@@ -7360,9 +7472,29 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 			return effect(x1 / 2, x1, ...x);
 		};
 	});
-	const flow1 = flow(graph, half, oddity);
-	const expected1 = [3,6,12,24,48,96,192,384,768,1536,3072,[]];
-	return check(effectuality, log, "debug circular flow test", [3072], [expected1], (flow1));
+	const third = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 / 3, x1, ...x);
+		};
+	});
+	const fifth = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 / 5, x1, ...x);
+		};
+	});
+	const minus = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 - 1, x1, ...x);
+		};
+	});
+	const plus = effectuality(function implication(effect){
+		return function cause(x1, ...x){
+			return effect(x1 + 1, x1, ...x);
+		};
+	});
+	const flow1 = flow(graph, plus, third, three, half, fifth, ten, minus);
+	const expected1 = [2,1,3,9,27,54,270,540,2700,5400,27000,27001,[]];
+	return check(effectuality, log, "debug circular flow test", [27001], [expected1], (flow1));
 })();
 
 </script>
