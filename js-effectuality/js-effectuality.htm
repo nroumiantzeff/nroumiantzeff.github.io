@@ -1843,8 +1843,18 @@ function compilation(declaration, ...additionalSideEffects){
 		return effectuality(function implication(...effects){
 			let keys = Object.create(null); // unpure
 			connections.forEach(function(connection, index){
-				const connectionEffects = connection.effects.map(function(id){
-					const ids = Array.isArray(id)? id: [id];
+				const connectionEffects = connection.effects.map(function(ids){
+					if (!Array.isArray(ids) || ids.length === 1){
+						const id = !Array.isArray(ids)? ids: ids[0];
+						return function(...x){
+							const values = keys[id];
+							if (values){
+								return values.reduce(function(accumulator, effect){
+									return effect(...x);
+								}, undefined);
+							}
+						};
+					}
 					return function(...x){
 						ids.forEach(function(id){
 							const values = keys[id];
@@ -1879,8 +1889,18 @@ function compilation(declaration, ...additionalSideEffects){
 					});
 				}
 			});
-			const causes = causesIds.map(function(id, index){
-				const ids = Array.isArray(id)? id: [id];
+			const causes = causesIds.map(function(ids){
+				if (!Array.isArray(ids) || ids.length === 1){
+					const id = !Array.isArray(ids)? ids: ids[0];
+					return function(...x){
+						const values = keys[id];
+						if (values){
+							return values.reduce(function(accumulator, effect){
+								return effect(...x);
+							}, undefined);
+						}
+					};
+				}
 				return function(...x){
 					ids.forEach(function(id){
 						const values = keys[id];
