@@ -217,8 +217,7 @@ var initialization = effectualityInitialization(effectuality);
 var initialization = effectualityInitialization(effectuality);
 
 // effectualityInjunctionFit: Effectuality -> Injunction -> (EffectIndex -> EffectIndex -> ...) -> (CauseIndex -> CauseIndex -> ...) -> (Effectuality (((t1, t2, t3, ..., u1, u2, u3, ...) -> ()) -> ((s1, s2, ..., u1, u2, u3, ...) -> ())) -> Effectuality (((ti, tj, ..., u1, ..., s1, u2, ..., s2, u3, ...) -> ()) -> ((u1, ..., s1, u2, ..., s2, u3, ...) -> ()))))
-var fit = effectualityInjunct
-ionFit(effectuality, injunction);
+var fit = effectualityInjunctionFit(effectuality, injunction);
 
 // effectualityIndexation: Effectuality (((t11, t12, ...) -> ()) -> ((Index, s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((Index, s21, s22, ...) -> ())) -> ... -> [Effectuality (((t11, t12, ...) -> ()) -> ((s11, s12, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s21, s22, ...) -> ())) -> ...]
 var indexation = effectualityIndexation(effectuality);
@@ -1686,6 +1685,129 @@ function compilation(declaration, ...additionalSideEffects){
 			return [...causes, effects.slice(effectsIds.length)];
 		});
 	}
+
+	// internal
+	// coherences: [CoherenceCumulation]
+	let coherences = [];
+	// coherenceCumulation: Object -> Object -> Object
+	function coherenceCumulation(object0, object1){
+		let object2 = Object.create(object0);
+		for(let key in object1){
+			const value1 = object1[key];
+			const value0 = object0[key];
+			if (value1 !== value0){
+				if (typeof value1 !== "object" || typeof value0 !== "object" || value1 === null || value0 === null){
+					object2[key] = value1; // unpure
+				}
+				else {
+					object2[key] = coherenceCumulation(value0, value1); // unpure
+				}
+			}	
+		}
+		return object2;
+	}
+
+	// coherence: True -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Number -> Effectuality (((t1, t2, ...) -> ()) -> ((CoherenceId, s1, s2, ...) -> ()))
+	// coherence: Undefined -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Number -> Effectuality (((CoherenceId, t1, t2, ...) -> ()) -> ((CoherenceId, s1, s2, ...) -> ()))
+	// coherence: False -> Effectuality (((CoherenceCumulation, CoherenceCumulation, t1, t2, ...) -> ()) -> ((CoherenceCumulation, s1, s2, ...) -> ())) -> Number -> Effectuality (((CoherenceId, t1, t2, ...) -> ()) -> ((CoherenceId, s1, s2, ...) -> ()))
+	function coherence(identification){
+		return function(coherenceEffectuality, effectarity = 1){
+			const coherenceImplication = decryption1(coherenceEffectuality);
+			if (coherenceImplication === undefined){
+				return effectuality();
+			}
+			if (identification === true){
+				return effectuality(function implication(...effects){
+					const coherenceEffects = Array(effectarity).fill(true).map(function(item, index){
+						return function coherenceEffect(id, ...y){
+							return effects[index](...y);
+						};
+					});
+					const coherenceCauses = coherenceImplication(...coherenceEffects);
+					const causarity = typeof coherenceCauses === "function"? 1: coherenceCauses.length;
+					const causes = Array(causarity).fill(true).map(function(item, index){
+						return function cause(...x){
+							const coherenceCause = typeof coherenceCauses === "function"? index === 0? coherenceCauses: undefined: coherenceCauses[index];
+							if (coherenceCause){
+								const id = coherences.length++; // unpure
+								coherences[id] = Object.create(null);
+								return coherenceCause(id, ...x);
+							}
+						};
+					});
+					return [...causes, ...effects.slice(effectarity)];
+				});
+			}
+			if (identification === false){
+				// implication: ((id, t1, t2, ..., s1, s2, ...) -> ()) -> ((id, s1, s2, ...) -> ())
+				return effectuality(function implication(...effects){
+					const effect0 = function(){};
+					const coherenceEffects0 = Array(effectarity).fill(effect0);
+					const coherenceCauses0 = coherenceImplication(...coherenceEffects0);
+					const causarity = typeof coherenceCauses0 === "function"? 1: coherenceCauses0.length;
+					const causes = Array(causarity).fill(true).map(function(item, index){
+						// effect: (id, t1, t2, ..., s1, s2, ...) -> ()
+						// cause: (id, s1, s2, ...) -> ()
+						return function cause(id, ...x){
+							const coherenceEffects = coherenceEffects0.map(function(item, index){
+								// coherenceEffect: (t1, t2, ..., CoherenceCumulation, CoherenceCumulation, s1, s2, ...) -> ()
+								return function coherenceEffect(...y){
+									// y: t1, t2, ..., CoherenceCumulation, CoherenceCumulation, s1, s2, ... 
+									const length = y.length - x.length - 2;
+									// z: t1, t2, ...
+									const z = length > 0? y.slice(0, length): [];
+									// cumulation1: CoherenceCumulation
+									const cumulation1 = y[length];
+									// cumulation0: CoherenceCumulation
+									const cumulation0 = coherences[id];
+									if(cumulation1 === null){
+										// cleanup
+										delete coherences[id]; // unpure
+									}
+									else if (cumulation1 !== cumulation0 && typeof cumulation1 === "object"){
+										coherences[id] = coherenceCumulation(cumulation0, cumulation1); // unpure
+									}
+									return effects[index](id, ...z, ...x);
+								};
+							});
+							const coherenceCauses = coherenceImplication(...coherenceEffects);
+							const coherenceCause = typeof coherenceCauses === "function"? index === 0? coherenceCauses: undefined: coherenceCauses[index];
+							if (coherenceCause){
+								// cumulation0: CoherenceCumulation
+								const cumulation0 = coherences[id];
+								// coherenceCause: (CoherenceCumulation, s1, s2, ...) -> ()
+								return coherenceCause(cumulation0, ...x);
+							}
+						};
+					});
+					return [...causes, ...effects.slice(effectarity)];
+				});
+			}
+			return effectuality(function implication(...effects){
+				const effect0 = function(){};
+				const coherenceEffects0 = Array(effectarity).fill(effect0);
+				const coherenceCauses0 = coherenceImplication(...coherenceEffects0);
+				const causarity = typeof coherenceCauses0 === "function"? 1: coherenceCauses0.length;
+				const causes = Array(causarity).fill(true).map(function(item, index){
+					return function cause(id, ...x){
+						const coherenceEffects = coherenceEffects0.map(function(item, index){
+							return function coherenceEffect(...y){
+								return effects[index](id, ...y);
+							};
+						});
+						const coherenceCauses = coherenceImplication(...coherenceEffects);
+						const coherenceCause = typeof coherenceCauses === "function"? index === 0? coherenceCauses: undefined: coherenceCauses[index];
+						if (coherenceCause){
+							return coherenceCause(...x);
+						}
+					};
+				});
+				return [...causes, ...effects.slice(effectarity)];
+			});
+
+		};
+	}
+	//todo expose coherence
 
 	// internal
 	// requests: [[InternalId]]
@@ -3503,6 +3625,119 @@ function compilation(declaration, ...additionalSideEffects){
 				}
 			})();
 
+			// concurrence all test
+			(function(){
+				const all = concurrence(effectuality(function(effect){
+					return function cause(values){
+						// values: [[[si1, si2, ...siNi], [CountN, IndexNi, [u1, u2, ...]]], ...]
+						// value: [[si1, si2, ...siNi], CountN, IndexNi, [u1, u2, ...]]
+						const value = values[values.length - 1];
+						// count: IndexN
+						const count = value[1];
+						const z = value[3];
+						if (values.length === count){
+							const y = values.slice().sort((item1, item2) => item1[2] - item2[2]).map(value => value[0]).flat(); // note: sort is unpure but (sort o slice) is pure
+								return effect(...y, ...z);
+						}
+					};
+				}));
+				const addition = effectuality(function implication(effect){
+					return function cause(x1, x2, x3, ...x){
+						const delay = 100;
+						setTimeout(function(){
+							return effect(x1 + x2 + x3, x1, x2, x3, ...x);
+						}, delay);
+					};
+				});
+				const tenth = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 200; // check that there is no concurrency issue with concurrence implementation
+						setTimeout(function(){
+							return effect(x1 / 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 300; // check that there is no concurrency issue with concurrence implementation
+						setTimeout(function(){
+							return effect(x1 * x1, x1, ...x);
+						}, delay);
+					};
+				});
+				const times10 = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 400; // check that there is no concurrency issue with concurrence implementation
+						setTimeout(function(){
+							return effect(x1 * 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const effectuality1 = (addition)(all((tenth),(square),(times10)));
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect(...x){
+					if (x[0] === 96.6 || x[0] === 4206){
+						console.warn("concurrence all test: " + x);
+					}
+					else {
+						console.error("concurrence all test: error: expected 96.6 or 4206: got " + x);
+					}
+				});
+				cause(6);
+				cause(60); // check that there is no concurrency issue with concurrence implementation
+			})();
+
+			// concurrence any test
+			(function(){
+				const any = concurrence(effectuality(function(effect){
+					return function cause(values){
+						// values: [[[si1, si2, ...siNi], CountN, IndexNi, [u1, u2, ...]], ...]
+						if (values.length === 1){
+							const value = values[0];
+							const x = value[0];
+							const z = value[3];
+							return effect(...x, ...z);
+						}
+					};
+				}));
+				const tenth = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 200; // check that there is no concurrency issue with concurrence implementation
+						setTimeout(function(){
+							return effect(x1 / 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const square = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 300; // check that there is no concurrency issue with concurrence implementation
+						setTimeout(function(){
+							return effect(x1 * x1, x1, ...x);
+						}, delay);
+					};
+				});
+				const times10 = effectuality(function implication(effect){
+					return function cause(x1, ...x){
+						const delay = x1 > 10? 0: 400; // check that there is no concurrency issue with concurrence implementation
+						setTimeout(function(){
+							return effect(x1 * 10, x1, ...x);
+						}, delay);
+					};
+				});
+				const effectuality1 = (any((tenth),(square),(times10)));
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect(...x){
+					if (x[0] === 0.6 || x[0] === 600){
+						console.warn("concurrence any test: " + x);
+					}
+					else {
+						console.error("concurrence any test: error: expected 0.6 or 600: got " + x);
+					}
+				});
+				cause(6);
+				cause(60); // check that there is no concurrency issue with concurrence implementation
+			})();
+
 			// entanglement test
 			(function(){
 				const addition = effectuality(function implication(effect){
@@ -3515,7 +3750,7 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				const tenth = effectuality(function implication(effect){
 					return function cause(x1, ...x){
-						const delay = 200;
+						const delay = x1 > 10? 0: 200; // check that there is no concurrency issue with entanglement implementation
 						setTimeout(function(){
 							return effect(x1 / 10, x1, ...x);
 						}, delay);
@@ -3531,7 +3766,7 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				const times10 = effectuality(function implication(effect){
 					return function cause(x1, ...x){
-						const delay = 400;
+						const delay = x1 > 10? 0: 400; // check that there is no concurrency issue with entanglement implementation
 						setTimeout(function(){
 							return effect(x1 * 10, x1, ...x);
 						}, delay);
@@ -3665,6 +3900,204 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 				});
 				cause(6);
+			})();
+
+			// coherence test
+			(function(){
+				const modulo2 = effectuality(function implication(effect){ //todo effect1, effect2
+					return function cause(x1, ...x){
+						return effect(!(x1 % 2), x1, ...x);
+					};
+				});
+				const modulo3 = effectuality(function implication(effect){ //todo effect1, effect2
+					return function cause(x1, ...x){
+						return effect(!(x1 % 3), x1, ...x);
+					};
+				});
+				const modulo5 = effectuality(function implication(effect){ //todo effect1, effect2
+					return function cause(x1, ...x){
+						return effect(!(x1 % 5), x1, ...x);
+					};
+				});
+				const modulo7 = effectuality(function implication(effect){ //todo effect1, effect2
+					return function cause(x1, ...x){
+						return effect(!(x1 % 7), x1, ...x);
+					};
+				});
+				const and1 = effectuality(function implication(effect){ //todo effect1, effect2
+					return function cause(cumulation, x1, ...x){
+						var count = (cumulation.and1 || 0) + (x1? 1: 0);
+						return effect(count === 3, {and1: count}, cumulation, x1, ...x);
+					};
+				});
+				const and2 = effectuality(function implication(effect){ //todo effect1, effect2
+					return function cause(cumulation, x1, ...x){
+						var count = (cumulation.and2 || 0) + (x1? 1: 0);
+						return effect(count === 3, {and2: count}, cumulation, x1, ...x);
+					};
+				});
+				const or1 = effectuality(function implication(effect){ //todo effect1, effect2
+					return function cause(cumulation, x1, ...x){
+						var total = (cumulation.total || 0) + 1;
+						var count = (cumulation.or1 || 0) + (x1? 1: 0);
+						return effect(x1 && count === 1, total === 6? null: {or1: count, total: total}, cumulation, x1, ...x);
+					};
+				});
+				const flow1 = flow({
+					effects: ["or"],
+					effectualities: [
+						{effects: ["or"], causes: ["and"]}, // modulo2 and modulo3 and modulo5 or modulo3 and modulo5 and modulo7
+						{effects: ["and"], causes: [["modulo3", "modulo5", "modulo7"]]}, // modulo3 and modulo5 and modulo7
+						{effects: ["and"], causes: [["modulo2", "modulo3", "modulo5"]]}, // modulo2 and modulo3 and modulo5
+						{effects: ["modulo7"], causes: ["modulo"]}, // modulo7
+						{effects: ["modulo5"], causes: ["modulo"]}, // modulo5
+						{effects: ["modulo3"], causes: ["modulo"]}, // modulo3
+						{effects: ["modulo2"], causes: ["modulo"]}, // modulo2
+					],
+					causes:["modulo"],
+				}, coherence(false)(or1), coherence(false)(and2), coherence(false)(and1), coherence()(modulo7), coherence()(modulo5), coherence()(modulo3), coherence()(modulo2));
+				const effectuality1 = (coherence(true)(flow1));
+				const implication1 = decryption1(effectuality1);
+				const causes = implication1(function effect(...x){
+					if (x[0] && x[3] === 30 || x[0] && x[3] === 105 || !x[0] && x[3] === 70){
+						console.warn("coherence test: " + x);
+					}
+					else if (!x[0] && x[3] === 30 || !x[0] && x[3] === 105){
+						// indetermination
+					}
+					else {
+						console.error("coherence test: error: expected true,30 or true,105 or false,70: got " + x);
+					}
+				});
+				causes[0](30);
+				causes[0](70); // check that there is no concurrency issue with coherence implementation
+				causes[0](105); // check that there is no concurrency issue with coherence implementation
+			})();
+
+			// multiple-effects coherence test
+			(function(){
+				const modulo2 = effectuality(function implication(effect1, effect2){
+					return function cause(...x){
+						if (x[0] % 2 === 0){
+							return effect1(...x);
+						}
+						return effect2(...x);
+					};
+				});
+				const modulo3 = effectuality(function implication(effect1, effect2){
+					return function cause(...x){
+						if (x[0] % 3 === 0){
+							return effect1(...x);
+						}
+						return effect2(...x);
+					};
+				});
+				const modulo5 = effectuality(function implication(effect1, effect2){
+					return function cause(...x){
+						if (x[0] % 5 === 0){
+							return effect1(...x);
+						}
+						return effect2(...x);
+					};
+				});
+				const modulo7 = effectuality(function implication(effect1, effect2){
+					return function cause(...x){
+						if (x[0] % 7 === 0){
+							return effect1(...x);
+						}
+						return effect2(...x);
+					};
+				});
+				const and1 = effectuality(function implication(effect1, effect2, effect3, ...effects){
+					function cause1(cumulation, ...x){
+						if (cumulation.and1 !== false){
+							var count = (cumulation.and1 || 0) + 1;
+							if (count === 3){
+								return effect1({and1: count}, cumulation, ...x);
+							}
+							return effect2({and1: count}, cumulation, ...x);
+						}
+						return effect2(cumulation, cumulation, ...x);
+					};
+					function cause2(cumulation, ...x){
+						if (cumulation.and1 !== false){
+							return effect3({and1: false}, cumulation, ...x);
+						}
+						return effect2(cumulation, cumulation, ...x);
+					};
+					return [cause1, cause2, ...effects];
+				});
+				const and2 = effectuality(function implication(effect1, effect2, effect3, ...effects){
+					function cause1(cumulation, ...x){
+						if (cumulation.and2 !== false){
+							var count = (cumulation.and2 || 0) + 1;
+							if (count === 3){
+								return effect1({and2: count}, cumulation, ...x);
+							}
+							return effect2({and2: count}, cumulation, ...x);
+						}
+						return effect2(cumulation, cumulation, ...x);
+					};
+					function cause2(cumulation, ...x){
+						if (cumulation.and2 !== false){
+							return effect3({and2: false}, cumulation, ...x);
+						}
+						return effect2(cumulation, cumulation, ...x);
+					};
+					return [cause1, cause2, ...effects];
+				});
+				const or1 = effectuality(function implication(effect1, effect2, effect3, ...effects){
+					function cause1(cumulation, ...x){
+						if (cumulation.or1 !== true){
+							return effect1({or1: true}, cumulation, ...x);
+						}
+						return effect2(cumulation, cumulation, ...x);
+					};
+					function cause2(cumulation, ...x){
+						if (cumulation.or1 !== true){
+							var count = (cumulation.or1 || 0) + 1;
+							if (count === 2){
+								return effect3({or1: count}, cumulation, ...x);
+							}
+							return effect2({or1: count}, cumulation, ...x);
+						}
+						return effect2(cumulation, cumulation, ...x);
+					};
+					return [cause1, cause2, ...effects];
+				});
+				const flow1 = flow({
+					effects: ["or", "not or"],
+					effectualities: [
+						{effects: ["or", "", "not or"], causes: ["and", "not and"]}, // modulo2 and modulo3 and modulo5 or modulo3 and modulo5 and modulo7
+						{effects: ["and", "", "not and"], causes: [["modulo3", "modulo5", "modulo7"], ["not modulo3", "not modulo5", "not modulo7"]]}, // modulo3 and modulo5 and modulo7
+						{effects: ["and", "", "not and"], causes: [["modulo2", "modulo3", "modulo5"], ["not modulo2", "not modulo3", "not modulo5"]]}, // modulo2 and modulo3 and modulo5
+						{effects: ["modulo7", "not modulo7"], causes: ["modulo"]}, // modulo7
+						{effects: ["modulo5", "not modulo5"], causes: ["modulo"]}, // modulo5
+						{effects: ["modulo3", "not modulo3"], causes: ["modulo"]}, // modulo3
+						{effects: ["modulo2", "not modulo2"], causes: ["modulo"]}, // modulo2
+					],
+					causes:["modulo"],
+				}, coherence(false)(or1, 3), coherence(false)(and2, 3), coherence(false)(and1, 3), coherence()(modulo7, 2), coherence()(modulo5, 2), coherence()(modulo3, 2), coherence()(modulo2, 2));
+				const effectuality1 = (coherence(true)(flow1, 2));
+				const implication1 = decryption1(effectuality1);
+				const causes = implication1(function effect1(...x){
+					if (x[0] === 30 || x[0] === 105){
+						console.warn("multiple-effects coherence test: " + x);
+					}
+					else {
+						console.error("multiple-effects coherence test: error: expected 30 or 105: got " + x);
+					}
+				}, function effect2(...x){
+					if (x[0] === 70){
+						console.warn("multiple-effects coherence test: " + x);
+					}
+					else {
+						console.error("multiple-effects coherence test: error: expected 105: got " + x);
+					}
+				});
+				causes[0](30);
+				causes[0](70); // check that there is no concurrency issue with coherence implementation
+				causes[0](105); // check that there is no concurrency issue with coherence implementation
 			})();
 
 			// request test
@@ -5214,6 +5647,7 @@ const effectualityException = (function(){
 //todo immutable stack (linked list instead of spread arrays)
 //todo optimize closures (static functions called with closure arguments)
 //todo name effect values and cause values (second and third arguments of Effectuality) and check names in composition, concurrence, recurrence, injunction, concurrence, recurrence, conjunction, disjunction (semantic type system at declaration stage)
+//todo effectualization: compile an event-driven application to an effectuality application
 
 /* //todo alternatively the following TypeScript type checks effectuality composition compatibility:
 type Effectuality<T extends unknown[], S extends unknown[]> = <R extends unknown[], Q extends unknown[]>(effectuality1: Effectuality<R, Q>) => R extends [...S, ...infer V]? Effectuality<[...T, ...V], Q>: R extends Partial<S>? S extends [...[any] extends R? [any]: [any, any] extends R? [any, any]: [any, any, any] extends R? [any, any, any]: [any, any, any, any] extends R? [any, any, any, any]: [any, any, any, any, any] extends R? [any, any, any, any, any]: [any, any, any, any, any, any] extends R? [any, any, any, any, any, any]: [any, any, any, any, any, any, any] extends R? [any, any, any, any, any, any, any]: [any, any, any, any, any, any, any, any] extends R? [any, any, any, any, any, any, any, any]: [any, any, any, any, any, any, any, any, any] extends R? [any, any, any, any, any, any, any, any, any]: R, ...infer U]? Effectuality<T, [...Q, ...U]>: never: never; //todo support [any, ...] tuple up to length 100 (instead of 9)
