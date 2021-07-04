@@ -1608,7 +1608,7 @@ function compilation(declaration, ...additionalSideEffects){
 		const effectsIds = graph.effects || connections[0].effects;
 		const causesIds = graph.causes || connections[connections.length - 1].causes;
 		return effectuality(function implication(...effects){
-			let keys = Object.create(null); // unpure
+			let keys = Object.create(null);
 			connections.forEach(function(connection, index){
 				const connectionEffects = connection.effects.map(function(ids){
 					if (!Array.isArray(ids) || ids.length === 1){
@@ -1727,12 +1727,10 @@ function compilation(declaration, ...additionalSideEffects){
 					const causarity = typeof coherenceCauses === "function"? 1: coherenceCauses.length;
 					const causes = Array(causarity).fill(true).map(function(item, index){
 						return function cause(...x){
-							const coherenceCause = typeof coherenceCauses === "function"? index === 0? coherenceCauses: undefined: coherenceCauses[index];
-							if (coherenceCause){
-								const id = coherences.length++; // unpure
-								coherences[id] = Object.create(null);
-								return coherenceCause(id, ...x);
-							}
+							const coherenceCause = typeof coherenceCauses === "function"? coherenceCauses: coherenceCauses[index];
+							const id = coherences.length++; // unpure
+							coherences[id] = Object.create(null);
+							return coherenceCause(id, ...x);
 						};
 					});
 					return [...causes, ...effects.slice(effectarity)];
@@ -1771,13 +1769,11 @@ function compilation(declaration, ...additionalSideEffects){
 								};
 							});
 							const coherenceCauses = coherenceImplication(...coherenceEffects);
-							const coherenceCause = typeof coherenceCauses === "function"? index === 0? coherenceCauses: undefined: coherenceCauses[index];
-							if (coherenceCause){
-								// cumulation0: CoherenceCumulation
-								const cumulation0 = coherences[id];
-								// coherenceCause: (CoherenceCumulation, s1, s2, ...) -> ()
-								return coherenceCause(cumulation0, ...x);
-							}
+							const coherenceCause = typeof coherenceCauses === "function"? coherenceCauses: coherenceCauses[index];
+							// cumulation0: CoherenceCumulation
+							const cumulation0 = coherences[id];
+							// coherenceCause: (CoherenceCumulation, s1, s2, ...) -> ()
+							return coherenceCause(cumulation0, ...x);
 						};
 					});
 					return [...causes, ...effects.slice(effectarity)];
@@ -1796,18 +1792,71 @@ function compilation(declaration, ...additionalSideEffects){
 							};
 						});
 						const coherenceCauses = coherenceImplication(...coherenceEffects);
-						const coherenceCause = typeof coherenceCauses === "function"? index === 0? coherenceCauses: undefined: coherenceCauses[index];
-						if (coherenceCause){
-							return coherenceCause(...x);
-						}
+						const coherenceCause = typeof coherenceCauses === "function"? coherenceCauses: coherenceCauses[index];
+						return coherenceCause(...x);
 					};
 				});
 				return [...causes, ...effects.slice(effectarity)];
 			});
-
 		};
 	}
 	//todo expose coherence
+
+	// internal
+	// LineageIdentification: String
+	// LineageIdentification: Boolean
+	// LineageId: String
+	// LineageId: Number
+	// LineageIds: [LineageId]
+	// lineages: [LineageState]
+	let lineages = [];
+
+	// lineage: LineageIdentification -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((LineageIds, t1, t2, ...) -> ()) -> ((LineageIds, s1, s2, ...) -> ()))
+	function lineage(identification){
+		return function(lineageEffectuality){
+			const lineageImplication = decryption1(lineageEffectuality);
+			if (lineageImplication === undefined){
+				return effectuality();
+			}
+			// implication: ((LineageIds, t1, t2, ...) -> ()) -> ((LineageIds, s1, s2, ...) -> ())
+			return effectuality(function implication(...effects){
+				const lineageCauses0 = lineageImplication(...effects);
+				const causarity = typeof lineageCauses0 === "function"? 1: lineageCauses0.length;
+				const causes = Array(causarity).fill(true).map(function(item, index){
+					// effect: (LineageIds, t1, t2, ...) -> ()
+					// cause: (LineageIds, s1, s2, ...) -> ()
+					return function cause(ids, ...x){
+						const lineageEffects = effects.map(function(item, index){
+							// lineageEffect: (t1, t2, ...) -> ()
+							return function lineageEffect(...y){
+								// y: t1, t2, ...
+								if (identification){
+									const id = lineages.length++; // unpure
+									const lineageId = typeof identification === "string"? identification + "[" + id + "]": id;
+									const lineageIds = ids === undefined? [lineageId]: Object.create(ids, {
+										[ids.length]: {
+											value: lineageId,
+										},
+										length: {
+											value: ids.length + 1,
+										},
+									});
+									return effects[index](lineageIds, ...y);
+								}
+								return effects[index](ids, ...y);
+							};
+						});
+						const lineageCauses = lineageImplication(...lineageEffects);
+						const lineageCause = typeof lineageCauses === "function"? lineageCauses: lineageCauses[index];
+						// lineageCause: (s1, s2, ...) -> ()
+						return lineageCause(...x);
+					};
+				});
+				return causes;
+			});
+		};
+	}
+	//todo expose lineage
 
 	// internal
 	// requests: [[InternalId]]
@@ -4098,6 +4147,36 @@ function compilation(declaration, ...additionalSideEffects){
 				causes[0](30);
 				causes[0](70); // check that there is no concurrency issue with coherence implementation
 				causes[0](105); // check that there is no concurrency issue with coherence implementation
+			})();
+
+			// lineage test
+			(function(){
+				const times2 = effectuality(function implication(effect){
+					return function cause(...x){
+						return effect(2 * x[0], ...x);
+					};
+				});
+				const times3 = effectuality(function implication(effect){
+					return function cause(...x){
+						return effect(3 * x[0], ...x);
+					};
+				});
+				const times4 = effectuality(function implication(effect){
+					return function cause(...x){
+						return effect(4 * x[0], ...x);
+					};
+				});
+				const effectuality1 = (lineage("time4")(times4))(lineage()(times3))(lineage("time2")(times2));
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect1(...x){
+					if (x[1] === 24 && x[0].length === 2 && x[0][0] === "time2[0]" && x[0][1] === "time4[1]"){
+						console.warn("lineage test: " + x);
+					}
+					else {
+						console.error("lineage test: error: expected times2[0],times4[1],24,6,2,1: got " + x);
+					}
+				});
+				cause(undefined, 1);
 			})();
 
 			// request test
