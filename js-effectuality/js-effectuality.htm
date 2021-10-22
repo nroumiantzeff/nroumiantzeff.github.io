@@ -1861,192 +1861,71 @@ function compilation(declaration, ...additionalSideEffects){
 	}
 	//todo expose lineage
 
-/* //todo
 	// internal
-	// MergeValues: [MergeValue]
-	// MergeState: [MergeValues]
-	// MergeId: String
-	// MergeIds: [MergeId]
-	// mergeIds0: MergeIds
-	const mergeIds0 = Object.create([]); 
-	// merges: [MergeState]
-	let merges = [];
+	// MixValues: [MixValue]
+	// MixState: [MixValues]
+	// mixes: [MixState]
+	let mixes = [];
 
-	// merge: Effectuality (((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())) -> Effectuality (((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())) // bracket
-	// merge: () -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())) // deterministic & forgetful
-	// merge: () -> () -> Effectuality (((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())) // undeterministic & forgetful
-	// merge: () -> () -> () -> Effectuality (((MergeState, MergeIds, t1, t2, ...) -> ()) -> ((MergeState, MergeIds, s1, s2, ...) -> ())) -> Effectuality (((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())) // deterministic & unforgetful
-	// merge: () -> () -> () -> () -> Effectuality (((MergeState, MergeIds, t1, t2, ...) -> ()) -> ((MergeState, MergeIds, s1, s2, ...) -> ())) -> Effectuality (((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())) // undeterministic & unforgetful
-	function merge(mergeEffectuality){
-		if(typeof mergeEffectuality === "function"){
-			// merge
-			const mergeImplication = decryption1(mergeEffectuality);
-			if (mergeImplication === undefined){
-				return effectuality();
-			}
-			// mergeImplication: ((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())
-			// implication: ((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())
-			return effectuality(function implication(...effects){
-				const mergeCauses0 = mergeImplication(...effects);
-				const causarity = typeof mergeCauses0 === "function"? 1: mergeCauses0.length;
-				const [cause0, ...causes] = Array(causarity).fill(true).map(function(item, index){
-					// effect: (MergeIds, t1, t2, ...) -> ()
-					// cause: (MergeIds, s1, s2, ...) -> ()
-					return function cause(ids, ...x){
-						const id = merges.length++; // unpure
-						const mergeIds1 = mergeIds0.isPrototypeOf(ids)? ids: mergeIds0;
-						const mergeIds2 = Object.create(mergeIds1, {
-							[mergeIds1.length]: {
-								value: id,
-							},
-							length: {
-								value: mergeIds1.length + 1,
-							},
-						});
-						const mergeEffects = effects.map(function(item, index){
-							// mergeEffect: (t1, t2, ...) -> ()
-							return function mergeEffect(...y){
-								// y: t1, t2, ...
-								return effects[index](mergeIds2, ...y);
-							};
-						});
-						function mergeEffect0(count){
-							if (count !== 0){
-								const state = merges[id] || []; 
-								state.length += count; // unpure
-								merges[id] = state; // unpure
-							}
-						}
-						const mergeCauses = mergeImplication(mergeEffect0, ...mergeEffects);
-						const mergeCause = typeof mergeCauses === "function"? mergeCauses: mergeCauses[index];
-						// mergeCause: (s1, s2, ...) -> ()
-						return mergeCause(mergeIds2, ...x);
-					};
-				});
-				return causes.length === 1? causes[0]: causes;
-			});
-		}
-
-
-		function todo(mergeEffectuality, deterministic, forgetful){ //todo
-			const mergeImplication = decryption1(mergeEffectuality);
-			if (mergeImplication === undefined){
-				return effectuality();
-			}
-			if (deterministic && forgetful){
-				// mergeImplication: ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())
-				// implication: ((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())
-				return effectuality(function implication(effect0, ...effects){
-					const mergeCauses0 = mergeImplication(...effects);
-					const causarity = typeof mergeCauses0 === "function"? 1: mergeCauses0.length;
-					const causes = Array(causarity).fill(true).map(function(item, index){
-						// effect: (MergeIds, t1, t2, ...) -> ()
-						// cause: (MergeIds, s1, s2, ...) -> ()
-						return function cause(ids, ...x){
-							const mergeEffects = effects.map(function(item, index){
-								// mergeEffect: (t1, t2, ...) -> ()
-								return function mergeEffect(...y){
-									// y: t1, t2, ...
-									return effects[index](ids, ...y);
-								};
-							});
-							const mergeCauses = mergeImplication(...mergeEffects);
-							const mergeCause = typeof mergeCauses === "function"? mergeCauses: mergeCauses[index];
-							// mergeCause: (s1, s2, ...) -> ()
-							return mergeCause(...x);
-						};
-					});
-					return [effect0, ...causes];
-				});
-			}
-			if (!deterministic && forgetful){
-				// mergeImplication: ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())
-				// implication: ((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())
-				return effectuality(function implication(...effects){
-					const mergeCauses0 = mergeImplication(...effects);
-					const causarity = typeof mergeCauses0 === "function"? 1: mergeCauses0.length;
-					const causes = Array(causarity).fill(true).map(function(item, index){
-						// effect: (MergeIds, t1, t2, ...) -> ()
-						// cause: (MergeIds, s1, s2, ...) -> ()
-						return function cause(ids, ...x){
-							const mergeEffects = effects.map(function(item, index){
-								// mergeEffect: (t1, t2, ...) -> ()
-								return function mergeEffect(...y){
-									// y: t1, t2, ...
-									if (index === 0){
-										return effects[index](...y);
-									}
-									return effects[index](ids, ...y);
-								};
-							});
-							const mergeCauses = mergeImplication(...mergeEffects);
-							const mergeCause = typeof mergeCauses === "function"? mergeCauses: mergeCauses[index];
-							// mergeCause: (s1, s2, ...) -> ()
-							return mergeCause(...x);
-						};
-					});
-					return [effects[0], ...causes];
-				});
-			}
-			if (deterministic && !forgetful){
-				// mergeImplication: ((MergeState, t1, t2, ...) -> ()) -> ((MergeState, s1, s2, ...) -> ())
-				// implication: ((MergeIds, t1, t2, ...) -> ()) -> ((MergeIds, s1, s2, ...) -> ())
-				return effectuality(function implication(effect0, ...effects){
-					const mergeCauses0 = mergeImplication(...effects);
-					const causarity = typeof mergeCauses0 === "function"? 1: mergeCauses0.length;
-					const causes = Array(causarity).fill(true).map(function(item, index){
-						// effect: (MergeIds, t1, t2, ...) -> ()
-						// cause: (MergeIds, s1, s2, ...) -> ()
-						return function cause(ids, ...x){
-							const id = ids[ids.length - 1];
-							const mergeEffects = effects.map(function(item, index){
-								// mergeEffect: (MergeState, t1, t2, ...) -> ()
-								return function mergeEffect(state, ...y){
-									// y: t1, t2, ...
-									if (index === 0){
-										return effects[index](state, ...y);
-									}
-									const state0 = merges[id] | [];
-									const slot = state0.indexOf(undefined);
-									if (slot >= 0){
-										state0[slot] = x; // unpure
-									}
-									return effects[index](ids, ...y);
-								};
-							});
-							const mergeCauses = mergeImplication(...mergeEffects);
-							const mergeCause = typeof mergeCauses === "function"? mergeCauses: mergeCauses[index];
-							// mergeCause: (MergeState, s1, s2, ...) -> ()
-							return mergeCause(...x);
-						};
-					});
-					return [effect0, ...causes];
-				});
-			}
-			//todo !deterministic && !forgetful
-		}
-		return function(mergeEffectuality){
-			if(typeof mergeEffectuality === "function"){
-				return todo(mergeEffectuality, false, false);
-			}
-			return function(mergeEffectuality){
-				if(typeof mergeEffectuality === "function"){
-					return todo(mergeEffectuality, true, false);
-				}
-				return function(mergeEffectuality){
-					if(typeof mergeEffectuality === "function"){
-						return todo(mergeEffectuality, false, true);
+	// mix: Number -> Effectuality (((u1, u2, ...) -> ()) -> (([[t11, t12, ...], [t21, t22, ...], ...], r1, r2, ...) -> ())) -> Effectuality (((t11, t12, ...) -> ()) -> ((t21, t22, ...) -> ()) -> ... -> [((s11, s12, ...) -> ()), ((s21, s22, ...) -> ()), ...]) -> Effectuality (((s11, s12, ...) -> ()) -> ((s21, s22, ...) -> ()) -> ... -> ((r1, r2, ...) -> ())) -> Effectuality (((u1, u2, ...) -> ()) -> ((r1, r2, ...) -> ()))
+	function mix(width){
+		return function(faninEffectuality){
+			return function(fanEffectuality){
+				return function(fanoutEffectuality){
+					const faninImplication = decryption1(faninEffectuality);
+					const fanImplication = decryption1(fanEffectuality);
+					const fanoutImplication = decryption1(fanoutEffectuality);
+					if (faninImplication === undefined || fanImplication === undefined || fanoutImplication === undefined){
+						return effectuality();
 					}
-					return function(mergeEffectuality){
-						return todo(mergeEffectuality, true, true);
-					};
+					// faninImplication: ((u1, u2, ...) -> ()) -> (([[t11, t12, ...], [t21, t22, ...], ...], r1, r2, ...) -> ())
+					// fanImplication: ((t11, t12, ...) -> ()) -> ((t21, t22, ...) -> ()) -> ... -> [((s11, s12, ...) -> ()), ((s21, s22, ...) -> ()), ...] 
+					// fanoutImplication: ((s11, s12, ...) -> ()) -> ((s21, s22, ...) -> ()) -> ... -> ((r1, r2, ...) -> ())
+					// implication: ((u1, u2, ...) -> ()) -> ((r1, r2, ...) -> ())
+					return effectuality(function implication(effect){
+						// effect: ((u1, u2, ...) -> ())
+						const faninCauses = faninImplication(effect);
+						// faninCause: ([[t11, t12, ...], [t21, t22, ...], ...], r1, r2, ...) -> ()
+						const faninCause = typeof faninCauses === "function"? faninCauses: faninCauses[0];
+						// mixCause:  fanoutCause: ((MixId, r1, r2, ...) -> ()) 
+						function mixCause(id, ...a){
+							// fanEffects: ((t11, t12, ...) -> ()), ((t21, t22, ...) -> ()), ...
+							const fanEffects = Array(width).fill(true).map(function(item, index){
+								return function fanEffect(...c){
+									const state = mixes[id];
+									state.mixes[index] = c; // unpure
+									state.width++; // unpure
+									if (state.width === width){
+										delete mixes[id]; // unpure
+										return faninCause(state.mixes, ...state.values);
+									}
+								};
+							});
+							const fanCause = fanImplication(...fanEffects);
+							// fanCauses: ((s11, s12, ...) -> ()), ((s21, s22, ...) -> ()), ...
+							const fanCauses = typeof fanCause === "function"? [fanCause]: fanCause;
+							// fanoutEffect: ((s11, s12, ...) -> ()), ((s21, s22, ...) -> ()), ...
+							const fanoutEffects = fanCauses;
+							const fanoutCauses = fanoutImplication(...fanoutEffects);
+							// fanoutCause: ((r1, r2, ...) -> ()) 
+							const fanoutCause = typeof fanoutCauses === "function"? fanoutCauses: fanoutCauses[0];
+							return fanoutCause(...a);
+						}
+						// cause: (r1, r2, ...) -> ()
+						function cause(...a){
+							const id = mixes.length++; // unpure
+							mixes[id] = { width: 0, mixes: [], values: a }; // unpure
+							return mixCause(id, ...a);
+						}
+						return cause;
+					});
 				};
 			};
 		};
 	}
-	//todo expose merge
-	//todo rename "merge" to "mix"
-*/ //todo
+	//todo expose mix
+	//todo implement 0 width mix
+	//todo optimization: no call to fanImplication nor fanoutImplication at runtime (encapsulate "id" in a function from argument array)
 
 	// superposition: Number -> Effectuality (((t11, t12, ...) -> ()) -> ((t21, t22, ...) -> ()) -> ... -> [((s11, s12, ...) -> ()), ((s21, s22, ...) -> ()), ...]) -> Effectuality (((u11, u12, ...) -> ()) -> ((u21, u22, ...) -> ()) -> ... -> ((t11, t12, ...) -> ()) -> ((t21, t22, ...) -> ()) -> ... -> [((u11, u12, ...) -> ()), ((u21, u22, ...) -> ()), ... , ((s11, s12, ...) -> ()), ((s21, s22, ...) -> ()), ...])
 	function superposition(shift){
@@ -4507,87 +4386,6 @@ function compilation(declaration, ...additionalSideEffects){
 				cause(undefined, 30);
 			})();
 
-/* //todo
-			// undeterministic merge test
-			(function(){
-				const dispatch = effectuality(function implication(...effects){
-					return function cause(...x){
-						return effects.reduce(function(accumulator, effect, index){
-							if (index === 0){
-								return effect(effects.length - 1, ...x);
-							}
-							return effect(...x);
-						}, undefined);
-					};
-				});
-				const merge1 = effectuality(function implication(...effects){
-					return effects.map(function(item, index){
-						return function cause(...x){
-							return effects[index](...x);
-						};
-					});
-				});
-				const modulo2 = effectuality(function implication(effect0, effect1, effect2, effect3, ...effects){
-					function cause(...x){
-						if (x[0] % 2 === 0){
-							return effect0(0, ...x) || effect1(...x);
-						}
-						return effect0(-1, ...x);
-					};
-					return [effect0, cause, effect2, effect3, ...effects];
-				});
-				const modulo3 = effectuality(function implication(effect0, effect1, effect2, effect3, ...effects){
-					function cause(...x){
-						if (x[0] % 3 === 0){
-							return effect0(0, ...x) || effect2(...x);
-						}
-						return effect0(-1, ...x);
-					};
-					return [effect0, effect1, cause, effect3, ...effects];
-				});
-				const modulo5 = effectuality(function implication(effect0, effect1, effect2, effect3, ...effects){
-					function cause(...x){
-						if (x[0] % 5 === 0){
-							return effect0(0, ...x) || effect3(...x);
-						}
-						return effect0(-1, ...x);
-					};
-					return [effect0, effect1, effect2, cause, ...effects];
-				});
-				const effectuality1 = (merge((merge()()()(merge1))(merge()()(modulo5))(merge()()(modulo3))(merge()()(modulo2))(merge()()(dispatch))));
-				const implication1 = decryption1(effectuality1);
-				const cause = implication1(function effect1(...x){
-					if (x[0] === 30 || x[0] === 100){
-						console.warn("undeterministic 1 merge test: " + x);
-					}
-					else {
-						console.error("undeterministic 1 merge test: error: expected 30 or 100: got " + x);
-					}
-				},
-				function effect2(...x){
-					if (x[0] === 30){
-						console.warn("undeterministic 2 merge test: " + x);
-					}
-					else {
-						console.error("undeterministic 2 merge test: error: expected 30: got " + x);
-					}
-				},
-				function effect3(...x){
-					if (x[0] === 30 || x[0] === 100){
-						console.warn("undeterministic 3 merge test: " + x);
-					}
-					else {
-						console.error("undeterministic 3 merge test: error: expected 30 or 100: got " + x);
-					}
-				});
-				cause(undefined, 100);
-				cause(undefined, 77);
-				cause(undefined, 30);
-			})();
-*/ //todo
-
-
-
 			// superposition test
 			(function(){
 				const dispatch = effectuality(function implication(effect1, effect2, effect3, ...effects){
@@ -4643,6 +4441,63 @@ function compilation(declaration, ...additionalSideEffects){
 					}
 					else {
 						console.error("superposition 3 test: error: expected 6,30 or 20,100: got " + x);
+					}
+				});
+				cause(100);
+				cause(77);
+				cause(30);
+			})();
+
+			// mix test
+			(function(){
+				const fanout = effectuality(function implication(effect1, effect2, effect3, ...effects){
+					function cause(...x){
+						return [effect1, effect2, effect3].reduce(function(accumulator, effect){
+							return effect(...x);
+						}, undefined);
+					}
+					return [cause, ...effects];
+				});
+				const modulo2 = effectuality(function implication(effect){
+					return function cause(...x){
+						if (x[0] % 2 === 0){
+							return effect(2, ...x);
+						}
+						return effect(1, ...x);
+					};
+				});
+				const modulo3 = effectuality(function implication(effect){
+					return function cause(...x){
+						if (x[0] % 3 === 0){
+							return effect(3, ...x);
+						}
+						return effect(1, ...x);
+					};
+				});
+				const modulo5 = effectuality(function implication(effect){
+					return function cause(...x){
+						if (x[0] % 5 === 0){
+							return effect(5, ...x);
+						}
+						return effect(1, ...x);
+					};
+				});
+				const fanin = effectuality(function implication(effect){
+					return function cause(x0, ...x){
+						const y0 = x0.reduce(function(accumulator, item){
+							return accumulator * item[0];
+						}, 1);
+						return effect(y0, ...x);
+					}
+				});
+				const effectuality1 = (mix(3)(fanin)((modulo2)(superposition(1)(modulo3))(superposition(2)(modulo5)))(fanout));
+				const implication1 = decryption1(effectuality1);
+				const cause = implication1(function effect(...x){
+					if (x[0] === 10 && x[1] === 100 || x[0] === 1 && x[1] === 77 || x[0] === 30 && x[1] === 30){
+						console.warn("mix test: " + x);
+					}
+					else {
+						console.error("mix test: error: expected 10,100 or 1,77 or 30,30: got " + x);
 					}
 				});
 				cause(100);
