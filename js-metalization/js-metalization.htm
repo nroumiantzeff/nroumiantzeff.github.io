@@ -1,0 +1,605 @@
+<html>
+<head><title>js-metalization</title></head>
+<body>
+<script>
+"use strict";
+
+const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
+	function attributeType(){
+	}
+	function implementationType(){
+	}
+	function specificationType(){
+	}
+	function errorType(){
+	}
+	function expensionType(){
+	}
+	function TYPE(value){
+		if (typeof(value) ===  "function"){
+			return value(TYPE);
+		}
+		if (value !== null && typeof(value) === "object"){
+			if (value.type === specificationType){
+				return specificationType;
+			}
+		}
+	}
+	function EXPENSION(attributes){
+		return attributes.reduce(function(accumulator, attribute){
+			const attributes = attribute(expensionType);
+			if (attributes === attribute){
+				return [...accumulator, attribute];
+			}
+			return [...accumulator, ...EXPENSION(attributes)];
+		}, []);
+	}
+	function ATTRIBUTES(error, attribute, ...attributes){
+		return function(implementation){
+			if (implementation === TYPE){
+				return attributeType;
+			}
+			if (implementation === expensionType){
+				return EXPENSION([attribute, ...attributes]);
+			}
+			switch (TYPE(implementation)){
+				case attributeType: return ATTRIBUTES(error, implementation, attribute, ...attributes);
+				case implementationType: {
+					const value = [attribute, ...attributes].reduce(function(implementation, attribute){
+						if (implementation !== errorType && typeof(implementation) === "function"){	
+							return attribute(implementation);
+						}
+						return errorType;
+					}, implementation);
+					if (value !== errorType){
+						return value;
+					}
+				}
+			}
+			return error && error("attribute applied to an invalid argument", [EXPENSION([attribute, ...attributes])]);
+		};
+	}
+	function IMPLEMENTATIONS(attributes, specifications, properties, implementations, implementation0){
+		return function IMPLEMENTATION(attribute){
+			if (attribute === TYPE){
+				return implementationType;
+			}
+			if (TYPE(attribute) === attributeType){
+				const implementation = implementations(attribute);
+				const specification = specifications(attribute);
+				if (implementation !== errorType && specification !== errorType){
+					if (implementation === undefined){
+						if (typeof(specification) === "function"){
+							return specification(IMPLEMENTATION);
+						}
+						return error && error("attribute associated to an invalid specification", [[...attributes, attribute]]);
+					}
+					if (TYPE(specification) !== specificationType){
+						if (implementation !== errorType){
+							if (typeof(implementation) === "function"){
+								return implementation(implementation0)(...properties);
+							}
+							return error && error("attribute associated to an invalid implementation", [[...attributes, attribute]]);
+						}
+						return error && error("unexpected attribute", [[...attributes, attribute]]);
+					}
+					return IMPLEMENTATIONS([...attributes, attribute], specification.mapping, properties, implementation, implementation0?? IMPLEMENTATION);
+				}
+				return error && error("unexpected attribute", [[...attributes, attribute]]);
+			}
+			return error && error("incorrect attribute", [[...attributes, attribute]]);
+		};
+	}
+	function MAPPINGS(implementations, specifications){
+		const entries = implementations.map(function(item){
+			const attribute = item[0];
+			const specification = specifications(attribute);
+			if (TYPE(specification) === specificationType){
+				const implementation = item[1];
+				return [attribute, MAPPINGS(implementation, specification.mapping)];
+			}
+			return item;
+		});
+		const map = new(WeakMap)(entries);
+		return function(attribute){
+			if (attribute === TYPE){
+				return implementationType;
+			}
+			if (attribute === undefined){
+				return entries.map(item => item[0]);
+			}
+			const value = map.get(attribute);
+			if (value !== undefined || map.has(attribute)){
+				return value;
+			}
+			return errorType;
+		};
+	}
+	function OVERSUPPLIES(implementations, specifications, ...attributes){
+		const oversupplies = implementations().reduce(function(oversupplies, attribute){
+			const implementation = implementations(attribute);
+			const specification = specifications(attribute);
+			if (specification !== undefined && TYPE(specification) === errorType){
+				return [...oversupplies, [attribute, ...attributes]];
+			}
+			if (implementation !== undefined && TYPE(implementation) === implementationType){
+				if (specification === undefined || TYPE(specification) !== specificationType){
+					return [...oversupplies, [attribute, ...attributes]];
+				}
+				return [...oversupplies, ...OVERSUPPLIES(implementation, specification.mapping, attribute, ...attributes)]
+			}
+			if (implementation !== undefined && specification !== undefined){
+				return [...oversupplies, [attribute, ...attributes]];
+			}
+			return oversupplies;
+		}, []);
+		return oversupplies;
+	}
+	function UNDERSUPPLIES(implementations, specifications, ...attributes){
+		const undersupplies = specifications().reduce(function(undersupplies, attribute){
+			const specification = specifications(attribute);
+			const implementation = implementations(attribute);
+			if (implementation === errorType){
+				return attributes.length === 0? undersupplies: [...undersupplies, [attribute, ...attributes]];
+			}
+			if (TYPE(specification) === specificationType){
+				if (implementation === undefined || TYPE(implementation) !== implementationType){
+					return [...undersupplies, [attribute, ...attributes]];
+				}
+				return [...undersupplies, ...UNDERSUPPLIES(implementation, specification.mapping, attribute, ...attributes)]
+			}
+			if (specification === undefined && implementation === undefined){
+				return [...undersupplies, [attribute, ...attributes]];
+			}
+			return undersupplies;
+		}, []);
+		return undersupplies;
+	}
+	return {
+		ATTRIBUTE: function ATTRIBUTE(attribute, implementation, error){
+			if (implementation === TYPE){
+				return attributeType;
+			}
+			if (implementation === expensionType){
+				return attribute;
+			}
+			switch (TYPE(implementation)){
+				case attributeType: return ATTRIBUTES(error, implementation, attribute);
+				case implementationType: return implementation(attribute);
+			}
+			return error && error("attributes applied to an invalid argument", [[attribute]]);
+		},
+		SPECIFICATION: function SPECIFICATION(specifications){
+			const map = new(WeakMap)(specifications);
+			return {
+				mapping: function(attribute){
+					if (attribute === TYPE){
+						return specificationType;
+					}
+					if (attribute === undefined){
+						return specifications.map(item => item[0]);
+					}
+					const value = map.get(attribute);
+					if (value !== undefined || map.has(attribute)){
+						return value;
+					}
+					return errorType;
+				},
+				type: specificationType,
+			}; 
+		},
+		IMPLEMENTATION: function IMPLEMENTATION(implementations, specifications, error){
+			if (TYPE(specifications) !== specificationType){
+				return error && error("invalid specifications", [[]]);
+			}
+			const mappings = MAPPINGS(implementations, specifications.mapping);
+			const oversupplies = OVERSUPPLIES(mappings, specifications.mapping);
+			if (oversupplies.length !== 0){
+				return error && error("unexpected implementations", oversupplies);
+			}
+			const undersupplies = UNDERSUPPLIES(mappings, specifications.mapping);
+			if (undersupplies.length !== 0){
+				return error && error("missing implementations", undersupplies);
+			}
+			return function(...properties){
+				return IMPLEMENTATIONS([], specifications.mapping, properties, mappings);
+			}
+		},
+	};
+})();
+
+function error(message, attributes){
+	const messages = attributes.map(function(attributes){
+		return attributes.reduce(function(accumulator, attribute){
+			return "(" + attribute.name + ")" + accumulator;
+		}, "");
+	}).join(" ");
+	throw message + ": " + messages;
+}
+
+// level 1 attributes
+function label_(implementation){ return ATTRIBUTE(label_, implementation, error); }
+function surface_(implementation){ return ATTRIBUTE(surface_, implementation, error); }
+function volume_(implementation){ return ATTRIBUTE(volume_, implementation, error); }
+function stretch_(implementation){ return ATTRIBUTE(stretch_, implementation, error); }
+function invariant_(implementation){ return ATTRIBUTE(invariant_, implementation, error); }
+function weight_(implementation){ return ATTRIBUTE(weight_, implementation, error); }
+function alignment_(implementation){ return ATTRIBUTE(alignment_, implementation, error); }
+function test_(implementation){ return ATTRIBUTE(test_, implementation, error); }
+
+// level 2 attributes
+function shape_(implementation){ return ATTRIBUTE(shape_, implementation, error); }
+function solid_(implementation){ return ATTRIBUTE(solid_, implementation, error); }
+
+const specifications = SPECIFICATION([
+	[shape_, SPECIFICATION([
+		[label_],
+		[surface_],
+		[volume_],
+		[stretch_],
+		[invariant_, implementation => (volume_(implementation) * volume_(implementation)) / (surface_(implementation) * surface_(implementation) * surface_(implementation))],
+		[alignment_],
+	])],
+	[solid_, SPECIFICATION([
+		[label_],
+		[weight_],
+		[alignment_],
+		[test_],
+	])],
+]);
+
+const cube = IMPLEMENTATION([
+	[shape_, [
+		[label_, implementation => side => `cube of side ${side}`],
+		[surface_, implementation => side => side * side * 6],
+		[volume_, implementation => side => side * side * side],
+		[stretch_, implementation => side => k => cube(side * k)],
+		[invariant_],
+		[alignment_, implementation => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+	]],
+], specifications, error);
+
+const sphere = IMPLEMENTATION([
+	[shape_, [
+		[label_, implementation => radius => `sphere of radius ${radius}`],
+		[surface_, implementation => radius => radius * radius *Math.PI * 4],
+		[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+		[stretch_, implementation => radius => k => sphere(radius * k)],
+		[invariant_],
+		[alignment_, implementation => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
+	]],
+], specifications, error);
+
+const object = IMPLEMENTATION([
+	[solid_, [
+		[label_, implementation => (shape, density) => `object of density ${density} and shape ${label_(shape)}`],
+		[weight_, implementation => (shape, density) => volume_(shape) * density],
+		[alignment_, implementation => (shape, density) => o => alignment_(shape)(o)],
+		[test_, implementation => (shape, density) => weight_(solid_)(implementation)],
+	]],
+], specifications, error);
+
+const cube1 = cube(1);
+const cube2 = stretch_(shape_(cube1))(2);
+const sphere1 = sphere(1);
+const sphere2 = stretch_(shape_(sphere1))(2);
+
+// heterogeneous collection
+const shapes = [cube1, cube2, sphere1, sphere2];
+
+const invariants = shapes.reduce(function(results, item){
+	return results + label_(shape_(item)) + ": " + invariant_(shape_(item)) + "\n";
+}, "invariants: \n");
+
+// <label>: <invariant>
+// <label>: <invariant>
+// ...
+console.log(invariants);
+
+const objects = shapes.map(function(item){
+	return object(shape_(item), 10);
+});
+
+const weights = objects.reduce(function(results, item){
+	return results + label_(solid_(item)) + ": " + weight_(solid_(item)) + "\n";
+}, "weights: \n");
+
+// <label>: <weight>
+// <label>: <weight>
+// ...
+console.log(weights);
+
+console.log("alignments:");
+console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(shape_)(cube2) + ": " + alignment_(shape_(cube1))(shape_(cube2)));
+console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(shape_)(sphere1) + ": " + alignment_(shape_(cube1))(shape_(sphere1)));
+console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(solid_)(object(shape_(sphere1), 7)) + ": " + alignment_(shape_(cube1))(solid_(object(shape_(sphere1), 7))));
+console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(shape_)(sphere1) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(shape_(sphere1)));
+console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(solid_)(object(shape_(sphere1), 7)) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(solid_(object(shape_(sphere1), 7))));
+
+console.log("tests:");
+
+const object1 = object(shape_(cube(5)), 15);
+const weight1 = weight_(solid_)(object1);
+const test1 = test_(solid_)(object1);
+console.log(test1 + " === " + weight1 + ": " + (test1 === weight1));
+
+function attribute0_(implementation){ return ATTRIBUTE(attribute0_, implementation, error); }
+function attribute1_(implementation){ return ATTRIBUTE(attribute1_, implementation, error); }
+function attribute2_(implementation){ return ATTRIBUTE(attribute2_, implementation, error); }
+function attribute3_(implementation){ return ATTRIBUTE(attribute3_, implementation, error); }
+function attribute4_(implementation){ return ATTRIBUTE(attribute4_, implementation, error); }
+
+const implementationTest = IMPLEMENTATION([
+	[attribute4_, [
+		[attribute3_, [
+			[attribute2_, [
+				[attribute1_, implementation => value => value],
+			]],
+		]],
+	]],
+], SPECIFICATION([
+	[attribute4_, SPECIFICATION([
+		[attribute3_, SPECIFICATION([
+			[attribute2_, SPECIFICATION([
+				[attribute1_],
+			])],
+		])],
+	])],
+]), error);
+
+const test2 = attribute1_(attribute2_)(attribute3_)(attribute4_)(implementationTest(222));
+console.log(test2 + " === 222: " + (test2 === 222));
+
+const test3 = attribute1_(attribute2_)(attribute3_)(attribute4_(implementationTest(333)));
+console.log(test3 + " === 333: " + (test3 === 333));
+
+const test4 = attribute1_(attribute2_)(attribute3_(attribute4_(implementationTest(444))));
+console.log(test4 + " === 444: " + (test4 === 444));
+
+const test5 = attribute1_(attribute2_(attribute3_(attribute4_(implementationTest(555)))));
+console.log(test5 + " === 555: " + (test5 === 555));
+
+const test6 = attribute1_(attribute2_)(attribute3_(attribute4_))(implementationTest(666));
+console.log(test6 + " === 666: " + (test6 === 666));
+
+const test7 = attribute1_(attribute2_(attribute3_))(attribute4_)(implementationTest(777));
+console.log(test7 + " === 777: " + (test7 === 777));
+
+const test8 = attribute1_(attribute2_)(attribute3_(attribute4_))(implementationTest(888));
+console.log(test8 + " === 888: " + (test8 === 888));
+
+console.log("compositions:");
+
+function value_(implementation){ return ATTRIBUTE(value_, implementation, error); }
+function next_(implementation){ return ATTRIBUTE(next_, implementation, error); }
+function previous_(implementation){ return ATTRIBUTE(previous_, implementation, error); }
+function double_(implementation){ return ATTRIBUTE(double_, implementation, error); }
+function half_(implementation){ return ATTRIBUTE(half_, implementation, error); }
+
+const number = IMPLEMENTATION([
+	[value_, implementation => value => value],
+	[next_, implementation => value => number(value + 1)],
+	[previous_, implementation => value => number(value - 1)],
+	[double_, implementation => value => number(value * 2)],
+	[half_, implementation => value => number(value / 2)],
+], SPECIFICATION([
+	[value_],
+	[next_],
+	[previous_],
+	[double_],
+	[half_],
+]), error);
+
+const composition1 = double_(previous_)(half_)(next_)(number(13));
+console.log(value_(composition1) + " === 12: " + (value_(composition1) === 12));
+
+const composition2 = double_(previous_)(half_)(next_(number(13)));
+console.log(value_(composition2) + " === 12: " + (value_(composition2) === 12));
+
+const composition3 = double_(previous_)(half_(next_(number(13))));
+console.log(value_(composition3) + " === 12: " + (value_(composition3) === 12));
+
+const composition4 = double_(previous_(half_(next_(number(13)))));
+console.log(value_(composition4) + " === 12: " + (value_(composition4) === 12));
+
+const composition5 = double_(previous_)(half_(next_))(number(13));
+console.log(value_(composition5) + " === 12: " + (value_(composition5) === 12));
+
+const composition6 = double_(previous_(half_))(next_)(number(13));
+console.log(value_(composition6) + " === 12: " + (value_(composition6) === 12));
+
+const composition7 = double_(previous_)(half_(next_))(number(13));
+console.log(value_(composition7) + " === 12: " + (value_(composition7) === 12));
+
+const composition8 = ((double_)(previous_)(((half_)(next_))(number(13))));
+console.log(value_(composition8) + " === 12: " + (value_(composition8) === 12));
+
+const composition9 = (((double_)(previous_))((half_)(next_)))(number(13));
+console.log(value_(composition9) + " === 12: " + (value_(composition9) === 12));
+
+console.log("chains:");
+
+function first_(implementation){ return ATTRIBUTE(first_, implementation, error); }
+function second_(implementation){ return ATTRIBUTE(second_, implementation, error); }
+
+const tree = IMPLEMENTATION([
+	[first_, implementation => value => typeof(value[0]) === "object"? tree(value[0]): value[0]],
+	[second_, implementation => value => typeof(value[1]) === "object"? tree(value[1]): value[1]],
+], SPECIFICATION([
+	[first_],
+	[second_],
+]), error);
+
+const tree1 = tree([
+	[11, 21],
+	[12, 22],
+]);
+
+const chain11 = (first_)(first_)(tree1);
+console.log(chain11 + " === 11: " + (chain11 === 11));
+
+const chain12 = (first_)(second_)(tree1);
+console.log(chain12 + " === 12: " + (chain12 === 12));
+
+const chain21 = (second_)(first_)(tree1);
+console.log(chain21 + " === 21: " + (chain21 === 21));
+
+const chain22 = (second_)(second_)(tree1);
+console.log(chain22 + " === 22: " + (chain22 === 22));
+
+
+console.log("exceptions:");
+
+try{
+	(stretch_)(shape_)(solid_)(cube1);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "unexpected attribute: (solid_)": ' + (exception === "unexpected attribute: (solid_)"));
+}
+
+try{
+	(solid_)(stretch_)(shape_)(cube1);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "attributes applied to an invalid argument: (solid_)": ' + (exception === "attributes applied to an invalid argument: (solid_)"));
+}
+
+try{
+	(weight_)(cube1);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "unexpected attribute: (weight_)": ' + (exception === "unexpected attribute: (weight_)"));
+}
+
+try{
+	(solid_)(cube1);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "unexpected attribute: (solid_)": ' + (exception === "unexpected attribute: (solid_)"));
+}
+
+try{
+	(shape_)(x => 2 * x);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "attributes applied to an invalid argument: (shape_)": ' + (exception === "attributes applied to an invalid argument: (shape_)"));
+}
+
+try{
+	(shape_)(2);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "attributes applied to an invalid argument: (shape_)": ' + (exception === "attributes applied to an invalid argument: (shape_)"));
+}
+
+try{
+	(shape_)();
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "attributes applied to an invalid argument: (shape_)": ' + (exception === "attributes applied to an invalid argument: (shape_)"));
+}
+
+try{
+	const cube = IMPLEMENTATION([
+		[shape_, [
+			[label_, implementation => side => `cube of side ${side}`],
+			[volume_, implementation => side => side * side * side],
+			[invariant_],
+			[alignment_, implementation => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+		]],
+	], SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, implementation => (volume_(implementation) * volume_(implementation)) / (surface_(implementation) * surface_(implementation) * surface_(implementation))],
+			[alignment_],
+		])],
+		[solid_, SPECIFICATION([
+			[label_],
+			[weight_],
+			[alignment_],
+			[test_],
+		])],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "missing implementations: (shape_)(surface_) (shape_)(stretch_)": ' + (exception === "missing implementations: (shape_)(surface_) (shape_)(stretch_)"));
+}
+
+try{
+	const cube = IMPLEMENTATION([
+		[shape_, [
+			[label_, implementation => side => `cube of side ${side}`],
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+			[stretch_, implementation => side => k => cube(side * k)],
+			[invariant_, implementation => side => 1],
+			[alignment_, implementation => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+		]],
+	], SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, implementation => (volume_(implementation) * volume_(implementation)) / (surface_(implementation) * surface_(implementation) * surface_(implementation))],
+			[alignment_],
+		])],
+		[solid_, SPECIFICATION([
+			[label_],
+			[weight_],
+			[alignment_],
+			[test_],
+		])],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "unexpected implementations: (shape_)(invariant_)": ' + (exception === "unexpected implementations: (shape_)(invariant_)"));
+}
+
+try{
+	const cube = IMPLEMENTATION([
+		[shape_, [
+			[label_, implementation => side => `cube of side ${side}`],
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+			[stretch_, implementation => side => k => cube(side * k)],
+			[invariant_],
+			[alignment_, implementation => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+		]],
+	], SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_],
+			[alignment_],
+		])],
+		[solid_, SPECIFICATION([
+			[label_],
+			[weight_],
+			[alignment_],
+			[test_],
+		])],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "missing implementations: (shape_)(invariant_)": ' + (exception === "missing implementations: (shape_)(invariant_)"));
+}
+
+</script>
+</body>
+</html>
