@@ -15,7 +15,13 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 	}
 	function expensionType(){
 	}
-	function TYPE(value){
+	function TYPE(value, type){
+		if (type === specificationType){
+			return value !== null && typeof(value) === "object" && value.type === specificationType;
+		}
+		if (type !== undefined){
+			return TYPE(value) === type;
+		}
 		if (typeof(value) ===  "function"){
 			return value(TYPE);
 		}
@@ -74,10 +80,10 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 						}
 						return error && error("attribute associated to an invalid specification", [[...attributes, attribute]]);
 					}
-					if (TYPE(specification) !== specificationType){
+					if (!TYPE(specification, specificationType)){
 						if (implementation !== errorType){
 							if (typeof(implementation) === "function"){
-								return implementation(implementation0)(...properties);
+								return implementation(implementation0?? IMPLEMENTATION)(...properties);
 							}
 							return error && error("attribute associated to an invalid implementation", [[...attributes, attribute]]);
 						}
@@ -94,7 +100,7 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 		const entries = implementations.map(function(item){
 			const attribute = item[0];
 			const specification = specifications(attribute);
-			if (TYPE(specification) === specificationType){
+			if (TYPE(specification, specificationType)){
 				const implementation = item[1];
 				return [attribute, MAPPINGS(implementation, specification.mapping)];
 			}
@@ -119,11 +125,11 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 		const oversupplies = implementations().reduce(function(oversupplies, attribute){
 			const implementation = implementations(attribute);
 			const specification = specifications(attribute);
-			if (specification !== undefined && TYPE(specification) === errorType){
+			if (specification === errorType){
 				return [...oversupplies, [attribute, ...attributes]];
 			}
 			if (implementation !== undefined && TYPE(implementation) === implementationType){
-				if (specification === undefined || TYPE(specification) !== specificationType){
+				if (specification === undefined || !TYPE(specification, specificationType)){
 					return [...oversupplies, [attribute, ...attributes]];
 				}
 				return [...oversupplies, ...OVERSUPPLIES(implementation, specification.mapping, attribute, ...attributes)]
@@ -142,7 +148,7 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 			if (implementation === errorType){
 				return attributes.length === 0? undersupplies: [...undersupplies, [attribute, ...attributes]];
 			}
-			if (TYPE(specification) === specificationType){
+			if (TYPE(specification, specificationType)){
 				if (implementation === undefined || TYPE(implementation) !== implementationType){
 					return [...undersupplies, [attribute, ...attributes]];
 				}
@@ -189,7 +195,7 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 			}; 
 		},
 		IMPLEMENTATION: function IMPLEMENTATION(implementations, specifications, error){
-			if (TYPE(specifications) !== specificationType){
+			if (!TYPE(specifications, specificationType)){
 				return error && error("invalid specifications", [[]]);
 			}
 			const mappings = MAPPINGS(implementations, specifications.mapping);
@@ -446,6 +452,81 @@ console.log(chain21 + " === 21: " + (chain21 === 21));
 
 const chain22 = (second_)(second_)(tree1);
 console.log(chain22 + " === 22: " + (chain22 === 22));
+
+
+
+
+console.log("recursions:");
+
+function nil_(implementation){ return ATTRIBUTE(nil_, implementation, error); }
+function head_(implementation){ return ATTRIBUTE(head_, implementation, error); }
+function tail_(implementation){ return ATTRIBUTE(tail_, implementation, error); }
+function extent_(implementation){ return ATTRIBUTE(extent_, implementation, error); }
+function translation_(implementation){ return ATTRIBUTE(translation_, implementation, error); }
+function collection_(implementation){ return ATTRIBUTE(collection_, implementation, error); }
+function reduction_(implementation){ return ATTRIBUTE(reduction_, implementation, error); }
+function array_(implementation){ return ATTRIBUTE(array_, implementation, error); }
+
+const list0 = (function(){
+	const list = IMPLEMENTATION([
+		[nil_, implementation => (head, tail) => nil],
+		[head_, implementation => (head, tail) => head],
+		[tail_, implementation => (head, tail) => implementation === nil? nil: tail],
+		[extent_, implementation => (head, tail) => value => list(value, implementation)],
+		[translation_, implementation => (head, tail) => translation => implementation === nil? nil: list(translation(head), translation_(tail)(translation))],
+		[collection_, implementation => (head, tail) => collection => implementation === nil? nil: collection(head)? list(head, collection_(tail)(collection)): collection_(tail)(collection)],
+		[reduction_, implementation => (head, tail) => reduction => accumulation => implementation === nil? accumulation: (reduction_(tail)(reduction))(reduction(head)(accumulation))],
+		[array_],
+	], SPECIFICATION([
+		[nil_],
+		[head_],
+		[tail_],
+		[extent_],
+		[translation_],
+		[collection_],
+		[reduction_],
+		[array_, implementation => reduction_(implementation)(value => accumulation => [value, ...accumulation])([])],
+	]), error);
+	const nil = list();
+	return nil;
+})();
+
+const list1 = (extent_)(list0)(10);
+const list2 = (extent_)(list1)(100);
+const list3 = (extent_)(list2)(1000);
+
+console.log((head_)(list3) + " === 1000: " + ((head_)(list3) === 1000));
+console.log((head_)(tail_)(list3) + " === 100: " + ((head_)(tail_)(list3) === 100));
+console.log((head_)(tail_)(tail_)(list3) + " === 10: " + ((head_)(tail_)(tail_)(list3) === 10));
+console.log((head_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list3) === undefined));
+console.log((head_)(tail_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list3) === undefined));
+console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list3) === undefined));
+
+const list4 = (translation_)(list3)(value => value + 1);
+
+console.log((head_)(list4) + " === 1001: " + ((head_)(list4) === 1001));
+console.log((head_)(tail_)(list4) + " === 101: " + ((head_)(tail_)(list4) === 101));
+console.log((head_)(tail_)(tail_)(list4) + " === 11: " + ((head_)(tail_)(tail_)(list4) === 11));
+console.log((head_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list4) === undefined));
+console.log((head_)(tail_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list4) === undefined));
+console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list4) === undefined));
+
+const list5 = (collection_)(list4)(value => value !== 101);
+
+console.log((head_)(list5) + " === 1001: " + ((head_)(list5) === 1001));
+console.log((head_)(tail_)(list5) + " === 11: " + ((head_)(tail_)(list5) === 11));
+console.log((head_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(list5) === undefined));
+console.log((head_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list5) === undefined));
+console.log((head_)(tail_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list5) === undefined));
+console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list5) === undefined));
+
+const accumulation4 = (reduction_)(list4)(value => accumulation => value + accumulation)(909);
+
+console.log(accumulation4 + " === 2022: " + (accumulation4 === 2022));
+
+const array4 = (array_)(list4);
+
+console.log(array4 + " === 11,101,1001: " + (JSON.stringify(array4) === "[11,101,1001]"));
 
 
 console.log("exceptions:");
