@@ -70,6 +70,9 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 			if (attribute === TYPE){
 				return implementationType;
 			}
+			if (attribute === undefined){
+				return specifications;
+			}
 			if (TYPE(attribute) === attributeType){
 				const implementation = implementations(attribute);
 				const specification = specifications(attribute);
@@ -453,8 +456,87 @@ console.log(chain21 + " === 21: " + (chain21 === 21));
 const chain22 = (second_)(second_)(tree1);
 console.log(chain22 + " === 22: " + (chain22 === 22));
 
+console.log("combinations:");
 
+function add_(implementation){ return ATTRIBUTE(add_, implementation, error); }
+function addString_(implementation){ return ATTRIBUTE(addString_, implementation, error); }
+function addInteger_(implementation){ return ATTRIBUTE(addInteger_, implementation, error); }
+function addDecimal_(implementation){ return ATTRIBUTE(addDecimal_, implementation, error); }
+function string_(implementation){ return ATTRIBUTE(string_, implementation, error); }
+function numerator_(implementation){ return ATTRIBUTE(numerator_, implementation, error); }
+function denominator_(implementation){ return ATTRIBUTE(denominator_, implementation, error); }
 
+const integer = IMPLEMENTATION([
+	[value_, implementation => value => value],
+	[string_, implementation => value => value.toString()],
+	[add_, implementation => value => addition => addInteger_(addition)(implementation)],
+	[addInteger_, implementation => value => addition => integer(value + value_(addition))],
+	[addDecimal_, implementation => value => addition => decimal(value * denominator_(addition) + numerator_(addition), denominator_(addition))],
+	[addString_],
+], SPECIFICATION([
+	[value_],
+	[string_],
+	[add_],
+	[addInteger_],
+	[addDecimal_],
+	[addString_, implementation => addition => string(string_(addition) + string_(implementation))],
+]), error);
+
+const decimal = IMPLEMENTATION([
+	[numerator_, implementation => (numerator, denominator) => numerator],
+	[denominator_, implementation => (numerator, denominator) => denominator],
+	[string_, implementation => (numerator, denominator) => numerator.toString() + "/" + denominator.toString()],
+	[add_, implementation => (numerator, denominator) => addition => addDecimal_(addition)(implementation)],
+	[addInteger_, implementation => (numerator, denominator) => addition => decimal(numerator + value_(addition) * denominator, denominator)],
+	[addDecimal_, implementation => (numerator, denominator) => addition => decimal(numerator * denominator_(addition) + numerator_(addition) * denominator, denominator * denominator_(addition))],
+	[addString_],
+], SPECIFICATION([
+	[numerator_],
+	[denominator_],
+	[string_],
+	[add_],
+	[addInteger_],
+	[addDecimal_],
+	[addString_, implementation => addition => string(string_(addition) + string_(implementation))],
+]), error);
+
+const string = IMPLEMENTATION([
+	[string_, implementation => value => value],
+	[add_, implementation => value => addition => addString_(addition)(implementation)],
+	[addInteger_, implementation => value => addition => string(string_(addition) + value)],
+	[addDecimal_, implementation => value => addition => string(string_(addition) + value)],
+	[addString_],
+], SPECIFICATION([
+	[string_],
+	[add_],
+	[addInteger_],
+	[addDecimal_],
+	[addString_, implementation => addition => string(string_(addition) + string_(implementation))],
+]), error);
+
+const combination1 = (string_)((add_)(integer(13))(integer(10)));
+console.log(combination1 + " === 23: " + (combination1 === "23"));
+
+const combination2 = (string_)((add_)(integer(3))(decimal(5, 7)));
+console.log(combination2 + " === 26/7: " + (combination2 === "26/7"));
+
+const combination3 = (string_)((add_)(decimal(5, 7))(integer(3)));
+console.log(combination3 + " === 26/7: " + (combination3 === "26/7"));
+
+const combination4 = (string_)((add_)(decimal(5, 7))(string("qwerty")));
+console.log(combination4 + " === 5/7qwerty: " + (combination4 === "5/7qwerty"));
+
+const combination5 = (string_)((add_)(string("azerty"))(decimal(5, 7)));
+console.log(combination5 + " === azerty5/7: " + (combination5 === "azerty5/7"));
+
+const combination6 = (string_)((add_)(string("azerty"))(integer(57)));
+console.log(combination6 + " === azerty57: " + (combination6 === "azerty57"));
+
+const combination7 = (string_)((add_)(integer(57))(string("qwerty")));
+console.log(combination7 + " === 57qwerty: " + (combination7 === "57qwerty"));
+
+const combination8 = (string_)((add_)(string("azerty"))(string("qwerty")));
+console.log(combination8 + " === azertyqwerty: " + (combination8 === "azertyqwerty"));
 
 console.log("recursions:");
 
@@ -527,7 +609,6 @@ console.log(accumulation4 + " === 2022: " + (accumulation4 === 2022));
 const array4 = (array_)(list4);
 
 console.log(array4 + " === 11,101,1001: " + (JSON.stringify(array4) === "[11,101,1001]"));
-
 
 console.log("exceptions:");
 
@@ -680,6 +761,24 @@ try{
 catch(exception){
 	console.log('"' + exception + '" === "missing implementations: (shape_)(invariant_)": ' + (exception === "missing implementations: (shape_)(invariant_)"));
 }
+
+console.log("debugs:");
+
+const debug1 = cube(1)()().map(attribute => attribute.name);
+console.log(JSON.stringify(debug1) + ' === ["shape_","solid_"]: ' + (JSON.stringify(debug1) === '["shape_","solid_"]'));
+
+const debug2 = cube(1)()(shape_).mapping().map(attribute => attribute.name);
+console.log(JSON.stringify(debug2) + ' === ["label_","surface_","volume_","stretch_","invariant_","alignment_"]: ' + (JSON.stringify(debug2) === '["label_","surface_","volume_","stretch_","invariant_","alignment_"]'));
+
+const debug3 = cube(1)()(shape_).mapping(alignment_);
+console.log(debug3 + ' === undefined: ' + (debug3 === undefined));
+
+const debug4 = cube(1)()(shape_).mapping(solid_);
+console.log(typeof(debug4) + ' === function: ' + (typeof(debug4) === "function"));
+
+const debug5 = cube(1)()(shape_).mapping(solid_)();
+console.log(debug5 + ' === undefined: ' + (debug5 === undefined));
+
 
 </script>
 </body>
