@@ -4,8 +4,8 @@
 <script>
 "use strict";
 
-const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
-	function attributeType(){
+const { APPLICATION, SPECIFICATION, IMPLEMENTATION } = (function(){
+	function applicationType(){
 	}
 	function implementationType(){
 	}
@@ -31,29 +31,29 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 			}
 		}
 	}
-	function EXPENSION(attributes){
-		return attributes.reduce(function(accumulator, attribute){
-			const attributes = attribute(expensionType);
-			if (attributes === attribute){
-				return [...accumulator, attribute];
+	function EXPENSION(applications){
+		return applications.reduce(function(accumulator, application){
+			const applications = application(expensionType);
+			if (applications === application){
+				return [...accumulator, application];
 			}
-			return [...accumulator, ...EXPENSION(attributes)];
+			return [...accumulator, ...EXPENSION(applications)];
 		}, []);
 	}
-	function ATTRIBUTES(error, attribute, ...attributes){
+	function APPLICATIONS(error, application, ...applications){
 		return function(implementation){
 			if (implementation === TYPE){
-				return attributeType;
+				return applicationType;
 			}
 			if (implementation === expensionType){
-				return EXPENSION([attribute, ...attributes]);
+				return EXPENSION([application, ...applications]);
 			}
 			switch (TYPE(implementation)){
-				case attributeType: return ATTRIBUTES(error, implementation, attribute, ...attributes);
+				case applicationType: return APPLICATIONS(error, implementation, application, ...applications);
 				case implementationType: {
-					const value = [attribute, ...attributes].reduce(function(implementation, attribute){
+					const value = [application, ...applications].reduce(function(implementation, application){
 						if (implementation !== errorType && typeof(implementation) === "function"){	
-							return attribute(implementation);
+							return application(implementation);
 						}
 						return errorType;
 					}, implementation);
@@ -62,134 +62,134 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 					}
 				}
 			}
-			return error && error("attribute applied to an invalid argument", [EXPENSION([attribute, ...attributes])]);
+			return error && error("application applied to an invalid argument", [EXPENSION([application, ...applications])]);
 		};
 	}
-	function IMPLEMENTATIONS(attributes, specifications, properties, implementations, implementation0){
-		return function IMPLEMENTATION(attribute){
-			if (attribute === TYPE){
+	function IMPLEMENTATIONS(applications, specifications, properties, implementations, implementation0){
+		return function IMPLEMENTATION(application){
+			if (application === TYPE){
 				return implementationType;
 			}
-			if (attribute === undefined){
+			if (application === undefined){
 				return specifications;
 			}
-			if (TYPE(attribute) === attributeType){
-				const implementation = implementations(attribute);
-				const specification = specifications(attribute);
+			if (TYPE(application) === applicationType){
+				const implementation = implementations(application);
+				const specification = specifications(application);
 				if (implementation !== errorType && specification !== errorType){
 					if (implementation === undefined){
 						if (typeof(specification) === "function"){
 							return specification(IMPLEMENTATION);
 						}
-						return error && error("attribute associated to an invalid specification", [[...attributes, attribute]]);
+						return error && error("application associated to an invalid specification", [[...applications, application]]);
 					}
 					if (!TYPE(specification, specificationType)){
 						if (implementation !== errorType){
 							if (typeof(implementation) === "function"){
 								return implementation(implementation0?? IMPLEMENTATION)(...properties);
 							}
-							return error && error("attribute associated to an invalid implementation", [[...attributes, attribute]]);
+							return error && error("application associated to an invalid implementation", [[...applications, application]]);
 						}
-						return error && error("unexpected attribute", [[...attributes, attribute]]);
+						return error && error("unexpected application", [[...applications, application]]);
 					}
-					return IMPLEMENTATIONS([...attributes, attribute], specification.mapping, properties, implementation, implementation0?? IMPLEMENTATION);
+					return IMPLEMENTATIONS([...applications, application], specification.mapping, properties, implementation, implementation0?? IMPLEMENTATION);
 				}
-				return error && error("unexpected attribute", [[...attributes, attribute]]);
+				return error && error("unexpected application", [[...applications, application]]);
 			}
-			return error && error("incorrect attribute", [[...attributes, attribute]]);
+			return error && error("incorrect application", [[...applications, application]]);
 		};
 	}
 	function MAPPINGS(implementations, specifications){
 		const entries = implementations.map(function(item){
-			const attribute = item[0];
-			const specification = specifications(attribute);
+			const application = item[0];
+			const specification = specifications(application);
 			if (TYPE(specification, specificationType)){
 				const implementation = item[1];
-				return [attribute, MAPPINGS(implementation, specification.mapping)];
+				return [application, MAPPINGS(implementation, specification.mapping)];
 			}
 			return item;
 		});
 		const map = new(WeakMap)(entries);
-		return function(attribute){
-			if (attribute === TYPE){
+		return function(application){
+			if (application === TYPE){
 				return implementationType;
 			}
-			if (attribute === undefined){
+			if (application === undefined){
 				return entries.map(item => item[0]);
 			}
-			const value = map.get(attribute);
-			if (value !== undefined || map.has(attribute)){
+			const value = map.get(application);
+			if (value !== undefined || map.has(application)){
 				return value;
 			}
 			return errorType;
 		};
 	}
-	function OVERSUPPLIES(implementations, specifications, ...attributes){
-		const oversupplies = implementations().reduce(function(oversupplies, attribute){
-			const implementation = implementations(attribute);
-			const specification = specifications(attribute);
+	function OVERSUPPLIES(implementations, specifications, ...applications){
+		const oversupplies = implementations().reduce(function(oversupplies, application){
+			const implementation = implementations(application);
+			const specification = specifications(application);
 			if (specification === errorType){
-				return [...oversupplies, [attribute, ...attributes]];
+				return [...oversupplies, [application, ...applications]];
 			}
 			if (implementation !== undefined && TYPE(implementation) === implementationType){
 				if (specification === undefined || !TYPE(specification, specificationType)){
-					return [...oversupplies, [attribute, ...attributes]];
+					return [...oversupplies, [application, ...applications]];
 				}
-				return [...oversupplies, ...OVERSUPPLIES(implementation, specification.mapping, attribute, ...attributes)]
+				return [...oversupplies, ...OVERSUPPLIES(implementation, specification.mapping, application, ...applications)]
 			}
 			if (implementation !== undefined && specification !== undefined){
-				return [...oversupplies, [attribute, ...attributes]];
+				return [...oversupplies, [application, ...applications]];
 			}
 			return oversupplies;
 		}, []);
 		return oversupplies;
 	}
-	function UNDERSUPPLIES(implementations, specifications, ...attributes){
-		const undersupplies = specifications().reduce(function(undersupplies, attribute){
-			const specification = specifications(attribute);
-			const implementation = implementations(attribute);
+	function UNDERSUPPLIES(implementations, specifications, ...applications){
+		const undersupplies = specifications().reduce(function(undersupplies, application){
+			const specification = specifications(application);
+			const implementation = implementations(application);
 			if (implementation === errorType){
-				return attributes.length === 0? undersupplies: [...undersupplies, [attribute, ...attributes]];
+				return applications.length === 0? undersupplies: [...undersupplies, [application, ...applications]];
 			}
 			if (TYPE(specification, specificationType)){
 				if (implementation === undefined || TYPE(implementation) !== implementationType){
-					return [...undersupplies, [attribute, ...attributes]];
+					return [...undersupplies, [application, ...applications]];
 				}
-				return [...undersupplies, ...UNDERSUPPLIES(implementation, specification.mapping, attribute, ...attributes)]
+				return [...undersupplies, ...UNDERSUPPLIES(implementation, specification.mapping, application, ...applications)]
 			}
 			if (specification === undefined && implementation === undefined){
-				return [...undersupplies, [attribute, ...attributes]];
+				return [...undersupplies, [application, ...applications]];
 			}
 			return undersupplies;
 		}, []);
 		return undersupplies;
 	}
 	return {
-		ATTRIBUTE: function ATTRIBUTE(attribute, implementation, error){
+		APPLICATION: function APPLICATION(application, implementation, error){
 			if (implementation === TYPE){
-				return attributeType;
+				return applicationType;
 			}
 			if (implementation === expensionType){
-				return attribute;
+				return application;
 			}
 			switch (TYPE(implementation)){
-				case attributeType: return ATTRIBUTES(error, implementation, attribute);
-				case implementationType: return implementation(attribute);
+				case applicationType: return APPLICATIONS(error, implementation, application);
+				case implementationType: return implementation(application);
 			}
-			return error && error("attributes applied to an invalid argument", [[attribute]]);
+			return error && error("applications applied to an invalid argument", [[application]]);
 		},
 		SPECIFICATION: function SPECIFICATION(specifications){
 			const map = new(WeakMap)(specifications);
 			return {
-				mapping: function(attribute){
-					if (attribute === TYPE){
+				mapping: function(application){
+					if (application === TYPE){
 						return specificationType;
 					}
-					if (attribute === undefined){
+					if (application === undefined){
 						return specifications.map(item => item[0]);
 					}
-					const value = map.get(attribute);
-					if (value !== undefined || map.has(attribute)){
+					const value = map.get(application);
+					if (value !== undefined || map.has(application)){
 						return value;
 					}
 					return errorType;
@@ -217,28 +217,28 @@ const { ATTRIBUTE, SPECIFICATION, IMPLEMENTATION } = (function(){
 	};
 })();
 
-function error(message, attributes){
-	const messages = attributes.map(function(attributes){
-		return attributes.reduce(function(accumulator, attribute){
-			return "(" + attribute.name + ")" + accumulator;
+function error(message, applications){
+	const messages = applications.map(function(applications){
+		return applications.reduce(function(accumulator, application){
+			return "(" + application.name + ")" + accumulator;
 		}, "");
 	}).join(" ");
 	throw message + ": " + messages;
 }
 
-// level 1 attributes
-function label_(implementation){ return ATTRIBUTE(label_, implementation, error); }
-function surface_(implementation){ return ATTRIBUTE(surface_, implementation, error); }
-function volume_(implementation){ return ATTRIBUTE(volume_, implementation, error); }
-function stretch_(implementation){ return ATTRIBUTE(stretch_, implementation, error); }
-function invariant_(implementation){ return ATTRIBUTE(invariant_, implementation, error); }
-function weight_(implementation){ return ATTRIBUTE(weight_, implementation, error); }
-function alignment_(implementation){ return ATTRIBUTE(alignment_, implementation, error); }
-function test_(implementation){ return ATTRIBUTE(test_, implementation, error); }
+// level 1 applications
+function label_(implementation){ return APPLICATION(label_, implementation, error); }
+function surface_(implementation){ return APPLICATION(surface_, implementation, error); }
+function volume_(implementation){ return APPLICATION(volume_, implementation, error); }
+function stretch_(implementation){ return APPLICATION(stretch_, implementation, error); }
+function invariant_(implementation){ return APPLICATION(invariant_, implementation, error); }
+function weight_(implementation){ return APPLICATION(weight_, implementation, error); }
+function alignment_(implementation){ return APPLICATION(alignment_, implementation, error); }
+function test_(implementation){ return APPLICATION(test_, implementation, error); }
 
-// level 2 attributes
-function shape_(implementation){ return ATTRIBUTE(shape_, implementation, error); }
-function solid_(implementation){ return ATTRIBUTE(solid_, implementation, error); }
+// level 2 applications
+function shape_(implementation){ return APPLICATION(shape_, implementation, error); }
+function solid_(implementation){ return APPLICATION(solid_, implementation, error); }
 
 const specifications = SPECIFICATION([
 	[shape_, SPECIFICATION([
@@ -332,58 +332,58 @@ const weight1 = weight_(solid_)(object1);
 const test1 = test_(solid_)(object1);
 console.log(test1 + " === " + weight1 + ": " + (test1 === weight1));
 
-function attribute0_(implementation){ return ATTRIBUTE(attribute0_, implementation, error); }
-function attribute1_(implementation){ return ATTRIBUTE(attribute1_, implementation, error); }
-function attribute2_(implementation){ return ATTRIBUTE(attribute2_, implementation, error); }
-function attribute3_(implementation){ return ATTRIBUTE(attribute3_, implementation, error); }
-function attribute4_(implementation){ return ATTRIBUTE(attribute4_, implementation, error); }
+function application0_(implementation){ return APPLICATION(application0_, implementation, error); }
+function application1_(implementation){ return APPLICATION(application1_, implementation, error); }
+function application2_(implementation){ return APPLICATION(application2_, implementation, error); }
+function application3_(implementation){ return APPLICATION(application3_, implementation, error); }
+function application4_(implementation){ return APPLICATION(application4_, implementation, error); }
 
 const implementationTest = IMPLEMENTATION([
-	[attribute4_, [
-		[attribute3_, [
-			[attribute2_, [
-				[attribute1_, implementation => value => value],
+	[application4_, [
+		[application3_, [
+			[application2_, [
+				[application1_, implementation => value => value],
 			]],
 		]],
 	]],
 ], SPECIFICATION([
-	[attribute4_, SPECIFICATION([
-		[attribute3_, SPECIFICATION([
-			[attribute2_, SPECIFICATION([
-				[attribute1_],
+	[application4_, SPECIFICATION([
+		[application3_, SPECIFICATION([
+			[application2_, SPECIFICATION([
+				[application1_],
 			])],
 		])],
 	])],
 ]), error);
 
-const test2 = attribute1_(attribute2_)(attribute3_)(attribute4_)(implementationTest(222));
+const test2 = application1_(application2_)(application3_)(application4_)(implementationTest(222));
 console.log(test2 + " === 222: " + (test2 === 222));
 
-const test3 = attribute1_(attribute2_)(attribute3_)(attribute4_(implementationTest(333)));
+const test3 = application1_(application2_)(application3_)(application4_(implementationTest(333)));
 console.log(test3 + " === 333: " + (test3 === 333));
 
-const test4 = attribute1_(attribute2_)(attribute3_(attribute4_(implementationTest(444))));
+const test4 = application1_(application2_)(application3_(application4_(implementationTest(444))));
 console.log(test4 + " === 444: " + (test4 === 444));
 
-const test5 = attribute1_(attribute2_(attribute3_(attribute4_(implementationTest(555)))));
+const test5 = application1_(application2_(application3_(application4_(implementationTest(555)))));
 console.log(test5 + " === 555: " + (test5 === 555));
 
-const test6 = attribute1_(attribute2_)(attribute3_(attribute4_))(implementationTest(666));
+const test6 = application1_(application2_)(application3_(application4_))(implementationTest(666));
 console.log(test6 + " === 666: " + (test6 === 666));
 
-const test7 = attribute1_(attribute2_(attribute3_))(attribute4_)(implementationTest(777));
+const test7 = application1_(application2_(application3_))(application4_)(implementationTest(777));
 console.log(test7 + " === 777: " + (test7 === 777));
 
-const test8 = attribute1_(attribute2_)(attribute3_(attribute4_))(implementationTest(888));
+const test8 = application1_(application2_)(application3_(application4_))(implementationTest(888));
 console.log(test8 + " === 888: " + (test8 === 888));
 
 console.log("compositions:");
 
-function value_(implementation){ return ATTRIBUTE(value_, implementation, error); }
-function next_(implementation){ return ATTRIBUTE(next_, implementation, error); }
-function previous_(implementation){ return ATTRIBUTE(previous_, implementation, error); }
-function double_(implementation){ return ATTRIBUTE(double_, implementation, error); }
-function half_(implementation){ return ATTRIBUTE(half_, implementation, error); }
+function value_(implementation){ return APPLICATION(value_, implementation, error); }
+function next_(implementation){ return APPLICATION(next_, implementation, error); }
+function previous_(implementation){ return APPLICATION(previous_, implementation, error); }
+function double_(implementation){ return APPLICATION(double_, implementation, error); }
+function half_(implementation){ return APPLICATION(half_, implementation, error); }
 
 const number = IMPLEMENTATION([
 	[value_, implementation => value => value],
@@ -428,8 +428,8 @@ console.log(value_(composition9) + " === 12: " + (value_(composition9) === 12));
 
 console.log("chains:");
 
-function first_(implementation){ return ATTRIBUTE(first_, implementation, error); }
-function second_(implementation){ return ATTRIBUTE(second_, implementation, error); }
+function first_(implementation){ return APPLICATION(first_, implementation, error); }
+function second_(implementation){ return APPLICATION(second_, implementation, error); }
 
 const tree = IMPLEMENTATION([
 	[first_, implementation => value => typeof(value[0]) === "object"? tree(value[0]): value[0]],
@@ -458,13 +458,13 @@ console.log(chain22 + " === 22: " + (chain22 === 22));
 
 console.log("combinations:");
 
-function add_(implementation){ return ATTRIBUTE(add_, implementation, error); }
-function addString_(implementation){ return ATTRIBUTE(addString_, implementation, error); }
-function addInteger_(implementation){ return ATTRIBUTE(addInteger_, implementation, error); }
-function addDecimal_(implementation){ return ATTRIBUTE(addDecimal_, implementation, error); }
-function string_(implementation){ return ATTRIBUTE(string_, implementation, error); }
-function numerator_(implementation){ return ATTRIBUTE(numerator_, implementation, error); }
-function denominator_(implementation){ return ATTRIBUTE(denominator_, implementation, error); }
+function add_(implementation){ return APPLICATION(add_, implementation, error); }
+function addString_(implementation){ return APPLICATION(addString_, implementation, error); }
+function addInteger_(implementation){ return APPLICATION(addInteger_, implementation, error); }
+function addDecimal_(implementation){ return APPLICATION(addDecimal_, implementation, error); }
+function string_(implementation){ return APPLICATION(string_, implementation, error); }
+function numerator_(implementation){ return APPLICATION(numerator_, implementation, error); }
+function denominator_(implementation){ return APPLICATION(denominator_, implementation, error); }
 
 const integer = IMPLEMENTATION([
 	[value_, implementation => value => value],
@@ -540,14 +540,14 @@ console.log(combination8 + " === azertyqwerty: " + (combination8 === "azertyqwer
 
 console.log("recursions:");
 
-function nil_(implementation){ return ATTRIBUTE(nil_, implementation, error); }
-function head_(implementation){ return ATTRIBUTE(head_, implementation, error); }
-function tail_(implementation){ return ATTRIBUTE(tail_, implementation, error); }
-function extent_(implementation){ return ATTRIBUTE(extent_, implementation, error); }
-function translation_(implementation){ return ATTRIBUTE(translation_, implementation, error); }
-function collection_(implementation){ return ATTRIBUTE(collection_, implementation, error); }
-function reduction_(implementation){ return ATTRIBUTE(reduction_, implementation, error); }
-function array_(implementation){ return ATTRIBUTE(array_, implementation, error); }
+function nil_(implementation){ return APPLICATION(nil_, implementation, error); }
+function head_(implementation){ return APPLICATION(head_, implementation, error); }
+function tail_(implementation){ return APPLICATION(tail_, implementation, error); }
+function extent_(implementation){ return APPLICATION(extent_, implementation, error); }
+function translation_(implementation){ return APPLICATION(translation_, implementation, error); }
+function collection_(implementation){ return APPLICATION(collection_, implementation, error); }
+function reduction_(implementation){ return APPLICATION(reduction_, implementation, error); }
+function array_(implementation){ return APPLICATION(array_, implementation, error); }
 
 const list0 = (function(){
 	const list = IMPLEMENTATION([
@@ -617,7 +617,7 @@ try{
 	console.error("unreachable script");
 }
 catch(exception){
-	console.log('"' + exception + '" === "unexpected attribute: (solid_)": ' + (exception === "unexpected attribute: (solid_)"));
+	console.log('"' + exception + '" === "unexpected application: (solid_)": ' + (exception === "unexpected application: (solid_)"));
 }
 
 try{
@@ -625,7 +625,7 @@ try{
 	console.error("unreachable script");
 }
 catch(exception){
-	console.log('"' + exception + '" === "attributes applied to an invalid argument: (solid_)": ' + (exception === "attributes applied to an invalid argument: (solid_)"));
+	console.log('"' + exception + '" === "applications applied to an invalid argument: (solid_)": ' + (exception === "applications applied to an invalid argument: (solid_)"));
 }
 
 try{
@@ -633,7 +633,7 @@ try{
 	console.error("unreachable script");
 }
 catch(exception){
-	console.log('"' + exception + '" === "unexpected attribute: (weight_)": ' + (exception === "unexpected attribute: (weight_)"));
+	console.log('"' + exception + '" === "unexpected application: (weight_)": ' + (exception === "unexpected application: (weight_)"));
 }
 
 try{
@@ -641,7 +641,7 @@ try{
 	console.error("unreachable script");
 }
 catch(exception){
-	console.log('"' + exception + '" === "unexpected attribute: (solid_)": ' + (exception === "unexpected attribute: (solid_)"));
+	console.log('"' + exception + '" === "unexpected application: (solid_)": ' + (exception === "unexpected application: (solid_)"));
 }
 
 try{
@@ -649,7 +649,7 @@ try{
 	console.error("unreachable script");
 }
 catch(exception){
-	console.log('"' + exception + '" === "attributes applied to an invalid argument: (shape_)": ' + (exception === "attributes applied to an invalid argument: (shape_)"));
+	console.log('"' + exception + '" === "applications applied to an invalid argument: (shape_)": ' + (exception === "applications applied to an invalid argument: (shape_)"));
 }
 
 try{
@@ -657,7 +657,7 @@ try{
 	console.error("unreachable script");
 }
 catch(exception){
-	console.log('"' + exception + '" === "attributes applied to an invalid argument: (shape_)": ' + (exception === "attributes applied to an invalid argument: (shape_)"));
+	console.log('"' + exception + '" === "applications applied to an invalid argument: (shape_)": ' + (exception === "applications applied to an invalid argument: (shape_)"));
 }
 
 try{
@@ -665,7 +665,7 @@ try{
 	console.error("unreachable script");
 }
 catch(exception){
-	console.log('"' + exception + '" === "attributes applied to an invalid argument: (shape_)": ' + (exception === "attributes applied to an invalid argument: (shape_)"));
+	console.log('"' + exception + '" === "applications applied to an invalid argument: (shape_)": ' + (exception === "applications applied to an invalid argument: (shape_)"));
 }
 
 try{
@@ -764,10 +764,10 @@ catch(exception){
 
 console.log("debugs:");
 
-const debug1 = cube(1)()().map(attribute => attribute.name);
+const debug1 = cube(1)()().map(application => application.name);
 console.log(JSON.stringify(debug1) + ' === ["shape_","solid_"]: ' + (JSON.stringify(debug1) === '["shape_","solid_"]'));
 
-const debug2 = cube(1)()(shape_).mapping().map(attribute => attribute.name);
+const debug2 = cube(1)()(shape_).mapping().map(application => application.name);
 console.log(JSON.stringify(debug2) + ' === ["label_","surface_","volume_","stretch_","invariant_","alignment_"]: ' + (JSON.stringify(debug2) === '["label_","surface_","volume_","stretch_","invariant_","alignment_"]'));
 
 const debug3 = cube(1)()(shape_).mapping(alignment_);
