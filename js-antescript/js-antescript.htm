@@ -79,7 +79,7 @@
 		<li>In AnteScript, the concept of definition corresponds to the concept of function definition in Functional Programming</li>
 		<li>In AnteScript, composition is simply the concatenation of applications (point-free), for example, to compose the base of the cynlinder with the surface of the circle: (surface_)(base_)(cylinder)</li>
 		<li>AnteScript supports multiple-dispatch, the actual code applied depends on more than one argument, for example to add two operands which are either integer, decimal or string: (add_)(operand1)(operand2)</li>
-		<li>AnteScript is currently a JavaScript meta-language (the language keywords are actualy JavaScript functions provided by mean of IIFE which names may be freely chosen)</li> 
+		<li>AnteScript is currently a JavaScript meta-language (the language keywords which names may be freely chosen are actualy JavaScript functions provided by mean of a 350 line IIFE)</li> 
 		<li>AnteScript defines the following keywords: APPLICATION, DEFINITION, SPECIFICATION, EXTENSION</li>
 		<li>The APPLICATION keyword is used to declare applications, for example in the below example: surface_</li>
 		<li>The SPECIFICATION keyword is used to declare specifications, for example in the below example: specification</li>
@@ -101,7 +101,7 @@
 	function stretch_(implementation){ return APPLICATION(stretch_, implementation); }
 	function invariant_(implementation){ return APPLICATION(invariant_, implementation); }
 
-	const specifications = SPECIFICATION([
+	const shape = SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[label_],
 			[surface_],
@@ -118,7 +118,7 @@
 			[volume_, implementation => side => side * side * side],
 			[stretch_, implementation => side => k => cube(side * k)],
 		]],
-	], specifications);
+	], shape);
 
 	const sphere = DEFINITION([
 		[shape_, [
@@ -127,7 +127,7 @@
 			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
 			[stretch_, implementation => radius => k => sphere(radius * k)],
 		]],
-	], specifications);
+	], shape);
 
 	const cube1 = cube(1);
 	const cube2 = (stretch_)(shape_)(cube1)(2);
@@ -150,7 +150,7 @@
 <script>
 "use strict";
 
-//todo replace MAPPINGS by recursive DEFINITION (handle definitions like specifications) more verbose but more strict
+//todo handle recursive definitions like recrsive specifications (more verbose but more strict)
 
 const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 	function applicationType(){
@@ -248,8 +248,18 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 			return map.get(application);
 		};
 	}
-	function OVERSUPPLIES(definitions, specifications, ...applications){
-		const oversupplies = definitions().reduce(function(oversupplies, application){
+	function ENTRIES(definitions, specifications){
+		if (!TYPE(specifications, specificationType)){
+			return definitions;
+		}
+		return definitions().reduce(function(entries, application){
+			const definition = definitions(application);
+			const specification = specifications.mapping(application);
+			return [...entries, [application, ENTRIES(definition, specification)]];
+		}, [])
+	}
+	function OVERSUPPLIES(definitions, specifications, ...applications){ //todo rename OVERSUPPLY
+		const oversupplies = definitions().reduce(function(oversupplies, application){ //todo rename oversupply
 			if (oversupplies.length !== 0){
 				return oversupplies;
 			}
@@ -271,15 +281,17 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 		}, []); //todo pass undefined instead of []
 		return oversupplies; //todo remove intermediate variable
 	}
-	function UNDERSUPPLIES(definitions, specifications, ...applications){
-		const undersupplies = specifications().reduce(function(undersupplies, application){
+	function UNDERSUPPLIES(definitions, specifications, ...applications){ //todo rename UNDERSUPPLY
+		const undersupplies = specifications().reduce(function(undersupplies, application){ //todo rename undersupply
 			if (undersupplies.length !== 0){
 				return undersupplies;
 			}
 			const definition = definitions(application);
-			if (applications.length === 0 && (definition === undefined)){
-				return undersupplies;
+
+			if (applications.length === 0 && (definition === undefined)){ //todo remove
+				//debug return undersupplies;
 			}
+
 			const specification = specifications(application);
 			if (TYPE(specification, specificationType)){
 				if (definition === undefined || TYPE(definition) !== implementationType){
@@ -342,23 +354,24 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 		}
 		const entries0 = definitions0().reduce(function(entries, application){
 			const definition0 = definitions0(application);
+			const specification0 = specifications0.mapping(application);
 			const definition = definitions === undefined? undefined: definitions(application);
 			if (definition === undefined){
-				return [...entries, [application, definition0]];
+				return [...entries, [application, ENTRIES(definition0, specification0)]];
 			}
 			const specification = specifications.mapping(application);
 			if (!TYPE(specification, specificationType)){
 				return [...entries, [application, definition0]];
 			}
-			const specification0 = specifications0.mapping(application);
 			return [...entries, [application, DEFINITIONS(definition0, definition, specification0, specification)]];
 		}, []);
 		const entries1 = definitions().reduce(function(entries, application){
 			const definition = definitions(application);
+			const specification = specifications.mapping(application);
 			const definition0 = definitions0 === undefined? undefined: definitions0(application);
 			const specification0 = specifications0.mapping(application);
-			if (specification0 === undefined){
-				return [...entries, [application, definition]];
+			if (specification0 === errorType){
+				return [...entries, [application, ENTRIES(definition, specification)]];
 			}
 			if (!TYPE(specification0, specificationType)){
 				return [...entries, [application, definition]];
@@ -494,7 +507,7 @@ function test_(implementation){ return APPLICATION(test_, implementation, error)
 function shape_(implementation){ return APPLICATION(shape_, implementation, error); }
 function solid_(implementation){ return APPLICATION(solid_, implementation, error); }
 
-const specifications = SPECIFICATION([
+const shape = SPECIFICATION([
 	[shape_, SPECIFICATION([
 		[label_],
 		[surface_],
@@ -503,6 +516,9 @@ const specifications = SPECIFICATION([
 		[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
 		[alignment_],
 	])],
+]);
+
+const solid = SPECIFICATION([
 	[solid_, SPECIFICATION([
 		[label_],
 		[weight_],
@@ -519,7 +535,7 @@ const cube = DEFINITION([
 		[stretch_, implementation => side => k => cube(side * k)],
 		[alignment_, implementation => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 	]],
-], specifications, error);
+], shape, error);
 
 const sphere = DEFINITION([
 	[shape_, [
@@ -529,7 +545,7 @@ const sphere = DEFINITION([
 		[stretch_, implementation => radius => k => sphere(radius * k)],
 		[alignment_, implementation => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
 	]],
-], specifications, error);
+], shape, error);
 
 const object = DEFINITION([
 	[solid_, [
@@ -538,7 +554,7 @@ const object = DEFINITION([
 		[alignment_, implementation => (shape, density) => o => alignment_(shape)(o)],
 		[test_, implementation => (shape, density) => weight_(solid_)(implementation)],
 	]],
-], specifications, error);
+], solid, error);
 
 const cube1 = cube(1);
 const cube2 = stretch_(shape_(cube1))(2);
@@ -902,7 +918,7 @@ console.log((label_)(shape_)(spherex3) + " === sphere of radius 3: " + ((label_)
 
 function stretch4_(implementation){ return APPLICATION(stretch4_, implementation, error); }
 
-const specificationxx = EXTENSION(specifications)(SPECIFICATION([
+const specificationxx = EXTENSION(shape)(SPECIFICATION([
 	[shape_, SPECIFICATION([
 		[stretch2_, implementation => (stretch_)(shape_)(implementation)(2)],
 		[stretch4_, implementation => (stretch2_)(shape_)(stretch2_)(shape_)(implementation)],
@@ -946,6 +962,25 @@ console.log((label_)(shape_)(spherexx2) + " === sphere of radius 2: " + ((label_
 
 const spherexx4 = (stretch4_)(shape_)(spherexx1);
 console.log((label_)(shape_)(spherexx4) + " === sphere of radius 4: " + ((label_)(shape_)(spherexx4) === "sphere of radius 4"));
+
+const cubexxx = EXTENSION(cube)([
+	[solid_, [
+		[weight_, implementation => side => density => density * (volume_)(shape_)(implementation)],
+	]],
+], SPECIFICATION([
+	[solid_, SPECIFICATION([
+		[weight_],
+	])],
+]), error);
+
+const cubexxx2 = cubexxx(2); 
+console.log((label_)(shape_)(cubexxx2) + " === cube of side 2: " + ((label_)(shape_)(cubexxx2) === "cube of side 2"));
+
+const volumexxx2 = (volume_)(shape_)(cubexxx2);
+console.log(volumexxx2 + " === 8: " + (volumexxx2 === 8));
+
+const weightxxx2 = (weight_)(solid_)(cubexxx2)(10);
+console.log(weightxxx2 + " === 80: " + (weightxxx2 === 80));
 
 console.log("exceptions:");
 
@@ -1152,12 +1187,84 @@ catch(exception){
 	console.log('"' + exception + '" === "missing definition: (shape_)(invariant_)": ' + (exception === "missing definition: (shape_)(invariant_)"));
 }
 
-//todo extension exceptions
+try{
+	const cubex = EXTENSION(cube)([
+		[shape_, [
+			[label_, implementation => side => `cube of side ${side}`],
+		]],
+	], SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+		])],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "specification duplication: (shape_)(label_)": ' + (exception === "specification duplication: (shape_)(label_)"));
+}
+
+try{
+	const cubex = EXTENSION(cube)([
+		[shape_, [
+		]],
+	], SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+		])],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "specification duplication: (shape_)(label_)": ' + (exception === "specification duplication: (shape_)(label_)"));
+}
+
+try{
+	const cubex = EXTENSION(cube)([
+		[shape_, [
+			[label_, implementation => side => `cube of side ${side}`],
+		]],
+	], SPECIFICATION([
+		[shape_, SPECIFICATION([
+		])],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "unexpected extension definition: (shape_)(label_)": ' + (exception === "unexpected extension definition: (shape_)(label_)"));
+}
+
+try{
+	const cubex = EXTENSION(cube)([
+		[shape_, implementation => side => `cube of side ${side}`],
+	], SPECIFICATION([
+		[shape_],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "specification duplication: (shape_)": ' + (exception === "specification duplication: (shape_)"));
+}
+
+/* //todo
+try{
+	const cubex = EXTENSION(cube)([
+		[solid_],
+	], SPECIFICATION([
+		[solid_, SPECIFICATION([
+			[weight_],
+		])],
+	]), error);
+	console.error("unreachable script");
+}
+catch(exception){
+	console.log('"' + exception + '" === "unexpected extension definition: (shape_)(label_)": ' + (exception === "unexpected extension definition: (shape_)(label_)"));
+}
+*/ //todo
 
 console.log("debugs:");
 
 const debug1 = cube(1)()().map(application => application.name);
-console.log(JSON.stringify(debug1) + ' === ["shape_","solid_"]: ' + (JSON.stringify(debug1) === '["shape_","solid_"]'));
+console.log(JSON.stringify(debug1) + ' === ["shape_"]: ' + (JSON.stringify(debug1) === '["shape_"]'));
 
 const debug2 = cube(1)()(shape_).mapping().map(application => application.name);
 console.log(JSON.stringify(debug2) + ' === ["label_","surface_","volume_","stretch_","invariant_","alignment_"]: ' + (JSON.stringify(debug2) === '["label_","surface_","volume_","stretch_","invariant_","alignment_"]'));
