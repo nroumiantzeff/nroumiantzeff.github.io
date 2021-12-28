@@ -238,14 +238,17 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				const implementation = implementations(application);
 				const specification = specifications(application);
 				if (implementation === undefined){
-					if (specification !== undefined && specification !== errorType && !TYPE(specification, specificationType)){ //todo check typeof(specification)==="function" in DECLARATION
+					if (specification !== undefined && specification !== errorType && typeof(specification) === "function" && !TYPE(specification, specificationType)){
 						return specification(definition?? DEFINITION);
 					}
 					return error && error("unexpected applications", [...applications, application]);
 				}
 				if (specification !== errorType){
 					if(!TYPE(specification, specificationType)){
-						return implementation(definition?? DEFINITION)(...values); //todo check typeof(definition)==="function" in DECLARATION
+						if (typeof(implementation) === "function"){
+							return implementation(definition?? DEFINITION)(...values);
+						}
+						return error && error("applications applied to an invalid function", [...applications, application]);	
 					}
 					return DEFINITIONS(error, [...applications, application], specification.mapping, values, implementation, definition?? DEFINITION);
 				}
@@ -1217,6 +1220,13 @@ try{
 catch(exception){
 	console.log('"' + exception + '" === "missing implementation: (shape_)(invariant_)": ' + (exception === "missing implementation: (shape_)(invariant_)"));
 }
+
+
+
+
+
+
+
 
 try{
 	const cubex = EXTENSION(cube)([
