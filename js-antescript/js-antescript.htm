@@ -64,28 +64,34 @@
 		<ul>
 			<li>In AnteScript, the concept of extension resolves the expression problem in both Functional Programming and Object Oriented Programming</li>
 			<li>An extension generates a new definition from a previous definition by specifing the specifiction and implementation for additional applications</li>
+			<li>Alternatively, an extension may generate a new specification from a previous specification by specifing the specifiction for additional invariant applications</li>
 		</ul>
 	</ul>
 	<li>Notes</li>
 	<ul>
 		<li>AnteScript is dynamically typed</li>
 		<li>Although AnteScript is dynamically typed, a definition is checked for consistency with its specification before any implmementation is generated and used</li>
-		<li>AnteScript supports an Object Oriented Programming form of polymorphism (interface polymorphism) which may be used in heterogeneous collections</li>
+		<li>AnteScript supports an Object Oriented Programming form of polymorphism (interface polymorphism) which transparently supports heterogeneous collections</li>
 		<li>AnteScript promotes Functional Programming paradigms notably, immutability, referencial transparency, declarative style, composition, point-free style, curying...</li>
 		<li>AnteScript does not support inheritance (this is not a lack, this is a feature) except for the relationship between a specification and a definition</li>
 		<li>AnteScript does not support overriding (this is not a lack, this is a feature), notably, an invariant application specified in a specification cannot be specified in the associated definition</li>
 		<li>In AnteScript, the concept of specification corresponds to the concept of function declaration in Functional Programming</li>
 		<li>In AnteScript, the concept of definition corresponds to the concept of function definition in Functional Programming</li>
 		<li>In AnteScript, composition is simply the concatenation of applications (point-free), for example, to compose the base of the cynlinder with the surface of the circle: (surface_)(base_)(cylinder)</li>
-		<li>AnteScript is currently a JavaScript meta-language, based on the following keywords (actually JavaScript function): APPLICATION, DEFINITION, SPECIFICATION, EXTENSION</li>
+		<li>AnteScript supports multiple-dispatch, the actual code applied depends on more than one argument, for example to add two operands which are either integer, decimal or string: (add_)(operand1)(operand2)</li>
+		<li>AnteScript is currently a JavaScript meta-language (the language keywords are actualy JavaScript functions provided by mean of IIFE which names may be freely chosen)</li> 
+		<li>AnteScript defines the following keywords: APPLICATION, DEFINITION, SPECIFICATION, EXTENSION</li>
 		<li>The APPLICATION keyword is used to declare applications, for example in the below example: surface_</li>
 		<li>The SPECIFICATION keyword is used to declare specifications, for example in the below example: specification</li>
 		<li>The DEFINITION keyword is used to declare definitions, for example in the below example: cube</li>
 		<li>The EXTENSION keyword is used to declare extensions as a special case of specifications and definitions (the expression problem is taken into account by the AnteScript language design in a simple and natural way)</li>
-		<li>AnteScript key-words are actually JavaScript functions provided by an IIFE function (their names may be chosen freely)</li>
 		<li>The APPLICATION boilerplate syntax, based on a JavaScript function definition, is needed to access the name of the application in error report and debugging</li>
 		<li>The current implementation of AnteScript has a large over head for compared to direct JavaScript function calls (linear with the level of applications but constant in the total number of applications)</li>
 		<li>AnteScript runtime errors are dealt with by providing an optional custom error function (ommited in the below sample)</li>
+		<li>AnteScript is currently a proof of concept (the overhead compared to direct JavaScript function calls may impact performance)</li>
+		<li>AnteScript is currently implemented using pure functions only (with a significant use of JavaScript WeakMap objects)</li>
+		<li>AnteScript could be implemented without the specification concept (loose typing instead of dynamic typing, no invariant application, no interface application) but interface applications help resoning (if not inferring)</li>
+		<li>AnteScript could be implemented as a compiled language (obviously, the first compiler would be implemented using the JavaScript version of AnteScript)</li>
 	</ul>
 	<li>Sample</li>
 	<ul><pre>
@@ -101,7 +107,7 @@
 			[surface_],
 			[volume_],
 			[stretch_],
-			[invariant_, implementation => (volume_(implementation) * volume_(implementation)) / (surface_(implementation) * surface_(implementation) * surface_(implementation))],
+			[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
 		])],
 	]);
 
@@ -144,7 +150,7 @@
 <script>
 "use strict";
 
-//todo EXTENSION of specification (in addition ot EXTENSION of definition)
+//todo replace MAPPINGS by recursive DEFINITION (handle definitions like specifications) more verbose but more strict
 
 const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 	function applicationType(){
@@ -193,7 +199,7 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 			return error && error("applications applied to an invalid argument", [application, ...applications]);
 		};
 	}
-	function IMPLEMENTATIONS(applications, specifications, properties, definitions, implementation){
+	function IMPLEMENTATIONS(error, applications, specifications, properties, definitions, implementation){
 		return function IMPLEMENTATION(application){
 			if (application === TYPE){
 				return implementationType;
@@ -206,7 +212,7 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 				const specification = specifications(application);
 				if (definition === undefined){
 					if (specification !== undefined && specification !== errorType && !TYPE(specification, specificationType)){ //todo check typeof(specification)==="function" in DEFINITION
-						return specification(IMPLEMENTATION);
+						return specification(implementation?? IMPLEMENTATION);
 					}
 					return error && error("unexpected applications", [...applications, application]);
 				}
@@ -214,7 +220,7 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 					if(!TYPE(specification, specificationType)){
 						return definition(implementation?? IMPLEMENTATION)(...properties); //todo check typeof(implementation)==="function" in DEFINITION
 					}
-					return IMPLEMENTATIONS([...applications, application], specification.mapping, properties, definition, implementation?? IMPLEMENTATION);
+					return IMPLEMENTATIONS(error, [...applications, application], specification.mapping, properties, definition, implementation?? IMPLEMENTATION);
 				}
 				return error && error("unexpected applications", [...applications, application]);
 			}
@@ -363,6 +369,34 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 	}
 	function EXTENSION(DEFINITION, definitions0, specifications0, error0){
 		return function(definitions, specifications, error){
+			const error1 = error !== undefined? error: error0;
+			if (!TYPE(specifications, specificationType)){
+				return error1 && error1("invalid extension specifications", []);
+			}
+			const duplication = DUPLICATION(specifications0, specifications);
+			if (duplication !== undefined){
+				return error1 && error1("specification duplication", duplication);
+			}
+			const specifications1 = SPECIFICATIONS(specifications0, specifications);
+			if (definitions === undefined){
+				return DEFINITION(definitions0, specifications1, error1);
+			}
+			const mappings = MAPPINGS(definitions, specifications.mapping);
+			const oversupplies = OVERSUPPLIES(mappings, specifications.mapping);
+			if (oversupplies.length !== 0){
+				return error1 && error1("unexpected extension definition", oversupplies);
+			}
+			const undersupplies = UNDERSUPPLIES(mappings, specifications.mapping);
+			if (undersupplies.length !== 0){
+				return error1 && error1("missing extension definition", undersupplies);
+			}
+			const mappings0 = MAPPINGS(definitions0, specifications0.mapping);
+			const definitions1 = DEFINITIONS(mappings0, mappings, specifications0, specifications);
+			return DEFINITION(definitions1, specifications1, error1);
+		};
+	}
+	function EXTENSIONS(specifications0){
+		return function(specifications, error){
 			if (!TYPE(specifications, specificationType)){
 				return error && error("invalid extension specifications", []);
 			}
@@ -370,21 +404,8 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 			if (duplication !== undefined){
 				return error && error("specification duplication", duplication);
 			}
-			if (definitions !== undefined){
-				const mappings = MAPPINGS(definitions, specifications.mapping);
-				const oversupplies = OVERSUPPLIES(mappings, specifications.mapping);
-				if (oversupplies.length !== 0){
-					return error && error("unexpected extension definition", oversupplies);
-				}
-				const undersupplies = UNDERSUPPLIES(mappings, specifications.mapping);
-				if (undersupplies.length !== 0){
-					return error && error("missing extension definition", undersupplies);
-				}
-			}
 			const specifications1 = SPECIFICATIONS(specifications0, specifications);
-			const definitions1 = definitions === undefined? definitions0: DEFINITIONS(MAPPINGS(definitions0, specifications0.mapping), MAPPINGS(definitions, specifications.mapping), specifications0, specifications);
-			const error1 = error !== undefined? error: error0;
-			return DEFINITION(definitions1, specifications1, error1);
+			return specifications1;
 		};
 	}
 	return {
@@ -404,6 +425,9 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 				mapping: function(application){
 					if (application === TYPE){
 						return specificationType;
+					}
+					if (application === extensionType){
+						return EXTENSIONS(SPECIFICATION(specifications));
 					}
 					if (application === undefined){
 						return specifications.map(item => item[0]);
@@ -435,12 +459,15 @@ const { APPLICATION, SPECIFICATION, DEFINITION, EXTENSION } = (function(){
 					case TYPE: return definitionType;
 					case extensionType: return EXTENSION(DEFINITION, definitions, specifications, error);
 				}
-				return IMPLEMENTATIONS([], specifications.mapping, properties, mappings);
+				return IMPLEMENTATIONS(error, [], specifications.mapping, properties, mappings);
 			}
 		},
 		EXTENSION: function EXTENSION(definition){
-			if (TYPE(definition)){
+			if (TYPE(definition) === definitionType){
 				return definition(extensionType);
+			}
+			if (TYPE(definition, specificationType)){
+				return definition.mapping(extensionType);
 			}
 			return error && error("invalid definition", []);
 		},
@@ -473,7 +500,7 @@ const specifications = SPECIFICATION([
 		[surface_],
 		[volume_],
 		[stretch_],
-		[invariant_, implementation => (volume_(implementation) * volume_(implementation)) / (surface_(implementation) * surface_(implementation) * surface_(implementation))],
+		[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
 		[alignment_],
 	])],
 	[solid_, SPECIFICATION([
@@ -835,7 +862,7 @@ console.log("extensions:");
 
 const specificationx = SPECIFICATION([
 	[shape_, SPECIFICATION([
-		[stretch2_, implementation => stretch_(implementation)(2)],
+		[stretch2_, implementation => (stretch_)(shape_)(implementation)(2)],
 		[stretch3_],
 	])],
 ]);
@@ -872,6 +899,53 @@ console.log((label_)(shape_)(spherex2) + " === sphere of radius 2: " + ((label_)
 
 const spherex3 = (stretch3_)(shape_)(spherex1);
 console.log((label_)(shape_)(spherex3) + " === sphere of radius 3: " + ((label_)(shape_)(spherex3) === "sphere of radius 3"));
+
+function stretch4_(implementation){ return APPLICATION(stretch4_, implementation, error); }
+
+const specificationxx = EXTENSION(specifications)(SPECIFICATION([
+	[shape_, SPECIFICATION([
+		[stretch2_, implementation => (stretch_)(shape_)(implementation)(2)],
+		[stretch4_, implementation => (stretch2_)(shape_)(stretch2_)(shape_)(implementation)],
+	])],
+]), error);
+
+const cubexx = DEFINITION([
+	[shape_, [
+		[label_, implementation => side => `cube of side ${side}`],
+		[surface_, implementation => side => side * side * 6],
+		[volume_, implementation => side => side * side * side],
+		[stretch_, implementation => side => k => cubexx(side * k)],
+		[alignment_, implementation => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+	]],
+], specificationxx, error);
+
+const spherexx = DEFINITION([
+	[shape_, [
+		[label_, implementation => radius => `sphere of radius ${radius}`],
+		[surface_, implementation => radius => radius * radius *Math.PI * 4],
+		[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+		[stretch_, implementation => radius => k => spherexx(radius * k)],
+		[alignment_, implementation => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
+	]],
+], specificationxx, error);
+
+const cubexx1 = cubexx(1); 
+console.log((label_)(shape_)(cubexx1) + " === cube of side 1: " + ((label_)(shape_)(cubexx1) === "cube of side 1"));
+
+const cubexx2 = (stretch2_)(shape_)(cubexx1);
+console.log((label_)(shape_)(cubexx2) + " === cube of side 2: " + ((label_)(shape_)(cubexx2) === "cube of side 2"));
+
+const cubexx4 = (stretch4_)(shape_)(cubexx1);
+console.log((label_)(shape_)(cubexx4) + " === cube of side 4: " + ((label_)(shape_)(cubexx4) === "cube of side 4"));
+
+const spherexx1 = spherexx(1);
+console.log((label_)(shape_)(spherexx1) + " === sphere of radius 1: " + ((label_)(shape_)(spherexx1) === "sphere of radius 1"));
+
+const spherexx2 = (stretch2_)(shape_)(spherexx1);
+console.log((label_)(shape_)(spherexx2) + " === sphere of radius 2: " + ((label_)(shape_)(spherexx2) === "sphere of radius 2"));
+
+const spherexx4 = (stretch4_)(shape_)(spherexx1);
+console.log((label_)(shape_)(spherexx4) + " === sphere of radius 4: " + ((label_)(shape_)(spherexx4) === "sphere of radius 4"));
 
 console.log("exceptions:");
 
