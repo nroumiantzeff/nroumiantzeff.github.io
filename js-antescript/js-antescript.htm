@@ -172,7 +172,6 @@
 <script>
 "use strict";
 
-//todo EXTENTION with an undefined declaration is equivalent to identity (this ensures consistency and independency of declaration)
 //todo allow DECLARATION with undefined implementation (definition with invariant applications only)
 //todo DELEGATION
 
@@ -491,6 +490,9 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			}
 		},
 		EXTENSION: function(declaration){
+			if (declaration === undefined){
+				return x => x;
+			}
 			if (TYPE(declaration) === declarationType){
 				return declaration(extensionType);
 			}
@@ -1041,6 +1043,19 @@ console.log("extensions:");
 
 	const weightxxx2 = (weight_)(solid_)(cubexxx2)(10);
 	console.log(weightxxx2 + " === 80: " + (weightxxx2 === 80));
+
+	const specificationxxxx = EXTENSION()(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[stretch2_, definition => (stretch_)(shape_)(definition)(2)],
+			[stretch4_, definition => (stretch2_)(shape_)(stretch2_)(shape_)(definition)],
+		])],
+	]));
+
+	const inceptionxxxx1 = specificationxxxx.mapping();
+	console.log("specificationxxxx.mapping() === [shape_]: " + (Array.isArray(inceptionxxxx1) && inceptionxxxx1.length === 1 && inceptionxxxx1[0] === shape_));
+
+	const inceptionxxxx2 = specificationxxxx.mapping(shape_).mapping();
+	console.log("specificationxxxx.mapping(shape_).mapping() === [stretch2_,stretch4_]: " + (Array.isArray(inceptionxxxx2) && inceptionxxxx2.length === 2 && inceptionxxxx2[0] === stretch2_ && inceptionxxxx2[1] === stretch4_));
 })();
 
 console.log("expression problem:");
