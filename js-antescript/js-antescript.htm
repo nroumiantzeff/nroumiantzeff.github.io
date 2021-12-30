@@ -40,8 +40,9 @@
 			<li>The specification and implementation of a declaration is checked for consistency</li>
 			<li>Applying values to a declaration (like calling a class constructor with value arguments) returns a definition</li>
 			<li>Declaration can model Algebraic Data Types supported by popular Functional Programmming languages</li>
-			<li>A declaration with two (or more) definition values models an additive Algebraic Data Type</li>
-			<li>A declaration with one definition value that can be defined from two (or mor) different declarations models an multplicative Algebraic Data Type</li>
+			<li>A declaration with two (or more) definition values models a product Algebraic Data Type</li>
+			<li>A declaration with one definition value that can be defined from two (or mor) different declarations models a sum Algebraic Data Type</li>
+			<li>A declaration is the function part in the separation of data and functions in Functional Programming</li>
 		</ul>
 		<li>Implementation</li>
 		<ul>
@@ -61,6 +62,8 @@
 			<li>A definition is defined by applying values to a declaration</li>
 			<li>A supported application (or a supported concatenation of applications) may be applied to a definition</li>
 			<li>Applying an unsupported application (or a unsupported concatenation of applications) to a definition results in an error</li>
+			<li>A definition is the data part in the separation of data and functions in Functional Programming</li>
+			<li>A definition encapsulates the values like private data class members in Object Oriented Programming</li>
 		</ul>
 		<li>Specification</li>
 		<ul>
@@ -76,9 +79,12 @@
 		</ul>
 		<li>Extension</li>
 		<ul>
-			<li>In AnteScript, the concept of extension resolves the expression problem in both Functional Programming and Object Oriented Programming</li>
-			<li>An extension generates a new definition from a previous definition by specifing the specifiction and implementation for additional applications</li>
-			<li>Alternatively, an extension may generate a new specification from a previous specification by specifing the specifiction for additional invariant applications</li>
+			<li>In AnteScript, the concept of extension solves the well known Expression Problem in both Functional Programming and Object Oriented Programming</li>
+			<li>An extension generates a new specification from a previous declaration by specifing the specifiction for the additional applications</li>
+			<li>An extension generates a new implementation from a previous declaration by specifing the implementation for the additional applications</li>
+			<li>A new declaration is typically generated with the new specification and the new implementation</li>
+			<li>An extension is checked against duplication of specification attributes and implementation attributes</li>
+			<li>In AnteScript, an extension application has the same nature as basic application without any additional limitation (unlike C# extention methods which cannot access private values and do not support polymorphism)</li>
 		</ul>
 	</ul>
 	<li>Notes</li>
@@ -91,6 +97,7 @@
 		<li>AnteScript does not support overriding (this is not a lack, this is a feature), notably, an invariant application specified in a specification cannot be specified in the associated definition</li>
 		<li>In AnteScript, the concept of specification corresponds to the concept of function declaration in Functional Programming</li>
 		<li>In AnteScript, the concept of definition corresponds to the concept of function definition in Functional Programming</li>
+		<li>In AnteScript, the concept of declaration can ensures the "strong static type safety" criteria of the Expression Problem (by loading separate JavaScript files)</li>
 		<li>In AnteScript, composition is simply the concatenation of applications (point-free), for example, to compose the base of the cynlinder with the surface of the circle: (surface_)(base_)(cylinder)</li>
 		<li>AnteScript supports multiple-dispatch, the actual code applied depends on more than one argument, for example to add two operands which are either integer, decimal or string: (add_)(operand1)(operand2)</li>
 		<li>AnteScript is currently a JavaScript meta-language (the language keywords which names may be freely chosen are actualy JavaScript functions provided by mean of a 350 line IIFE)</li> 
@@ -106,7 +113,6 @@
 		<li>AnteScript runtime errors are dealt with by providing an optional custom error function (ommited in the below sample)</li>
 		<li>AnteScript is currently a proof of concept (the overhead compared to direct JavaScript function calls may impact performance)</li>
 		<li>AnteScript is currently implemented using pure functions only (with a significant use of JavaScript WeakMap objects)</li>
-		<li>AnteScript could be implemented without the specification concept (loose typing instead of dynamic typing, no invariant application, no interface application) but interface applications help resoning (if not inferring)</li>
 		<li>AnteScript could be implemented as a compiled language (obviously, the first compiler would be implemented using the JavaScript version of AnteScript)</li>
 	</ul>
 	<li>Sample</li>
@@ -127,23 +133,23 @@
 		])],
 	]);
 
-	const cube = DECLARATION(IMPLEMENTATION([
+	const cube = DECLARATION(shape, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => side => `cube of side ${side}`],
 			[surface_, implementation => side => side * side * 6],
 			[volume_, implementation => side => side * side * side],
 			[stretch_, implementation => side => k => cube(side * k)],
 		])],
-	]), shape);
+	]));
 
-	const sphere = DECLARATION(IMPLEMENTATION([
+	const sphere = DECLARATION(shape, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => radius => `sphere of radius ${radius}`],
 			[surface_, implementation => radius => radius * radius * Math.PI * 4],
 			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
 			[stretch_, implementation => radius => k => sphere(radius * k)],
 		])],
-	]), shape);
+	]));
 
 	const cube1 = cube(1);
 	const cube2 = (stretch_)(shape_)(cube1)(2);
@@ -166,7 +172,8 @@
 <script>
 "use strict";
 
-//todo handle recursive implementations like recrsive specifications (more verbose but more strict)
+//todo EXTENTION with an undefined declaration is equivalent to identity (this ensures consistency and independency of declaration)
+//todo allow DECLARATION with undefined implementation (definition with invariant applications only) 
 
 const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (function(){
 	function applicationType(){
@@ -175,6 +182,8 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 	}
 	function specificationType(){
 	}
+	function implementationType(){
+	}
 	function declarationType(){
 	}
 	function extensionType(){
@@ -182,19 +191,11 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 	function errorType(){
 	}
 	function TYPE(value, type){
-		if (type === specificationType){
-			return value !== null && typeof(value) === "object" && value.type === specificationType;
-		}
 		if (type !== undefined){
-			return TYPE(value) === type;
+			return value !== null && typeof(value) === "object" && value.type === type;
 		}
 		if (typeof(value) ===  "function"){
 			return value(TYPE);
-		}
-		if (value !== null && typeof(value) === "object"){
-			if (value.type === specificationType){
-				return specificationType;
-			}
 		}
 	}
 	let memoization = new(Map)();
@@ -226,7 +227,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			return error && error("applications applied to an invalid definition or invalid application", [application, ...applications]);
 		};
 	}
-	function DEFINITIONS(error, applications, specifications, values, implementations, definition){
+	function DEFINITIONS(error, applications, specifications, implementations, values, definition){
 		return function DEFINITION(application){
 			if (application === TYPE){
 				return definitionType;
@@ -235,58 +236,32 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				return specifications;
 			}
 			if (TYPE(application) === applicationType){
-				const implementation = implementations(application);
-				const specification = specifications(application);
-				if (implementation === undefined){
-					if (specification !== undefined && specification !== errorType && typeof(specification) === "function" && !TYPE(specification, specificationType)){
-						return specification(definition?? DEFINITION);
-					}
-					return error && error("unexpected applications", [...applications, application]);
-				}
-				if (specification !== errorType){
-					if(!TYPE(specification, specificationType)){
+				const implementation = implementations(application, true);
+				if (implementation !== undefined){
+					if(!TYPE(implementation, implementationType)){
 						if (typeof(implementation) === "function"){
-							return implementation(definition?? DEFINITION)(...values);
+							const encapsulation = implementation(definition?? DEFINITION);
+							if (typeof(encapsulation) === "function"){
+								return encapsulation(...values);
+							}
 						}
-						return error && error("applications applied to an invalid function", [...applications, application]);	
+						return error && error("applications applied to an invalid function", [...applications, application]);
 					}
-					return DEFINITIONS(error, [...applications, application], specification.mapping, values, implementation, definition?? DEFINITION);
 				}
-				return error && error("unexpected applications", [...applications, application]);
+				const specification = specifications(application, true);
+				if (implementation === undefined){
+					if(!TYPE(specification, specificationType)){
+						if (specification !== undefined && typeof(specification) === "function"){
+							return specification(definition?? DEFINITION);
+						}
+						return error && error("unexpected applications", [...applications, application]);
+					}
+					return DEFINITIONS(error, [...applications, application], specification.mapping, undefined, values, definition?? DEFINITION); //todo support undefined implementation (and swap arguments)
+				}
+				return DEFINITIONS(error, [...applications, application], specification.mapping, implementation.mapping, values, definition?? DEFINITION);
 			}
 			return error && error("incorrect application", [...applications, application]);
 		};
-	}
-	function MAPPINGS(implementations, specifications){
-		const entries = implementations.map(function(item){
-			const application = item[0];
-			const specification = specifications(application);
-			if (TYPE(specification, specificationType)){
-				const implementation = item[1];
-				return [application, MAPPINGS(implementation, specification.mapping)];
-			}
-			return item;
-		});
-		const map = new(WeakMap)(entries);
-		return function(application){
-			if (application === TYPE){
-				return definitionType;
-			}
-			if (application === undefined){
-				return entries.map(item => item[0]);
-			}
-			return map.get(application);
-		};
-	}
-	function ENTRIES(implementations, specifications){
-		if (!TYPE(specifications, specificationType)){
-			return implementations;
-		}
-		return implementations().reduce(function(entries, application){
-			const implementation = implementations(application);
-			const specification = specifications.mapping(application);
-			return [...entries, [application, ENTRIES(implementation, specification)]];
-		}, [])
 	}
 	function OVERSUPPLY(implementations, specifications, ...applications){
 		return implementations().reduce(function(oversupply, application){
@@ -298,11 +273,11 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			if (specification === errorType){
 				return [application, ...applications];
 			}
-			if (implementation !== undefined && TYPE(implementation) === definitionType){
-				if (specification === undefined || !TYPE(specification, specificationType)){
+			if (TYPE(implementation, implementationType)){
+				if (!TYPE(specification, specificationType)){
 					return [application, ...applications];
 				}
-				return OVERSUPPLY(implementation, specification.mapping, application, ...applications);
+				return OVERSUPPLY(implementation.mapping, specification.mapping, application, ...applications);
 			}
 			if (specification !== undefined){
 				return [application, ...applications];
@@ -317,10 +292,10 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			const implementation = implementations(application);
 			const specification = specifications(application);
 			if (TYPE(specification, specificationType)){
-				if (implementation === undefined || TYPE(implementation) !== definitionType){
+				if (!TYPE(implementation, implementationType)){
 					return [application, ...applications];
 				}
-				return UNDERSUPPLY(implementation, specification.mapping, application, ...applications);
+				return UNDERSUPPLY(implementation.mapping, specification.mapping, application, ...applications);
 			}
 			if (specification === undefined){
 				if (implementation === undefined){
@@ -329,18 +304,18 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			}
 		}, undefined);
 	}
-	function DUPLICATION(specifications0, specifications, ...applications){
-		return specifications.mapping().reduce(function(duplication, application){
+	function DUPLICATION(type, specificationsOrImplementations0, specificationsOrImplementations, ...applications){
+		return specificationsOrImplementations().reduce(function(duplication, application){
 			if (duplication !== undefined){
 				return duplication;
 			}
-			const specification0 = specifications0.mapping(application);
-			if (specification0 !== errorType){
-				const specification = specifications.mapping(application);
-				if (!TYPE(specification0, specificationType) || !TYPE(specification, specificationType)){
+			const specificationOrImplementation0 = specificationsOrImplementations0(application);
+			if (specificationOrImplementation0 !== errorType){
+				const specificationOrImplementation = specificationsOrImplementations(application);
+				if (!TYPE(specificationOrImplementation0, type) || !TYPE(specificationOrImplementation, type)){
 					return [application, ...applications];
 				}
-				return DUPLICATION(specification0, specification, application, ...applications);
+				return DUPLICATION(type, specificationOrImplementation0.mapping, specificationOrImplementation.mapping, application, ...applications);
 			}
 		}, undefined);
 	}
@@ -369,72 +344,56 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		}, entries0);
 		return SPECIFICATION(entries1);
 	}
-	function DECLARATIONS(implementations0, implementations, specifications0, specifications){
-		if (implementations === undefined){
-			return implementations0;
-		}
-		const entries0 = implementations0().reduce(function(entries, application){
-			const implementation0 = implementations0(application);
-			const specification0 = specifications0.mapping(application);
-			const implementation = implementations === undefined? undefined: implementations(application);
-			if (implementation === undefined){
-				return [...entries, [application, ENTRIES(implementation0, specification0)]];
-			}
-			const specification = specifications.mapping(application);
-			if (!TYPE(specification, specificationType)){
+	function IMPLEMENTATIONS(implementations0, implementations){
+		const entries0 = implementations0.mapping().reduce(function(entries, application){
+			const implementation0 = implementations0.mapping(application);
+			const implementation = implementations === errorType? errorType: implementations.mapping(application);
+			if (implementation === errorType){
 				return [...entries, [application, implementation0]];
 			}
-			return [...entries, [application, DECLARATIONS(implementation0, implementation, specification0, specification)]];
-		}, []);
-		const entries1 = implementations().reduce(function(entries, application){
-			const implementation = implementations(application);
-			const specification = specifications.mapping(application);
-			const implementation0 = implementations0 === undefined? undefined: implementations0(application);
-			const specification0 = specifications0.mapping(application);
-			if (specification0 === errorType){
-				return [...entries, [application, ENTRIES(implementation, specification)]];
+			if (!TYPE(implementation, implementationType)){
+				return [...entries, [application, implementation0]];
 			}
-			if (!TYPE(specification0, specificationType)){
+			return [...entries, [application, IMPLEMENTATIONS(implementation0, implementation)]];
+		}, []);
+		const entries1 = implementations.mapping().reduce(function(entries, application){
+			const implementation = implementations.mapping(application);
+			const implementation0 = implementations0 === errorType? errorType: implementations0.mapping(application);
+			if (implementation0 === errorType){
+				return [...entries, [application, implementation]];
+			}
+			if (!TYPE(implementation0, implementationType)){
 				return [...entries, [application, implementation]];
 			}
 			return entries;
 		}, entries0);
-		return entries1;
+		return IMPLEMENTATION(entries1);
 	}
-	function EXTENSION(DECLARATION, implementations0, specifications0, error0){
-		return function(implementations, specifications, error){
-			const error1 = error !== undefined? error: error0;
-			if (!TYPE(specifications, specificationType)){
-				return error1 && error1("invalid extension specifications", []);
+	function EXTENSION(specification, implementation, error){
+		return function(extension){
+			if (TYPE(extension, specificationType)){
+				const duplication1 = DUPLICATION(specificationType, specification.mapping, extension.mapping);
+				if (duplication1 !== undefined){
+					return error && error("extension specification duplication", duplication1);
+				}
+				return SPECIFICATIONS(specification, extension);
 			}
-			const duplication = DUPLICATION(specifications0, specifications);
-			if (duplication !== undefined){
-				return error1 && error1("specification duplication", duplication);
+			if (TYPE(extension, implementationType)){
+				const duplication2 = DUPLICATION(implementationType, implementation.mapping, extension.mapping);
+				if (duplication2 !== undefined){
+					return error && error("extension implementation duplication", duplication2);
+				}
+				return IMPLEMENTATIONS(implementation, extension);
 			}
-			const specifications1 = SPECIFICATIONS(specifications0, specifications);
-			if (implementations === undefined){
-				return DECLARATION(implementations0, specifications1, error1);
-			}
-			const mappings = MAPPINGS(implementations, specifications.mapping);
-			const oversupply = OVERSUPPLY(mappings, specifications.mapping);
-			if (oversupply !== undefined){
-				return error1 && error1("unexpected extension implementation", oversupply);
-			}
-			const undersupply = UNDERSUPPLY(mappings, specifications.mapping);
-			if (undersupply !== undefined){
-				return error1 && error1("missing extension implementation", undersupply);
-			}
-			const mappings0 = MAPPINGS(implementations0, specifications0.mapping);
-			const implementations1 = DECLARATIONS(mappings0, mappings, specifications0, specifications);
-			return DECLARATION(implementations1, specifications1, error1);
+			return error && error("invalid specification or implementation extension");
 		};
 	}
 	function EXTENSIONS(specifications0){
 		return function(specifications, error){
 			if (!TYPE(specifications, specificationType)){
-				return error && error("invalid extension specifications", []);
+				return error && error("invalid extension specifications");
 			}
-			const duplication = DUPLICATION(specifications0, specifications);
+			const duplication = DUPLICATION(specificationType, specifications0.mapping, specifications.mapping);
 			if (duplication !== undefined){
 				return error && error("specification duplication", duplication);
 			}
@@ -460,7 +419,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		SPECIFICATION: function SPECIFICATION(specifications){
 			const map = new(WeakMap)(specifications);
 			return {
-				mapping: function(application){
+				mapping: function(application, runtime){
 					if (application === TYPE){
 						return specificationType;
 					}
@@ -471,7 +430,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 						return specifications.map(item => item[0]);
 					}
 					const value = map.get(application);
-					if (value !== undefined || map.has(application)){
+					if (runtime || value !== undefined || map.has(application)){
 						return value;
 					}
 					return errorType;
@@ -479,696 +438,757 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				type: specificationType,
 			}; 
 		},
-		DECLARATION: function DECLARATION(implementations, specifications, error){
-			if (!TYPE(specifications, specificationType)){
-				return error && error("invalid specifications", []);
+		IMPLEMENTATION: function IMPLEMENTATION(implementations){
+			const map = new(WeakMap)(implementations);
+			return {
+				mapping: function(application, runtime){
+					if (application === TYPE){
+						return implementationType;
+					}
+					if (application === extensionType){
+						return EXTENSIONS(IMPLEMENTATION(implementations));
+					}
+					if (application === undefined){
+						return implementations.map(item => item[0]);
+					}
+					const value = map.get(application);
+					if (runtime || value !== undefined || map.has(application)){
+						return value;
+					}
+					return errorType;
+				},
+				type: implementationType,
+			}; 
+		},
+		DECLARATION: function(specification, implementation, error){
+			if (!TYPE(specification, specificationType)){
+				return error && error("invalid specification");
 			}
-			const mappings = MAPPINGS(implementations, specifications.mapping);
-			const oversupply = OVERSUPPLY(mappings, specifications.mapping);
+			if (!TYPE(implementation, implementationType)){
+				return error && error("invalid implementation");
+			}
+			const oversupply = OVERSUPPLY(implementation.mapping, specification.mapping);
 			if (oversupply !== undefined){
 				return error && error("unexpected implementation", oversupply);
 			}
-			const undersupply = UNDERSUPPLY(mappings, specifications.mapping);
+			const undersupply = UNDERSUPPLY(implementation.mapping, specification.mapping);
 			if (undersupply !== undefined){
 				return error && error("missing implementation", undersupply);
 			}
 			return function(...values){
 				switch(values[0]){
 					case TYPE: return declarationType;
-					case extensionType: return EXTENSION(DECLARATION, implementations, specifications, error);
+					case extensionType: return EXTENSION(specification, implementation, error);
 				}
-				return DEFINITIONS(error, [], specifications.mapping, values, mappings);
+				return DEFINITIONS(error, [], specification.mapping, implementation.mapping, values);
 			}
 		},
-		EXTENSION: function EXTENSION(declaration){
+		EXTENSION: function(declaration){
 			if (TYPE(declaration) === declarationType){
 				return declaration(extensionType);
 			}
 			if (TYPE(declaration, specificationType)){
 				return declaration.mapping(extensionType);
 			}
-			return error && error("invalid declaration", []);
-		},
-		IMPLEMENTATION: function IMPLEMENTATION(implementation){
-			return implementation;
+			return error && error("invalid declaration");
 		},
 	};
 })();
 
 function error(message, applications){
-	throw message + ": " + applications.reduce(function(accumulator, application){
+	throw message + (applications? (": " + applications.reduce(function(accumulator, application){
 		return "(" + application.name + ")" + accumulator;
-	}, "");
+	}, "")): "");
 }
 
-// level 1 applications
-var label_ = APPLICATION("label_", error);
-var surface_ = APPLICATION("surface_", error);
-var volume_ = APPLICATION("volume_", error);
-var stretch_ = APPLICATION("stretch_", error);
-var invariant_ = APPLICATION("invariant_", error);
-var weight_ = APPLICATION("weight_", error);
-var alignment_ = APPLICATION("alignment_", error);
-var test_ = APPLICATION("test_", error);
+(function(){
+	// level 1 applications
+	var label_ = APPLICATION("label_", error);
+	var surface_ = APPLICATION("surface_", error);
+	var volume_ = APPLICATION("volume_", error);
+	var stretch_ = APPLICATION("stretch_", error);
+	var invariant_ = APPLICATION("invariant_", error);
+	var weight_ = APPLICATION("weight_", error);
+	var alignment_ = APPLICATION("alignment_", error);
+	var test_ = APPLICATION("test_", error);
 
-// level 2 applications
-var shape_ = APPLICATION("shape_", error);
-var solid_ = APPLICATION("solid_", error);
+	// level 2 applications
+	var shape_ = APPLICATION("shape_", error);
+	var solid_ = APPLICATION("solid_", error);
 
-const shape = SPECIFICATION([
-	[shape_, SPECIFICATION([
-		[label_],
-		[surface_],
-		[volume_],
-		[stretch_],
-		[invariant_, definition => ((volume_)(shape_)(definition) * (volume_)(shape_)(definition)) / ((surface_)(shape_)(definition) * (surface_)(shape_)(definition) * (surface_)(shape_)(definition))],
-		[alignment_],
-	])],
-]);
-
-const solid = SPECIFICATION([
-	[solid_, SPECIFICATION([
-		[label_],
-		[weight_],
-		[alignment_],
-		[test_],
-	])],
-]);
-
-const cube = DECLARATION(IMPLEMENTATION([
-	[shape_, IMPLEMENTATION([
-		[label_, definition => side => `cube of side ${side}`],
-		[surface_, definition => side => side * side * 6],
-		[volume_, definition => side => side * side * side],
-		[stretch_, definition => side => k => cube(side * k)],
-		[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
-	])],
-]), shape, error);
-
-const sphere = DECLARATION(IMPLEMENTATION([
-	[shape_, IMPLEMENTATION([
-		[label_, definition => radius => `sphere of radius ${radius}`],
-		[surface_, definition => radius => radius * radius * Math.PI * 4],
-		[volume_, definition => radius => radius * radius * radius * Math.PI * 4/3],
-		[stretch_, definition => radius => k => sphere(radius * k)],
-		[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
-	])],
-]), shape, error);
-
-const object = DECLARATION(IMPLEMENTATION([
-	[solid_, IMPLEMENTATION([
-		[label_, definition => (shape, density) => `object of density ${density} and shape ${label_(shape)}`],
-		[weight_, definition => (shape, density) => volume_(shape) * density],
-		[alignment_, definition => (shape, density) => o => alignment_(shape)(o)],
-		[test_, definition => (shape, density) => weight_(solid_)(definition)],
-	])],
-]), solid, error);
-
-const cube1 = cube(1);
-const cube2 = stretch_(shape_(cube1))(2);
-const sphere1 = sphere(1);
-const sphere2 = stretch_(shape_(sphere1))(2);
-
-// heterogeneous collection
-const shapes = [cube1, cube2, sphere1, sphere2];
-
-const invariants = shapes.reduce(function(results, item){
-	return results + label_(shape_(item)) + ": " + invariant_(shape_(item)) + "\n";
-}, "invariants: \n");
-
-// <label>: <invariant>
-// <label>: <invariant>
-// ...
-console.log(invariants);
-
-const objects = shapes.map(function(item){
-	return object(shape_(item), 10);
-});
-
-const weights = objects.reduce(function(results, item){
-	return results + label_(solid_(item)) + ": " + weight_(solid_(item)) + "\n";
-}, "weights: \n");
-
-// <label>: <weight>
-// <label>: <weight>
-// ...
-console.log(weights);
-
-console.log("alignments:");
-console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(shape_)(cube2) + ": " + alignment_(shape_(cube1))(shape_(cube2)));
-console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(shape_)(sphere1) + ": " + alignment_(shape_(cube1))(shape_(sphere1)));
-console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(solid_)(object(shape_(sphere1), 7)) + ": " + alignment_(shape_(cube1))(solid_(object(shape_(sphere1), 7))));
-console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(shape_)(sphere1) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(shape_(sphere1)));
-console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(solid_)(object(shape_(sphere1), 7)) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(solid_(object(shape_(sphere1), 7))));
-
-console.log("tests:");
-
-const object1 = object(shape_(cube(5)), 15);
-const weight1 = weight_(solid_)(object1);
-const test1 = test_(solid_)(object1);
-console.log(test1 + " === " + weight1 + ": " + (test1 === weight1));
-
-var application0_ = APPLICATION("application0_", error);
-var application1_ = APPLICATION("application1_", error);
-var application2_ = APPLICATION("application2_", error);
-var application3_ = APPLICATION("application3_", error);
-var application4_ = APPLICATION("application4_", error);
-
-const definitionTest = DECLARATION(IMPLEMENTATION([
-	[application4_, IMPLEMENTATION([
-		[application3_, IMPLEMENTATION([
-			[application2_, IMPLEMENTATION([
-				[application1_, definition => value => value],
-			])],
+	const shape = SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, definition => ((volume_)(shape_)(definition) * (volume_)(shape_)(definition)) / ((surface_)(shape_)(definition) * (surface_)(shape_)(definition) * (surface_)(shape_)(definition))],
+			[alignment_],
 		])],
-	])],
-]), SPECIFICATION([
-	[application4_, SPECIFICATION([
-		[application3_, SPECIFICATION([
-			[application2_, SPECIFICATION([
-				[application1_],
-			])],
+	]);
+
+	const solid = SPECIFICATION([
+		[solid_, SPECIFICATION([
+			[label_],
+			[weight_],
+			[alignment_],
+			[test_],
 		])],
-	])],
-]), error);
+	]);
 
-const test2 = application1_(application2_)(application3_)(application4_)(definitionTest(222));
-console.log(test2 + " === 222: " + (test2 === 222));
-
-const test3 = application1_(application2_)(application3_)(application4_(definitionTest(333)));
-console.log(test3 + " === 333: " + (test3 === 333));
-
-const test4 = application1_(application2_)(application3_(application4_(definitionTest(444))));
-console.log(test4 + " === 444: " + (test4 === 444));
-
-const test5 = application1_(application2_(application3_(application4_(definitionTest(555)))));
-console.log(test5 + " === 555: " + (test5 === 555));
-
-const test6 = application1_(application2_)(application3_(application4_))(definitionTest(666));
-console.log(test6 + " === 666: " + (test6 === 666));
-
-const test7 = application1_(application2_(application3_))(application4_)(definitionTest(777));
-console.log(test7 + " === 777: " + (test7 === 777));
-
-const test8 = application1_(application2_)(application3_(application4_))(definitionTest(888));
-console.log(test8 + " === 888: " + (test8 === 888));
-
-console.log("compositions:");
-
-var value_ = APPLICATION("value_", error);
-var next_ = APPLICATION("next_", error);
-var previous_ = APPLICATION("previous_", error);
-var double_ = APPLICATION("double_", error);
-var half_ = APPLICATION("half_", error);
-
-const number = DECLARATION(IMPLEMENTATION([
-	[value_, definition => value => value],
-	[next_, definition => value => number(value + 1)],
-	[previous_, definition => value => number(value - 1)],
-	[double_, definition => value => number(value * 2)],
-	[half_, definition => value => number(value / 2)],
-]), SPECIFICATION([
-	[value_],
-	[next_],
-	[previous_],
-	[double_],
-	[half_],
-]), error);
-
-const composition1 = double_(previous_)(half_)(next_)(number(13));
-console.log(value_(composition1) + " === 12: " + (value_(composition1) === 12));
-
-const composition2 = double_(previous_)(half_)(next_(number(13)));
-console.log(value_(composition2) + " === 12: " + (value_(composition2) === 12));
-
-const composition3 = double_(previous_)(half_(next_(number(13))));
-console.log(value_(composition3) + " === 12: " + (value_(composition3) === 12));
-
-const composition4 = double_(previous_(half_(next_(number(13)))));
-console.log(value_(composition4) + " === 12: " + (value_(composition4) === 12));
-
-const composition5 = double_(previous_)(half_(next_))(number(13));
-console.log(value_(composition5) + " === 12: " + (value_(composition5) === 12));
-
-const composition6 = double_(previous_(half_))(next_)(number(13));
-console.log(value_(composition6) + " === 12: " + (value_(composition6) === 12));
-
-const composition7 = double_(previous_)(half_(next_))(number(13));
-console.log(value_(composition7) + " === 12: " + (value_(composition7) === 12));
-
-const composition8 = ((double_)(previous_)(((half_)(next_))(number(13))));
-console.log(value_(composition8) + " === 12: " + (value_(composition8) === 12));
-
-const composition9 = (((double_)(previous_))((half_)(next_)))(number(13));
-console.log(value_(composition9) + " === 12: " + (value_(composition9) === 12));
-
-console.log("chains:");
-
-var first_ = APPLICATION("first_", error);
-var second_ = APPLICATION("second_", error);
-
-const tree = DECLARATION(IMPLEMENTATION([
-	[first_, definition => value => typeof(value[0]) === "object"? tree(value[0]): value[0]],
-	[second_, definition => value => typeof(value[1]) === "object"? tree(value[1]): value[1]],
-]), SPECIFICATION([
-	[first_],
-	[second_],
-]), error);
-
-const tree1 = tree([
-	[11, 21],
-	[12, 22],
-]);
-
-const chain11 = (first_)(first_)(tree1);
-console.log(chain11 + " === 11: " + (chain11 === 11));
-
-const chain12 = (first_)(second_)(tree1);
-console.log(chain12 + " === 12: " + (chain12 === 12));
-
-const chain21 = (second_)(first_)(tree1);
-console.log(chain21 + " === 21: " + (chain21 === 21));
-
-const chain22 = (second_)(second_)(tree1);
-console.log(chain22 + " === 22: " + (chain22 === 22));
-
-console.log("combinations:");
-
-var add_ = APPLICATION("add_", error);
-var addString_ = APPLICATION("addString_", error);
-var addInteger_ = APPLICATION("addInteger_", error);
-var addDecimal_ = APPLICATION("addDecimal_", error);
-var string_ = APPLICATION("string_", error);
-var numerator_ = APPLICATION("numerator_", error);
-var denominator_ = APPLICATION("denominator_", error);
-
-const integer = DECLARATION(IMPLEMENTATION([
-	[value_, definition => value => value],
-	[string_, definition => value => value.toString()],
-	[add_, definition => value => addition => addInteger_(addition)(definition)],
-	[addInteger_, definition => value => addition => integer(value + value_(addition))],
-	[addDecimal_, definition => value => addition => decimal(value * denominator_(addition) + numerator_(addition), denominator_(addition))],
-]), SPECIFICATION([
-	[value_],
-	[string_],
-	[add_],
-	[addInteger_],
-	[addDecimal_],
-	[addString_, definition => addition => string(string_(addition) + string_(definition))],
-]), error);
-
-const decimal = DECLARATION(IMPLEMENTATION([
-	[numerator_, definition => (numerator, denominator) => numerator],
-	[denominator_, definition => (numerator, denominator) => denominator],
-	[string_, definition => (numerator, denominator) => numerator.toString() + "/" + denominator.toString()],
-	[add_, definition => (numerator, denominator) => addition => addDecimal_(addition)(definition)],
-	[addInteger_, definition => (numerator, denominator) => addition => decimal(numerator + value_(addition) * denominator, denominator)],
-	[addDecimal_, definition => (numerator, denominator) => addition => decimal(numerator * denominator_(addition) + numerator_(addition) * denominator, denominator * denominator_(addition))],
-]), SPECIFICATION([
-	[numerator_],
-	[denominator_],
-	[string_],
-	[add_],
-	[addInteger_],
-	[addDecimal_],
-	[addString_, definition => addition => string(string_(addition) + string_(definition))],
-]), error);
-
-const string = DECLARATION(IMPLEMENTATION([
-	[string_, definition => value => value],
-	[add_, definition => value => addition => addString_(addition)(definition)],
-	[addInteger_, definition => value => addition => string(string_(addition) + value)],
-	[addDecimal_, definition => value => addition => string(string_(addition) + value)],
-]), SPECIFICATION([
-	[string_],
-	[add_],
-	[addInteger_],
-	[addDecimal_],
-	[addString_, definition => addition => string(string_(addition) + string_(definition))],
-]), error);
-
-const combination1 = (string_)((add_)(integer(13))(integer(10)));
-console.log(combination1 + " === 23: " + (combination1 === "23"));
-
-const combination2 = (string_)((add_)(integer(3))(decimal(5, 7)));
-console.log(combination2 + " === 26/7: " + (combination2 === "26/7"));
-
-const combination3 = (string_)((add_)(decimal(5, 7))(integer(3)));
-console.log(combination3 + " === 26/7: " + (combination3 === "26/7"));
-
-const combination4 = (string_)((add_)(decimal(5, 7))(string("qwerty")));
-console.log(combination4 + " === 5/7qwerty: " + (combination4 === "5/7qwerty"));
-
-const combination5 = (string_)((add_)(string("azerty"))(decimal(5, 7)));
-console.log(combination5 + " === azerty5/7: " + (combination5 === "azerty5/7"));
-
-const combination6 = (string_)((add_)(string("azerty"))(integer(57)));
-console.log(combination6 + " === azerty57: " + (combination6 === "azerty57"));
-
-const combination7 = (string_)((add_)(integer(57))(string("qwerty")));
-console.log(combination7 + " === 57qwerty: " + (combination7 === "57qwerty"));
-
-const combination8 = (string_)((add_)(string("azerty"))(string("qwerty")));
-console.log(combination8 + " === azertyqwerty: " + (combination8 === "azertyqwerty"));
-
-console.log("recursions:");
-
-var nil_ = APPLICATION("nil_", error);
-var head_ = APPLICATION("head_", error);
-var tail_ = APPLICATION("tail_", error);
-var extent_ = APPLICATION("extent_", error);
-var translation_ = APPLICATION("translation_", error);
-var collection_ = APPLICATION("collection_", error);
-var reduction_ = APPLICATION("reduction_", error);
-var array_ = APPLICATION("array_", error);
-
-const list0 = (function(){
-	const list = DECLARATION(IMPLEMENTATION([
-		[nil_, definition => (head, tail) => nil],
-		[head_, definition => (head, tail) => head],
-		[tail_, definition => (head, tail) => definition === nil? nil: tail],
-		[extent_, definition => (head, tail) => value => list(value, definition)],
-		[translation_, definition => (head, tail) => translation => definition === nil? nil: list(translation(head), translation_(tail)(translation))],
-		[collection_, definition => (head, tail) => collection => definition === nil? nil: collection(head)? list(head, collection_(tail)(collection)): collection_(tail)(collection)],
-		[reduction_, definition => (head, tail) => reduction => accumulation => definition === nil? accumulation: (reduction_(tail)(reduction))(reduction(head)(accumulation))],
-	]), SPECIFICATION([
-		[nil_],
-		[head_],
-		[tail_],
-		[extent_],
-		[translation_],
-		[collection_],
-		[reduction_],
-		[array_, definition => reduction_(definition)(value => accumulation => [value, ...accumulation])([])],
+	const cube = DECLARATION(shape, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => side => `cube of side ${side}`],
+			[surface_, definition => side => side * side * 6],
+			[volume_, definition => side => side * side * side],
+			[stretch_, definition => side => k => cube(side * k)],
+			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+		])],
 	]), error);
-	const nil = list();
-	return nil;
+
+	const sphere = DECLARATION(shape, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => radius => `sphere of radius ${radius}`],
+			[surface_, definition => radius => radius * radius * Math.PI * 4],
+			[volume_, definition => radius => radius * radius * radius * Math.PI * 4/3],
+			[stretch_, definition => radius => k => sphere(radius * k)],
+			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
+		])],
+	]), error);
+
+	const object = DECLARATION(solid, IMPLEMENTATION([
+		[solid_, IMPLEMENTATION([
+			[label_, definition => (shape, density) => `object of density ${density} and shape ${label_(shape)}`],
+			[weight_, definition => (shape, density) => volume_(shape) * density],
+			[alignment_, definition => (shape, density) => o => alignment_(shape)(o)],
+			[test_, definition => (shape, density) => weight_(solid_)(definition)],
+		])],
+	]), error);
+
+	const cube1 = cube(1);
+	const cube2 = stretch_(shape_(cube1))(2);
+	const sphere1 = sphere(1);
+	const sphere2 = stretch_(shape_(sphere1))(2);
+
+	// heterogeneous collection
+	const shapes = [cube1, cube2, sphere1, sphere2];
+
+	const invariants = shapes.reduce(function(results, item){
+		return results + label_(shape_(item)) + ": " + invariant_(shape_(item)) + "\n";
+	}, "invariants: \n");
+
+	// <label>: <invariant>
+	// <label>: <invariant>
+	// ...
+	console.log(invariants);
+
+	const objects = shapes.map(function(item){
+		return object(shape_(item), 10);
+	});
+
+	const weights = objects.reduce(function(results, item){
+		return results + label_(solid_(item)) + ": " + weight_(solid_(item)) + "\n";
+	}, "weights: \n");
+
+	// <label>: <weight>
+	// <label>: <weight>
+	// ...
+	console.log(weights);
+
+	console.log("alignments:");
+	console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(shape_)(cube2) + ": " + alignment_(shape_(cube1))(shape_(cube2)));
+	console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(shape_)(sphere1) + ": " + alignment_(shape_(cube1))(shape_(sphere1)));
+	console.log("alignment of " + label_(shape_)(cube1) + " And " + label_(solid_)(object(shape_(sphere1), 7)) + ": " + alignment_(shape_(cube1))(solid_(object(shape_(sphere1), 7))));
+	console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(shape_)(sphere1) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(shape_(sphere1)));
+	console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(solid_)(object(shape_(sphere1), 7)) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(solid_(object(shape_(sphere1), 7))));
+
+	console.log("tests:");
+
+	const object1 = object(shape_(cube(5)), 15);
+	const weight1 = weight_(solid_)(object1);
+	const test1 = test_(solid_)(object1);
+	console.log(test1 + " === " + weight1 + ": " + (test1 === weight1));
+
+	var application0_ = APPLICATION("application0_", error);
+	var application1_ = APPLICATION("application1_", error);
+	var application2_ = APPLICATION("application2_", error);
+	var application3_ = APPLICATION("application3_", error);
+	var application4_ = APPLICATION("application4_", error);
+
+	const definitionTest = DECLARATION(SPECIFICATION([
+		[application4_, SPECIFICATION([
+			[application3_, SPECIFICATION([
+				[application2_, SPECIFICATION([
+					[application1_],
+				])],
+			])],
+		])],
+	]), IMPLEMENTATION([
+		[application4_, IMPLEMENTATION([
+			[application3_, IMPLEMENTATION([
+				[application2_, IMPLEMENTATION([
+					[application1_, definition => value => value],
+				])],
+			])],
+		])],
+	]), error);
+
+	const test2 = application1_(application2_)(application3_)(application4_)(definitionTest(222));
+	console.log(test2 + " === 222: " + (test2 === 222));
+
+	const test3 = application1_(application2_)(application3_)(application4_(definitionTest(333)));
+	console.log(test3 + " === 333: " + (test3 === 333));
+
+	const test4 = application1_(application2_)(application3_(application4_(definitionTest(444))));
+	console.log(test4 + " === 444: " + (test4 === 444));
+
+	const test5 = application1_(application2_(application3_(application4_(definitionTest(555)))));
+	console.log(test5 + " === 555: " + (test5 === 555));
+
+	const test6 = application1_(application2_)(application3_(application4_))(definitionTest(666));
+	console.log(test6 + " === 666: " + (test6 === 666));
+
+	const test7 = application1_(application2_(application3_))(application4_)(definitionTest(777));
+	console.log(test7 + " === 777: " + (test7 === 777));
+
+	const test8 = application1_(application2_)(application3_(application4_))(definitionTest(888));
+	console.log(test8 + " === 888: " + (test8 === 888));
 })();
 
-const list1 = (extent_)(list0)(10);
-const list2 = (extent_)(list1)(100);
-const list3 = (extent_)(list2)(1000);
+console.log("compositions:");
+(function(){
+	var value_ = APPLICATION("value_", error);
+	var next_ = APPLICATION("next_", error);
+	var previous_ = APPLICATION("previous_", error);
+	var double_ = APPLICATION("double_", error);
+	var half_ = APPLICATION("half_", error);
 
-console.log((head_)(list3) + " === 1000: " + ((head_)(list3) === 1000));
-console.log((head_)(tail_)(list3) + " === 100: " + ((head_)(tail_)(list3) === 100));
-console.log((head_)(tail_)(tail_)(list3) + " === 10: " + ((head_)(tail_)(tail_)(list3) === 10));
-console.log((head_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list3) === undefined));
-console.log((head_)(tail_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list3) === undefined));
-console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list3) === undefined));
+	const number = DECLARATION(SPECIFICATION([
+		[value_],
+		[next_],
+		[previous_],
+		[double_],
+		[half_],
+	]), IMPLEMENTATION([
+		[value_, definition => value => value],
+		[next_, definition => value => number(value + 1)],
+		[previous_, definition => value => number(value - 1)],
+		[double_, definition => value => number(value * 2)],
+		[half_, definition => value => number(value / 2)],
+	]), error);
 
-const list4 = (translation_)(list3)(value => value + 1);
+	const composition1 = double_(previous_)(half_)(next_)(number(13));
+	console.log(value_(composition1) + " === 12: " + (value_(composition1) === 12));
 
-console.log((head_)(list4) + " === 1001: " + ((head_)(list4) === 1001));
-console.log((head_)(tail_)(list4) + " === 101: " + ((head_)(tail_)(list4) === 101));
-console.log((head_)(tail_)(tail_)(list4) + " === 11: " + ((head_)(tail_)(tail_)(list4) === 11));
-console.log((head_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list4) === undefined));
-console.log((head_)(tail_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list4) === undefined));
-console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list4) === undefined));
+	const composition2 = double_(previous_)(half_)(next_(number(13)));
+	console.log(value_(composition2) + " === 12: " + (value_(composition2) === 12));
 
-const list5 = (collection_)(list4)(value => value !== 101);
+	const composition3 = double_(previous_)(half_(next_(number(13))));
+	console.log(value_(composition3) + " === 12: " + (value_(composition3) === 12));
 
-console.log((head_)(list5) + " === 1001: " + ((head_)(list5) === 1001));
-console.log((head_)(tail_)(list5) + " === 11: " + ((head_)(tail_)(list5) === 11));
-console.log((head_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(list5) === undefined));
-console.log((head_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list5) === undefined));
-console.log((head_)(tail_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list5) === undefined));
-console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list5) === undefined));
+	const composition4 = double_(previous_(half_(next_(number(13)))));
+	console.log(value_(composition4) + " === 12: " + (value_(composition4) === 12));
 
-const accumulation4 = (reduction_)(list4)(value => accumulation => value + accumulation)(909);
+	const composition5 = double_(previous_)(half_(next_))(number(13));
+	console.log(value_(composition5) + " === 12: " + (value_(composition5) === 12));
 
-console.log(accumulation4 + " === 2022: " + (accumulation4 === 2022));
+	const composition6 = double_(previous_(half_))(next_)(number(13));
+	console.log(value_(composition6) + " === 12: " + (value_(composition6) === 12));
 
-const array4 = (array_)(list4);
+	const composition7 = double_(previous_)(half_(next_))(number(13));
+	console.log(value_(composition7) + " === 12: " + (value_(composition7) === 12));
 
-console.log(array4 + " === 11,101,1001: " + (JSON.stringify(array4) === "[11,101,1001]"));
+	const composition8 = ((double_)(previous_)(((half_)(next_))(number(13))));
+	console.log(value_(composition8) + " === 12: " + (value_(composition8) === 12));
+
+	const composition9 = (((double_)(previous_))((half_)(next_)))(number(13));
+	console.log(value_(composition9) + " === 12: " + (value_(composition9) === 12));
+})();
+
+console.log("chains:");
+(function(){
+	var first_ = APPLICATION("first_", error);
+	var second_ = APPLICATION("second_", error);
+
+	const tree = DECLARATION(SPECIFICATION([
+		[first_],
+		[second_],
+	]), IMPLEMENTATION([
+		[first_, definition => value => typeof(value[0]) === "object"? tree(value[0]): value[0]],
+		[second_, definition => value => typeof(value[1]) === "object"? tree(value[1]): value[1]],
+	]), error);
+
+	const tree1 = tree([
+		[11, 21],
+		[12, 22],
+	]);
+
+	const chain11 = (first_)(first_)(tree1);
+	console.log(chain11 + " === 11: " + (chain11 === 11));
+
+	const chain12 = (first_)(second_)(tree1);
+	console.log(chain12 + " === 12: " + (chain12 === 12));
+
+	const chain21 = (second_)(first_)(tree1);
+	console.log(chain21 + " === 21: " + (chain21 === 21));
+
+	const chain22 = (second_)(second_)(tree1);
+	console.log(chain22 + " === 22: " + (chain22 === 22));
+
+	console.log("combinations:");
+
+	var value_ = APPLICATION("value_", error);
+	var add_ = APPLICATION("add_", error);
+	var addString_ = APPLICATION("addString_", error);
+	var addInteger_ = APPLICATION("addInteger_", error);
+	var addDecimal_ = APPLICATION("addDecimal_", error);
+	var string_ = APPLICATION("string_", error);
+	var numerator_ = APPLICATION("numerator_", error);
+	var denominator_ = APPLICATION("denominator_", error);
+
+	const integer = DECLARATION(SPECIFICATION([
+		[value_],
+		[string_],
+		[add_],
+		[addInteger_],
+		[addDecimal_],
+		[addString_, definition => addition => string(string_(addition) + string_(definition))],
+	]), IMPLEMENTATION([
+		[value_, definition => value => value],
+		[string_, definition => value => value.toString()],
+		[add_, definition => value => addition => addInteger_(addition)(definition)],
+		[addInteger_, definition => value => addition => integer(value + value_(addition))],
+		[addDecimal_, definition => value => addition => decimal(value * denominator_(addition) + numerator_(addition), denominator_(addition))],
+	]), error);
+
+	const decimal = DECLARATION(SPECIFICATION([
+		[numerator_],
+		[denominator_],
+		[string_],
+		[add_],
+		[addInteger_],
+		[addDecimal_],
+		[addString_, definition => addition => string(string_(addition) + string_(definition))],
+	]), IMPLEMENTATION([
+		[numerator_, definition => (numerator, denominator) => numerator],
+		[denominator_, definition => (numerator, denominator) => denominator],
+		[string_, definition => (numerator, denominator) => numerator.toString() + "/" + denominator.toString()],
+		[add_, definition => (numerator, denominator) => addition => addDecimal_(addition)(definition)],
+		[addInteger_, definition => (numerator, denominator) => addition => decimal(numerator + value_(addition) * denominator, denominator)],
+		[addDecimal_, definition => (numerator, denominator) => addition => decimal(numerator * denominator_(addition) + numerator_(addition) * denominator, denominator * denominator_(addition))],
+	]), error);
+
+	const string = DECLARATION(SPECIFICATION([
+		[string_],
+		[add_],
+		[addInteger_],
+		[addDecimal_],
+		[addString_, definition => addition => string(string_(addition) + string_(definition))],
+	]), IMPLEMENTATION([
+		[string_, definition => value => value],
+		[add_, definition => value => addition => addString_(addition)(definition)],
+		[addInteger_, definition => value => addition => string(string_(addition) + value)],
+		[addDecimal_, definition => value => addition => string(string_(addition) + value)],
+	]), error);
+
+	const combination1 = (string_)((add_)(integer(13))(integer(10)));
+	console.log(combination1 + " === 23: " + (combination1 === "23"));
+
+	const combination2 = (string_)((add_)(integer(3))(decimal(5, 7)));
+	console.log(combination2 + " === 26/7: " + (combination2 === "26/7"));
+
+	const combination3 = (string_)((add_)(decimal(5, 7))(integer(3)));
+	console.log(combination3 + " === 26/7: " + (combination3 === "26/7"));
+
+	const combination4 = (string_)((add_)(decimal(5, 7))(string("qwerty")));
+	console.log(combination4 + " === 5/7qwerty: " + (combination4 === "5/7qwerty"));
+
+	const combination5 = (string_)((add_)(string("azerty"))(decimal(5, 7)));
+	console.log(combination5 + " === azerty5/7: " + (combination5 === "azerty5/7"));
+
+	const combination6 = (string_)((add_)(string("azerty"))(integer(57)));
+	console.log(combination6 + " === azerty57: " + (combination6 === "azerty57"));
+
+	const combination7 = (string_)((add_)(integer(57))(string("qwerty")));
+	console.log(combination7 + " === 57qwerty: " + (combination7 === "57qwerty"));
+
+	const combination8 = (string_)((add_)(string("azerty"))(string("qwerty")));
+	console.log(combination8 + " === azertyqwerty: " + (combination8 === "azertyqwerty"));
+})();
+
+console.log("recursions:");
+(function(){
+	var nil_ = APPLICATION("nil_", error);
+	var head_ = APPLICATION("head_", error);
+	var tail_ = APPLICATION("tail_", error);
+	var extent_ = APPLICATION("extent_", error);
+	var translation_ = APPLICATION("translation_", error);
+	var collection_ = APPLICATION("collection_", error);
+	var reduction_ = APPLICATION("reduction_", error);
+	var array_ = APPLICATION("array_", error);
+
+	const list0 = (function(){
+		const list = DECLARATION(SPECIFICATION([
+			[nil_],
+			[head_],
+			[tail_],
+			[extent_],
+			[translation_],
+			[collection_],
+			[reduction_],
+			[array_, definition => reduction_(definition)(value => accumulation => [value, ...accumulation])([])],
+		]), IMPLEMENTATION([
+			[nil_, definition => (head, tail) => nil],
+			[head_, definition => (head, tail) => head],
+			[tail_, definition => (head, tail) => definition === nil? nil: tail],
+			[extent_, definition => (head, tail) => value => list(value, definition)],
+			[translation_, definition => (head, tail) => translation => definition === nil? nil: list(translation(head), translation_(tail)(translation))],
+			[collection_, definition => (head, tail) => collection => definition === nil? nil: collection(head)? list(head, collection_(tail)(collection)): collection_(tail)(collection)],
+			[reduction_, definition => (head, tail) => reduction => accumulation => definition === nil? accumulation: (reduction_(tail)(reduction))(reduction(head)(accumulation))],
+		]), error);
+		const nil = list();
+		return nil;
+	})();
+
+	const list1 = (extent_)(list0)(10);
+	const list2 = (extent_)(list1)(100);
+	const list3 = (extent_)(list2)(1000);
+
+	console.log((head_)(list3) + " === 1000: " + ((head_)(list3) === 1000));
+	console.log((head_)(tail_)(list3) + " === 100: " + ((head_)(tail_)(list3) === 100));
+	console.log((head_)(tail_)(tail_)(list3) + " === 10: " + ((head_)(tail_)(tail_)(list3) === 10));
+	console.log((head_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list3) === undefined));
+	console.log((head_)(tail_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list3) === undefined));
+	console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list3) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list3) === undefined));
+
+	const list4 = (translation_)(list3)(value => value + 1);
+
+	console.log((head_)(list4) + " === 1001: " + ((head_)(list4) === 1001));
+	console.log((head_)(tail_)(list4) + " === 101: " + ((head_)(tail_)(list4) === 101));
+	console.log((head_)(tail_)(tail_)(list4) + " === 11: " + ((head_)(tail_)(tail_)(list4) === 11));
+	console.log((head_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list4) === undefined));
+	console.log((head_)(tail_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list4) === undefined));
+	console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list4) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list4) === undefined));
+
+	const list5 = (collection_)(list4)(value => value !== 101);
+
+	console.log((head_)(list5) + " === 1001: " + ((head_)(list5) === 1001));
+	console.log((head_)(tail_)(list5) + " === 11: " + ((head_)(tail_)(list5) === 11));
+	console.log((head_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(list5) === undefined));
+	console.log((head_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(list5) === undefined));
+	console.log((head_)(tail_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(list5) === undefined));
+	console.log((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list5) + " === undefined: " + ((head_)(tail_)(tail_)(tail_)(tail_)(tail_)(list5) === undefined));
+
+	const accumulation4 = (reduction_)(list4)(value => accumulation => value + accumulation)(909);
+
+	console.log(accumulation4 + " === 2022: " + (accumulation4 === 2022));
+
+	const array4 = (array_)(list4);
+
+	console.log(array4 + " === 11,101,1001: " + (JSON.stringify(array4) === "[11,101,1001]"));
+})();
 
 console.log("extensions:");
+(function(){
+	var shape_ = APPLICATION("shape_", error);
+	var label_ = APPLICATION("label_", error);
+	var surface_ = APPLICATION("surface_", error);
+	var volume_ = APPLICATION("volume_", error);
+	var stretch_ = APPLICATION("stretch_", error);
+	var invariant_ = APPLICATION("invariant_", error);
+	var weight_ = APPLICATION("weight_", error);
+	var alignment_ = APPLICATION("alignment_", error);
+	var test_ = APPLICATION("test_", error);
+	const shape = SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, definition => ((volume_)(shape_)(definition) * (volume_)(shape_)(definition)) / ((surface_)(shape_)(definition) * (surface_)(shape_)(definition) * (surface_)(shape_)(definition))],
+			[alignment_],
+		])],
+	]);
+	const cube = DECLARATION(shape, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => side => `cube of side ${side}`],
+			[surface_, definition => side => side * side * 6],
+			[volume_, definition => side => side * side * side],
+			[stretch_, definition => side => k => cube(side * k)],
+			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+		])],
+	]), error);
+	const sphere = DECLARATION(shape, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => radius => `sphere of radius ${radius}`],
+			[surface_, definition => radius => radius * radius * Math.PI * 4],
+			[volume_, definition => radius => radius * radius * radius * Math.PI * 4/3],
+			[stretch_, definition => radius => k => sphere(radius * k)],
+			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
+		])],
+	]), error);
 
-var stretch2_ = APPLICATION("stretch2_", error);
-var stretch3_ = APPLICATION("stretch3_", error);
+	var stretch2_ = APPLICATION("stretch2_", error);
+	var stretch3_ = APPLICATION("stretch3_", error);
+	const specificationx = SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[stretch2_, definition => (stretch_)(shape_)(definition)(2)],
+			[stretch3_],
+		])],
+	]);
+	const cubex = DECLARATION(EXTENSION(sphere)(specificationx), EXTENSION(cube)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[stretch3_, definition => side => cube(side * 3)],
+		])],
+	])), error);
+	const spherex = DECLARATION(EXTENSION(sphere)(specificationx), EXTENSION(sphere)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[stretch3_, definition => radius => sphere(radius * 3)],
+		])],
+	])), error);
 
-const specificationx = SPECIFICATION([
-	[shape_, SPECIFICATION([
-		[stretch2_, definition => (stretch_)(shape_)(definition)(2)],
-		[stretch3_],
-	])],
-]);
+	const cubex1 = cubex(1); 
+	console.log((label_)(shape_)(cubex1) + " === cube of side 1: " + ((label_)(shape_)(cubex1) === "cube of side 1"));
 
-const cubex = EXTENSION(cube)([
-	[shape_, [
-		[stretch3_, definition => side => cube(side * 3)],
-	]],
-], specificationx);
+	const cubex2 = (stretch2_)(shape_)(cubex1);
+	console.log((label_)(shape_)(cubex2) + " === cube of side 2: " + ((label_)(shape_)(cubex2) === "cube of side 2"));
 
-const spherex = EXTENSION(sphere)([
-	[shape_, [
-		[stretch3_, definition => radius => sphere(radius * 3)],
-	]],
-], specificationx);
+	const cubex3 = (stretch3_)(shape_)(cubex1);
+	console.log((label_)(shape_)(cubex3) + " === cube of side 3: " + ((label_)(shape_)(cubex3) === "cube of side 3"));
 
-const cubex1 = cubex(1); 
-console.log((label_)(shape_)(cubex1) + " === cube of side 1: " + ((label_)(shape_)(cubex1) === "cube of side 1"));
+	const spherex1 = spherex(1);
+	console.log((label_)(shape_)(spherex1) + " === sphere of radius 1: " + ((label_)(shape_)(spherex1) === "sphere of radius 1"));
 
-const cubex2 = (stretch2_)(shape_)(cubex1);
-console.log((label_)(shape_)(cubex2) + " === cube of side 2: " + ((label_)(shape_)(cubex2) === "cube of side 2"));
+	const spherex2 = (stretch2_)(shape_)(spherex1);
+	console.log((label_)(shape_)(spherex2) + " === sphere of radius 2: " + ((label_)(shape_)(spherex2) === "sphere of radius 2"));
 
-const cubex3 = (stretch3_)(shape_)(cubex1);
-console.log((label_)(shape_)(cubex3) + " === cube of side 3: " + ((label_)(shape_)(cubex3) === "cube of side 3"));
+	const spherex3 = (stretch3_)(shape_)(spherex1);
+	console.log((label_)(shape_)(spherex3) + " === sphere of radius 3: " + ((label_)(shape_)(spherex3) === "sphere of radius 3"));
 
-const spherex1 = spherex(1);
-console.log((label_)(shape_)(spherex1) + " === sphere of radius 1: " + ((label_)(shape_)(spherex1) === "sphere of radius 1"));
+	var stretch2_ = APPLICATION("stretch2_", error);
+	var stretch4_ = APPLICATION("stretch4_", error);
+	const specificationxx = EXTENSION(shape)(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[stretch2_, definition => (stretch_)(shape_)(definition)(2)],
+			[stretch4_, definition => (stretch2_)(shape_)(stretch2_)(shape_)(definition)],
+		])],
+	]));
+	const cubexx = DECLARATION(specificationxx, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => side => `cube of side ${side}`],
+			[surface_, definition => side => side * side * 6],
+			[volume_, definition => side => side * side * side],
+			[stretch_, definition => side => k => cubexx(side * k)],
+			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+		])],
+	]), error);
+	const spherexx = DECLARATION(specificationxx, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => radius => `sphere of radius ${radius}`],
+			[surface_, definition => radius => radius * radius *Math.PI * 4],
+			[volume_, definition => radius => radius * radius * radius * Math.PI * 4/3],
+			[stretch_, definition => radius => k => spherexx(radius * k)],
+			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
+		])],
+	]), error);
 
-const spherex2 = (stretch2_)(shape_)(spherex1);
-console.log((label_)(shape_)(spherex2) + " === sphere of radius 2: " + ((label_)(shape_)(spherex2) === "sphere of radius 2"));
+	const cubexx1 = cubexx(1); 
+	console.log((label_)(shape_)(cubexx1) + " === cube of side 1: " + ((label_)(shape_)(cubexx1) === "cube of side 1"));
 
-const spherex3 = (stretch3_)(shape_)(spherex1);
-console.log((label_)(shape_)(spherex3) + " === sphere of radius 3: " + ((label_)(shape_)(spherex3) === "sphere of radius 3"));
+	const cubexx2 = (stretch2_)(shape_)(cubexx1);
+	console.log((label_)(shape_)(cubexx2) + " === cube of side 2: " + ((label_)(shape_)(cubexx2) === "cube of side 2"));
 
-var stretch2_ = APPLICATION("stretch2_", error);
-var stretch4_ = APPLICATION("stretch4_", error);
+	var stretch2_ = APPLICATION("stretch2_", error);
 
-const specificationxx = EXTENSION(shape)(SPECIFICATION([
-	[shape_, SPECIFICATION([
-		[stretch2_, definition => (stretch_)(shape_)(definition)(2)],
-		[stretch4_, definition => (stretch2_)(shape_)(stretch2_)(shape_)(definition)],
-	])],
-]), error);
+	const cubexx3 = (stretch2_)(shape_)(cubexx1);
+	console.log((label_)(shape_)(cubexx3) + " === cube of side 2: " + ((label_)(shape_)(cubexx3) === "cube of side 2"));
 
-const cubexx = DECLARATION(IMPLEMENTATION([
-	[shape_, IMPLEMENTATION([
-		[label_, definition => side => `cube of side ${side}`],
-		[surface_, definition => side => side * side * 6],
-		[volume_, definition => side => side * side * side],
-		[stretch_, definition => side => k => cubexx(side * k)],
-		[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
-	])],
-]), specificationxx, error);
+	const cubexx4 = (stretch4_)(shape_)(cubexx1);
+	console.log((label_)(shape_)(cubexx4) + " === cube of side 4: " + ((label_)(shape_)(cubexx4) === "cube of side 4"));
 
-const spherexx = DECLARATION(IMPLEMENTATION([
-	[shape_, IMPLEMENTATION([
-		[label_, definition => radius => `sphere of radius ${radius}`],
-		[surface_, definition => radius => radius * radius *Math.PI * 4],
-		[volume_, definition => radius => radius * radius * radius * Math.PI * 4/3],
-		[stretch_, definition => radius => k => spherexx(radius * k)],
-		[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
-	])],
-]), specificationxx, error);
+	const spherexx1 = spherexx(1);
+	console.log((label_)(shape_)(spherexx1) + " === sphere of radius 1: " + ((label_)(shape_)(spherexx1) === "sphere of radius 1"));
 
-const cubexx1 = cubexx(1); 
-console.log((label_)(shape_)(cubexx1) + " === cube of side 1: " + ((label_)(shape_)(cubexx1) === "cube of side 1"));
+	const spherexx2 = (stretch2_)(shape_)(spherexx1);
+	console.log((label_)(shape_)(spherexx2) + " === sphere of radius 2: " + ((label_)(shape_)(spherexx2) === "sphere of radius 2"));
 
-const cubexx2 = (stretch2_)(shape_)(cubexx1);
-console.log((label_)(shape_)(cubexx2) + " === cube of side 2: " + ((label_)(shape_)(cubexx2) === "cube of side 2"));
+	const spherexx4 = (stretch4_)(shape_)(spherexx1);
+	console.log((label_)(shape_)(spherexx4) + " === sphere of radius 4: " + ((label_)(shape_)(spherexx4) === "sphere of radius 4"));
 
-var stretch2_ = APPLICATION("stretch2_", error);
+	var solid_ = APPLICATION("solid_", error);
+	const cubexxx = DECLARATION(EXTENSION(cube)(SPECIFICATION([
+		[solid_, SPECIFICATION([
+			[weight_],
+		])],
+	])), EXTENSION(cube)(IMPLEMENTATION([
+		[solid_, IMPLEMENTATION([
+			[weight_, definition => side => density => density * (volume_)(shape_)(definition)],
+			])],
+	])), error);
 
-const cubexx3 = (stretch2_)(shape_)(cubexx1);
-console.log((label_)(shape_)(cubexx3) + " === cube of side 2: " + ((label_)(shape_)(cubexx3) === "cube of side 2"));
+	const cubexxx2 = cubexxx(2); 
+	console.log((label_)(shape_)(cubexxx2) + " === cube of side 2: " + ((label_)(shape_)(cubexxx2) === "cube of side 2"));
 
-const cubexx4 = (stretch4_)(shape_)(cubexx1);
-console.log((label_)(shape_)(cubexx4) + " === cube of side 4: " + ((label_)(shape_)(cubexx4) === "cube of side 4"));
+	const volumexxx2 = (volume_)(shape_)(cubexxx2);
+	console.log(volumexxx2 + " === 8: " + (volumexxx2 === 8));
 
-const spherexx1 = spherexx(1);
-console.log((label_)(shape_)(spherexx1) + " === sphere of radius 1: " + ((label_)(shape_)(spherexx1) === "sphere of radius 1"));
+	const weightxxx2 = (weight_)(solid_)(cubexxx2)(10);
+	console.log(weightxxx2 + " === 80: " + (weightxxx2 === 80));
+})();
 
-const spherexx2 = (stretch2_)(shape_)(spherexx1);
-console.log((label_)(shape_)(spherexx2) + " === sphere of radius 2: " + ((label_)(shape_)(spherexx2) === "sphere of radius 2"));
-
-const spherexx4 = (stretch4_)(shape_)(spherexx1);
-console.log((label_)(shape_)(spherexx4) + " === sphere of radius 4: " + ((label_)(shape_)(spherexx4) === "sphere of radius 4"));
-
-const cubexxx = EXTENSION(cube)([
-	[solid_, [
-		[weight_, definition => side => density => density * (volume_)(shape_)(definition)],
-	]],
-], SPECIFICATION([
-	[solid_, SPECIFICATION([
-		[weight_],
-	])],
-]), error);
-
-const cubexxx2 = cubexxx(2); 
-console.log((label_)(shape_)(cubexxx2) + " === cube of side 2: " + ((label_)(shape_)(cubexxx2) === "cube of side 2"));
-
-const volumexxx2 = (volume_)(shape_)(cubexxx2);
-console.log(volumexxx2 + " === 8: " + (volumexxx2 === 8));
-
-const weightxxx2 = (weight_)(solid_)(cubexxx2)(10);
-console.log(weightxxx2 + " === 80: " + (weightxxx2 === 80));
+console.log("expression problem:");
+(function(){
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script a (V1):
+	function error(message, applications){
+		throw message + (applications? (": " + applications.reduce(function(accumulator, application){
+			return "(" + application.name + ")" + accumulator;
+		}, "")): "");
+	}
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script b (V1):
+	const shape_ = APPLICATION("shape_", error);
+	const label_ = APPLICATION("label_", error);
+	const surface_ = APPLICATION("surface_", error);
+	const volume_ = APPLICATION("volume_", error);
+	const stretch_ = APPLICATION("stretch_", error);
+	const invariant_ = APPLICATION("invariant_", error);
+	const shapeV1 = SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
+		])],
+	]);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script c (V1):
+	const cubeV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => side => `cube of side ${side}`],
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+			[stretch_, definition => side => k => cube(side * k)],
+		])],
+	]), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script d (V1):
+	const sphereV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => radius => `sphere of radius ${radius}`],
+			[surface_, implementation => radius => radius * radius * Math.PI * 4],
+			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+			[stretch_, definition => radius => k => sphere(radius * k)],
+		])],
+	]), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script e (V2):
+	const container_ = APPLICATION("container_", error);
+	const shapeV2 = EXTENSION(shapeV1)(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[container_],
+		])],
+	]), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script f (V2):
+	const cubeV2 = DECLARATION(shapeV2, EXTENSION(cubeV1)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => side => volume => cube(Math.pow(volume, 1/3))],
+		])],
+	])), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script g (V2):
+	const sphereV2 = DECLARATION(shapeV2, EXTENSION(sphereV1)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => radius => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
+		])],
+	])), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script h (V2):
+	const cylinderV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+			[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+			[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+			[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+			[container_, definition => (radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
+		])],
+	]), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script j (V2):
+	const cube = cubeV2;
+	const sphere = sphereV2;
+	const cylinder = cylinderV2;
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script j (V2):
+	const cube1 = cube(1);
+	const cube2 = (stretch_)(shape_)(cube1)(2);
+	const cube3 = (container_)(shape_)(cube2)(1);
+	const sphere1 = sphere(1);
+	const sphere2 = (stretch_)(shape_)(sphere1)(2);
+	const sphere3 = (container_)(shape_)(sphere2)(1);
+	const cylinder1 = cylinder(1, 1);
+	const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+	const cylinder3 = (container_)(shape_)(cylinder2)(1);
+	const cylinder4 = (stretch_)(shape_)(cylinder3)(2);
+	const label1 = (label_)(shape_)(cube1); // "cube of side 1"
+	const label2 = (label_)(shape_)(cube2); // "cube of side 2"
+	const label3 = (label_)(shape_)(cube3); // "cube of side 1"
+	const label4 = (label_)(shape_)(sphere1); // "sphere of radius 1"
+	const label5 = (label_)(shape_)(sphere2); // "sphere of radius 2"
+	const label6 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
+	const label7 = (label_)(shape_)(cylinder1); // "cylinder of radius 1 and height 1"
+	const label8 = (label_)(shape_)(cylinder2); // "cylinder of radius 2 and height 2"
+	const label9 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
+	const label10 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+	const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
+	const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
+	const invariant3 = (invariant_)(shape_)(cube3); // 0.004629629629629629
+	const invariant4 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+	const invariant5 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+	const invariant6 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
+	const invariant7 = (invariant_)(shape_)(cylinder1); // 0.0049735919716217296
+	const invariant8 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
+	const invariant9 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
+	const invariant10 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script k (V2):
+	console.log('"' + label1 + '" === "cube of side 1": ' + (label1 === "cube of side 1"));
+	console.log('"' + label2 + '" === "cube of side 2": ' + (label2 === "cube of side 2"));
+	console.log('"' + label3 + '" === "cube of side 1": ' + (label3 === "cube of side 1"));
+	console.log('"' + label4 + '" === "sphere of radius 1": ' + (label4 === "sphere of radius 1"));
+	console.log('"' + label5 + '" === "sphere of radius 2": ' + (label5 === "sphere of radius 2"));
+	console.log('"' + label6 + '" === "sphere of radius 0.6203504908994": ' + (label6 === "sphere of radius 0.6203504908994"));
+	console.log('"' + label7 + '" === "cylinder of radius 1 and height 1": ' + (label7 === "cylinder of radius 1 and height 1"));
+	console.log('"' + label8 + '" === "cylinder of radius 2 and height 2": ' + (label8 === "cylinder of radius 2 and height 2"));
+	console.log('"' + label9 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label9 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
+	console.log('"' + label10 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label10 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
+	console.log('"' + invariant1 + '" === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
+	console.log('"' + invariant2 + '" === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
+	console.log('"' + invariant3 + '" === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
+	console.log('"' + invariant4 + '" === 0.008841941282883074: ' + (invariant4 === 0.008841941282883074));
+	console.log('"' + invariant5 + '" === 0.008841941282883074: ' + (invariant5 === 0.008841941282883074));
+	console.log('"' + invariant6 + '" === 0.008841941282883072: ' + (invariant6 === 0.008841941282883072));
+	console.log('"' + invariant7 + '" === 0.0049735919716217296: ' + (invariant7 === 0.0049735919716217296));
+	console.log('"' + invariant8 + '" === 0.0049735919716217296: ' + (invariant8 === 0.0049735919716217296));
+	console.log('"' + invariant9 + '" === 0.005894627521922052: ' + (invariant9 === 0.005894627521922052));
+	console.log('"' + invariant10 + '" === 0.005894627521922052: ' + (invariant10 === 0.005894627521922052));
+})();
 
 console.log("exceptions:");
-
-try{
-	(stretch_)(shape_)(solid_)(cube1);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "unexpected applications: (solid_)": ' + (exception === "unexpected applications: (solid_)"));
-}
-
-try{
-	(solid_)(stretch_)(shape_)(cube1);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (solid_)": ' + (exception === "applications applied to an invalid definition or invalid application: (solid_)"));
-}
-
-try{
-	(weight_)(cube1);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "unexpected applications: (weight_)": ' + (exception === "unexpected applications: (weight_)"));
-}
-
-try{
-	(solid_)(cube1);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "unexpected applications: (solid_)": ' + (exception === "unexpected applications: (solid_)"));
-}
-
-try{
-	(shape_)(x => 2 * x);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (shape_)"));
-}
-
-try{
-	(shape_)(2);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (shape_)"));
-}
-
-try{
-	(shape_)();
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (shape_)"));
-}
-
-try{
-	(label_)(shape_)(1234);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (label_)(shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (label_)(shape_)"));
-}
-
-try{
-	(label_)(shape_)();
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (label_)(shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (label_)(shape_)"));
-}
-
-try{
-	(label_)(shape_)(x => 1234);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (label_)(shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (label_)(shape_)"));
-}
-
-try{
-	const cube = DECLARATION(IMPLEMENTATION([
-		[shape_, IMPLEMENTATION([
-			[label_, definition => side => `cube of side ${side}`],
-			[volume_, definition => side => side * side * side],
-			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
-		])],
-	]), SPECIFICATION([
-		[shape_, SPECIFICATION([
-			[label_],
-			[surface_],
-			[volume_],
-			[stretch_],
-			[invariant_, definition => (volume_(definition) * volume_(definition)) / (surface_(definition) * surface_(definition) * surface_(definition))],
-			[alignment_],
-		])],
-		[solid_, SPECIFICATION([
-			[label_],
-			[weight_],
-			[alignment_],
-			[test_],
-		])],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "missing implementation: (shape_)(surface_)": ' + (exception === "missing implementation: (shape_)(surface_)"));
-}
-
-try{
-	const cube = DECLARATION(IMPLEMENTATION([
-		[shape_, IMPLEMENTATION([
-			[label_, definition => side => `cube of side ${side}`],
-			[surface_, definition => side => side * side * 6],
-			[volume_, definition => side => side * side * side],
-			[stretch_, definition => side => k => cube(side * k)],
-			[invariant_, definition => side => 1],
-			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
-		])],
-	]), SPECIFICATION([
-		[shape_, SPECIFICATION([
-			[label_],
-			[surface_],
-			[volume_],
-			[stretch_],
-			[invariant_, definition => (volume_(definition) * volume_(definition)) / (surface_(definition) * surface_(definition) * surface_(definition))],
-		])],
-		[solid_, SPECIFICATION([
-			[label_],
-			[weight_],
-			[alignment_],
-			[test_],
-		])],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "unexpected implementation: (shape_)(invariant_)": ' + (exception === "unexpected implementation: (shape_)(invariant_)"));
-}
-
-try{
-	const cube = DECLARATION(IMPLEMENTATION([
-		[shape_, IMPLEMENTATION([
-			[label_, definition => side => `cube of side ${side}`],
-			[surface_, definition => side => side * side * 6],
-			[volume_, definition => side => side * side * side],
-			[stretch_, definition => side => k => cube(side * k)],
-			[invariant_],
-			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
-		])],
-	]), SPECIFICATION([
+(function(){
+	const shape_ = APPLICATION("shape_", error);
+	const label_ = APPLICATION("label_", error);
+	const surface_ = APPLICATION("surface_", error);
+	const volume_ = APPLICATION("volume_", error);
+	const stretch_ = APPLICATION("stretch_", error);
+	const invariant_ = APPLICATION("invariant_", error);
+	const alignment_ = APPLICATION("alignment_", error);
+	const solid_ = APPLICATION("solid_", error);
+	const weight_ = APPLICATION("weight_", error);
+	const test_ = APPLICATION("test_", error);
+	const cube = DECLARATION(SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[label_],
 			[surface_],
@@ -1177,21 +1197,7 @@ try{
 			[invariant_],
 			[alignment_],
 		])],
-		[solid_, SPECIFICATION([
-			[label_],
-			[weight_],
-			[alignment_],
-			[test_],
-		])],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "missing implementation: (shape_)(invariant_)": ' + (exception === "missing implementation: (shape_)(invariant_)"));
-}
-
-try{
-	const cube = DECLARATION(IMPLEMENTATION([
+	]), IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, definition => side => `cube of side ${side}`],
 			[surface_, definition => side => side * side * 6],
@@ -1199,126 +1205,543 @@ try{
 			[stretch_, definition => side => k => cube(side * k)],
 			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 		])],
-	]), SPECIFICATION([
-		[shape_, SPECIFICATION([
-			[label_],
-			[surface_],
-			[volume_],
-			[stretch_],
-			[invariant_],
-			[alignment_],
-		])],
-		[solid_, SPECIFICATION([
-			[label_],
-			[weight_],
-			[alignment_],
-			[test_],
-		])],
 	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "missing implementation: (shape_)(invariant_)": ' + (exception === "missing implementation: (shape_)(invariant_)"));
-}
+	const cube1 = cube(1);
 
+	try{
+		(stretch_)(shape_)(solid_)(cube1);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "unexpected applications: (solid_)": ' + (exception === "unexpected applications: (solid_)"));
+	}
 
+	try{
+		(solid_)(stretch_)(shape_)(cube1);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (solid_)": ' + (exception === "applications applied to an invalid definition or invalid application: (solid_)"));
+	}
 
+	try{
+		(weight_)(cube1);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "unexpected applications: (weight_)": ' + (exception === "unexpected applications: (weight_)"));
+	}
 
+	try{
+		(solid_)(cube1);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "unexpected applications: (solid_)": ' + (exception === "unexpected applications: (solid_)"));
+	}
 
+	try{
+		(shape_)(x => 2 * x);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (shape_)"));
+	}
 
+	try{
+		(shape_)(2);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (shape_)"));
+	}
 
+	try{
+		(shape_)();
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (shape_)"));
+	}
 
-try{
-	const cubex = EXTENSION(cube)([
-		[shape_, [
-			[label_, definition => side => `cube of side ${side}`],
-		]],
-	], SPECIFICATION([
-		[shape_, SPECIFICATION([
-			[label_],
-		])],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "specification duplication: (shape_)(label_)": ' + (exception === "specification duplication: (shape_)(label_)"));
-}
+	try{
+		(label_)(shape_)(1234);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (label_)(shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (label_)(shape_)"));
+	}
 
-try{
-	const cubex = EXTENSION(cube)([
-		[shape_, [
-		]],
-	], SPECIFICATION([
-		[shape_, SPECIFICATION([
-			[label_],
-		])],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "specification duplication: (shape_)(label_)": ' + (exception === "specification duplication: (shape_)(label_)"));
-}
+	try{
+		(label_)(shape_)();
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (label_)(shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (label_)(shape_)"));
+	}
 
-try{
-	const cubex = EXTENSION(cube)([
-		[shape_, [
-			[label_, definition => side => `cube of side ${side}`],
-		]],
-	], SPECIFICATION([
-		[shape_, SPECIFICATION([
-		])],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "unexpected extension implementation: (shape_)(label_)": ' + (exception === "unexpected extension implementation: (shape_)(label_)"));
-}
+	try{
+		(label_)(shape_)(x => 1234);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (label_)(shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (label_)(shape_)"));
+	}
 
-try{
-	const cubex = EXTENSION(cube)([
-		[shape_, definition => side => `cube of side ${side}`],
-	], SPECIFICATION([
-		[shape_],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "specification duplication: (shape_)": ' + (exception === "specification duplication: (shape_)"));
-}
+	try{
+		const cube = DECLARATION([
+			[shape_, [
+				[label_],
+				[surface_],
+				[volume_],
+				[stretch_],
+				[invariant_, definition => (volume_(definition) * volume_(definition)) / (surface_(definition) * surface_(definition) * surface_(definition))],
+				[alignment_],
+			]],
+			[solid_, [
+				[label_],
+				[weight_],
+				[alignment_],
+				[test_],
+			]],
+		], IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+				[label_, definition => side => `cube of side ${side}`],
+				[volume_, definition => side => side * side * side],
+				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+			])],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "invalid specification": ' + (exception === "invalid specification"));
+	}
 
-/* //todo
-try{
-	const cubex = EXTENSION(cube)([
-		[solid_],
-	], SPECIFICATION([
-		[solid_, SPECIFICATION([
-			[weight_],
-		])],
-	]), error);
-	console.error("unreachable script");
-}
-catch(exception){
-	console.log('"' + exception + '" === "unexpected extension implementation: (shape_)(label_)": ' + (exception === "unexpected extension implementation: (shape_)(label_)"));
-}
-*/ //todo
+	try{
+		const cube = DECLARATION(SPECIFICATION([
+			[shape_, SPECIFICATION([
+				[label_],
+				[surface_],
+				[volume_],
+				[stretch_],
+				[invariant_, definition => (volume_(definition) * volume_(definition)) / (surface_(definition) * surface_(definition) * surface_(definition))],
+				[alignment_],
+			])],
+			[solid_, SPECIFICATION([
+				[label_],
+				[weight_],
+				[alignment_],
+				[test_],
+			])],
+		]), [
+			[shape_, [
+				[label_, definition => side => `cube of side ${side}`],
+				[volume_, definition => side => side * side * side],
+				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+			]],
+		], error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "invalid implementation": ' + (exception === "invalid implementation"));
+	}
+
+	try{
+		const cube = DECLARATION(SPECIFICATION([
+			[shape_, SPECIFICATION([
+				[label_],
+				[surface_],
+				[volume_],
+				[stretch_],
+				[invariant_, definition => (volume_(definition) * volume_(definition)) / (surface_(definition) * surface_(definition) * surface_(definition))],
+				[alignment_],
+			])],
+			[solid_, SPECIFICATION([
+				[label_],
+				[weight_],
+				[alignment_],
+				[test_],
+			])],
+		]), IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+				[label_, definition => side => `cube of side ${side}`],
+				[volume_, definition => side => side * side * side],
+				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+			])],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "missing implementation: (solid_)": ' + (exception === "missing implementation: (solid_)"));
+	}
+
+	try{
+		const cube = DECLARATION(SPECIFICATION([
+			[shape_, SPECIFICATION([
+				[label_],
+				[surface_],
+				[volume_],
+				[stretch_],
+				[invariant_, definition => (volume_(definition) * volume_(definition)) / (surface_(definition) * surface_(definition) * surface_(definition))],
+			])],
+			[solid_, SPECIFICATION([
+				[label_],
+				[weight_],
+				[alignment_],
+				[test_],
+			])],
+		]), IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+				[label_, definition => side => `cube of side ${side}`],
+				[surface_, definition => side => side * side * 6],
+				[volume_, definition => side => side * side * side],
+				[stretch_, definition => side => k => cube(side * k)],
+				[invariant_, definition => side => 1],
+				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+			])],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "unexpected implementation: (shape_)(invariant_)": ' + (exception === "unexpected implementation: (shape_)(invariant_)"));
+	}
+
+	try{
+		const cube = DECLARATION(SPECIFICATION([
+			[shape_, SPECIFICATION([
+				[label_],
+				[surface_],
+				[volume_],
+				[stretch_],
+				[invariant_],
+				[alignment_],
+			])],
+			[solid_, SPECIFICATION([
+				[label_],
+				[weight_],
+				[alignment_],
+				[test_],
+			])],
+		]), IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+				[label_, definition => side => `cube of side ${side}`],
+				[surface_, definition => side => side * side * 6],
+				[volume_, definition => side => side * side * side],
+				[stretch_, definition => side => k => cube(side * k)],
+				[invariant_],
+				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+			])],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "missing implementation: (shape_)(invariant_)": ' + (exception === "missing implementation: (shape_)(invariant_)"));
+	}
+
+	try{
+		const cube = DECLARATION(SPECIFICATION([
+			[shape_, SPECIFICATION([
+				[label_],
+				[surface_],
+				[volume_],
+				[stretch_],
+				[invariant_],
+				[alignment_],
+			])],
+			[solid_, SPECIFICATION([
+				[label_],
+				[weight_],
+				[alignment_],
+				[test_],
+			])],
+		]), IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+				[label_, definition => side => `cube of side ${side}`],
+				[surface_, definition => side => side * side * 6],
+				[volume_, definition => side => side * side * side],
+				[stretch_, definition => side => k => cube(side * k)],
+				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+			])],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "missing implementation: (solid_)": ' + (exception === "missing implementation: (solid_)"));
+	}
+
+	try{
+		const cubex = EXTENSION(cube)(SPECIFICATION([
+			[shape_, SPECIFICATION([
+				[label_],
+			])],
+		]), IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+				[label_, definition => side => `cube of side ${side}`],
+			])],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "extension specification duplication: (shape_)(label_)": ' + (exception === "extension specification duplication: (shape_)(label_)"));
+	}
+
+	try{
+		const cubex = EXTENSION(cube)(SPECIFICATION([
+			[shape_, SPECIFICATION([
+				[label_],
+			])],
+		]), IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+			])],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "extension specification duplication: (shape_)(label_)": ' + (exception === "extension specification duplication: (shape_)(label_)"));
+	}
+
+	try{
+		const cubex = DECLARATION(EXTENSION(cube)(SPECIFICATION([
+			[shape_, SPECIFICATION([
+			])],
+		])), EXTENSION(cube)(IMPLEMENTATION([
+			[shape_, IMPLEMENTATION([
+				[label_, definition => side => `cube of side ${side}`],
+			])],
+		])), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "extension implementation duplication: (shape_)(label_)": ' + (exception === "extension implementation duplication: (shape_)(label_)"));
+	}
+
+	try{
+		const cubex = EXTENSION(cube)(SPECIFICATION([
+			[shape_],
+		]), IMPLEMENTATION([
+			[shape_, definition => side => `cube of side ${side}`],
+		]), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "extension specification duplication: (shape_)": ' + (exception === "extension specification duplication: (shape_)"));
+	}
+
+	try{
+		const cubex = DECLARATION(EXTENSION(cube)(SPECIFICATION([
+			[solid_, SPECIFICATION([
+				[weight_],
+			])],
+		])), EXTENSION(cube)(IMPLEMENTATION([
+			[solid_],
+		])), error);
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "unexpected implementation: (solid_)": ' + (exception === "unexpected implementation: (solid_)"));
+	}
+
+	try{
+		(function(){
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script a (V1):
+			function error(message, applications){
+				throw message + (applications? (": " + applications.reduce(function(accumulator, application){
+					return "(" + application.name + ")" + accumulator;
+				}, "")): "");
+			}
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script b (V1):
+			const shape_ = APPLICATION("shape_", error);
+			const label_ = APPLICATION("label_", error);
+			const surface_ = APPLICATION("surface_", error);
+			const volume_ = APPLICATION("volume_", error);
+			const stretch_ = APPLICATION("stretch_", error);
+			const invariant_ = APPLICATION("invariant_", error);
+			const shapeV1 = SPECIFICATION([
+				[shape_, SPECIFICATION([
+					[label_],
+					[surface_],
+					[volume_],
+					[stretch_],
+					[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
+				])],
+			]);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script c (V1):
+			const cubeV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[label_, implementation => side => `cube of side ${side}`],
+					[surface_, implementation => side => side * side * 6],
+					[volume_, implementation => side => side * side * side],
+					[stretch_, definition => side => k => cube(side * k)],
+				])],
+			]), error);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script d (V1):
+			const sphereV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[label_, implementation => radius => `sphere of radius ${radius}`],
+					[surface_, implementation => radius => radius * radius * Math.PI * 4],
+					[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+					[stretch_, definition => radius => k => sphere(radius * k)],
+				])],
+			]), error);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script e (V2):
+			const container_ = APPLICATION("container_", error);
+			const shapeV2 = EXTENSION(shapeV1)(SPECIFICATION([
+				[shape_, SPECIFICATION([
+					[container_],
+				])],
+			]), error);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script f (V2):
+			const cubeV2 = DECLARATION(shapeV2, EXTENSION(cubeV1)(IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[container_, definition => side => volume => cube(Math.pow(volume, 1/3))],
+				])],
+			])), error);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script g (V2):
+			const sphereV2 = DECLARATION(shapeV2, EXTENSION(sphereV1)(IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[container_, definition => radius => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
+				])],
+			])), error);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script h (V2):
+			const cylinderV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+					[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+					[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+					[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+					[container_, definition => (radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
+				])],
+			]), error);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script j (V2):
+			const cube = cubeV2;
+			// missing declaration // const sphere = sphereV2;
+			const cylinder = cylinderV2;
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script j (V2):
+			const cube1 = cube(1);
+			const cube2 = (stretch_)(shape_)(cube1)(2);
+			const cube3 = (container_)(shape_)(cube2)(1);
+			const sphere1 = sphere(1);
+			const sphere2 = (stretch_)(shape_)(sphere1)(2);
+			const sphere3 = (container_)(shape_)(sphere2)(1);
+			const cylinder1 = cylinder(1, 1);
+			const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+			const cylinder3 = (container_)(shape_)(cylinder2)(1);
+			const cylinder4 = (stretch_)(shape_)(cylinder3)(2);
+			const label1 = (label_)(shape_)(cube1); // "cube of side 1"
+			const label2 = (label_)(shape_)(cube2); // "cube of side 2"
+			const label3 = (label_)(shape_)(cube3); // "cube of side 1"
+			const label4 = (label_)(shape_)(sphere1); // "sphere of radius 1"
+			const label5 = (label_)(shape_)(sphere2); // "sphere of radius 2"
+			const label6 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
+			const label7 = (label_)(shape_)(cylinder1); // "cylinder of radius 1 and height 1"
+			const label8 = (label_)(shape_)(cylinder2); // "cylinder of radius 2 and height 2"
+			const label9 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
+			const label10 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+			const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
+			const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
+			const invariant3 = (invariant_)(shape_)(cube3); // 0.004629629629629629
+			const invariant4 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+			const invariant5 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+			const invariant6 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
+			const invariant7 = (invariant_)(shape_)(cylinder1); // 0.0049735919716217296
+			const invariant8 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
+			const invariant9 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
+			const invariant10 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script k (V2):
+			console.log('"' + label1 + '" === "cube of side 1": ' + (label1 === "cube of side 1"));
+			console.log('"' + label2 + '" === "cube of side 2": ' + (label2 === "cube of side 2"));
+			console.log('"' + label3 + '" === "cube of side 1": ' + (label3 === "cube of side 1"));
+			console.log('"' + label4 + '" === "sphere of radius 1": ' + (label4 === "sphere of radius 1"));
+			console.log('"' + label5 + '" === "sphere of radius 2": ' + (label5 === "sphere of radius 2"));
+			console.log('"' + label6 + '" === "sphere of radius 0.6203504908994": ' + (label6 === "sphere of radius 0.6203504908994"));
+			console.log('"' + label7 + '" === "cylinder of radius 1 and height 1": ' + (label7 === "cylinder of radius 1 and height 1"));
+			console.log('"' + label8 + '" === "cylinder of radius 2 and height 2": ' + (label8 === "cylinder of radius 2 and height 2"));
+			console.log('"' + label9 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label9 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
+			console.log('"' + label10 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label10 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
+			console.log('"' + invariant1 + '" === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
+			console.log('"' + invariant2 + '" === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
+			console.log('"' + invariant3 + '" === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
+			console.log('"' + invariant4 + '" === 0.008841941282883074: ' + (invariant4 === 0.008841941282883074));
+			console.log('"' + invariant5 + '" === 0.008841941282883074: ' + (invariant5 === 0.008841941282883074));
+			console.log('"' + invariant6 + '" === 0.008841941282883072: ' + (invariant6 === 0.008841941282883072));
+			console.log('"' + invariant7 + '" === 0.0049735919716217296: ' + (invariant7 === 0.0049735919716217296));
+			console.log('"' + invariant8 + '" === 0.0049735919716217296: ' + (invariant8 === 0.0049735919716217296));
+			console.log('"' + invariant9 + '" === 0.005894627521922052: ' + (invariant9 === 0.005894627521922052));
+			console.log('"' + invariant10 + '" === 0.005894627521922052: ' + (invariant10 === 0.005894627521922052));
+		})();
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception.toString() + '" === "ReferenceError: sphere is not defined": ' + (exception.toString() === "ReferenceError: sphere is not defined"));
+	}
+})();
 
 console.log("debugs:");
+(function(){
+	var shape_ = APPLICATION("shape_", error);
+	var label_ = APPLICATION("label_", error);
+	var surface_ = APPLICATION("surface_", error);
+	var volume_ = APPLICATION("volume_", error);
+	var stretch_ = APPLICATION("stretch_", error);
+	var invariant_ = APPLICATION("invariant_", error);
+	var weight_ = APPLICATION("weight_", error);
+	var alignment_ = APPLICATION("alignment_", error);
+	var solid_ = APPLICATION("solid_", error);
+	const shape = SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, definition => ((volume_)(shape_)(definition) * (volume_)(shape_)(definition)) / ((surface_)(shape_)(definition) * (surface_)(shape_)(definition) * (surface_)(shape_)(definition))],
+			[alignment_],
+		])],
+	]);
+	const cube = DECLARATION(shape, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => side => `cube of side ${side}`],
+			[surface_, definition => side => side * side * 6],
+			[volume_, definition => side => side * side * side],
+			[stretch_, definition => side => k => cube(side * k)],
+			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
+		])],
+	]), error);
+	const sphere = DECLARATION(shape, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, definition => radius => `sphere of radius ${radius}`],
+			[surface_, definition => radius => radius * radius * Math.PI * 4],
+			[volume_, definition => radius => radius * radius * radius * Math.PI * 4/3],
+			[stretch_, definition => radius => k => sphere(radius * k)],
+			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
+		])],
+	]), error);
 
-const debug1 = cube(1)()().map(application => application.name);
-console.log(JSON.stringify(debug1) + ' === ["shape_"]: ' + (JSON.stringify(debug1) === '["shape_"]'));
+	const debug1 = cube(1)()().map(application => application.name);
+	console.log(JSON.stringify(debug1) + ' === ["shape_"]: ' + (JSON.stringify(debug1) === '["shape_"]'));
 
-const debug2 = cube(1)()(shape_).mapping().map(application => application.name);
-console.log(JSON.stringify(debug2) + ' === ["label_","surface_","volume_","stretch_","invariant_","alignment_"]: ' + (JSON.stringify(debug2) === '["label_","surface_","volume_","stretch_","invariant_","alignment_"]'));
+	const debug2 = cube(1)()(shape_).mapping().map(application => application.name);
+	console.log(JSON.stringify(debug2) + ' === ["label_","surface_","volume_","stretch_","invariant_","alignment_"]: ' + (JSON.stringify(debug2) === '["label_","surface_","volume_","stretch_","invariant_","alignment_"]'));
 
-const debug3 = cube(1)()(shape_).mapping(alignment_);
-console.log(debug3 + ' === undefined: ' + (debug3 === undefined));
+	const debug3 = cube(1)()(shape_).mapping(alignment_);
+	console.log(debug3 + ' === undefined: ' + (debug3 === undefined));
 
-const debug4 = cube(1)()(shape_).mapping(solid_);
-console.log(typeof(debug4) + ' === function: ' + (typeof(debug4) === "function"));
+	const debug4 = cube(1)()(shape_).mapping(solid_);
+	console.log(typeof(debug4) + ' === function: ' + (typeof(debug4) === "function"));
 
-const debug5 = cube(1)()(shape_).mapping(solid_)();
-console.log(debug5 + ' === undefined: ' + (debug5 === undefined));
-
+	const debug5 = cube(1)()(shape_).mapping(solid_)();
+	console.log(debug5 + ' === undefined: ' + (debug5 === undefined));
+})();
 
 </script>
 </body>
