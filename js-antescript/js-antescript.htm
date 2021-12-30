@@ -14,7 +14,7 @@
 		<li>In Object Oriented Programming, the method typically stands on the right of the object, for example: circle.surface()</li>
 		<li>In Functional Programming, the function stands on the left of the data argument, for example: surface(circle)</li>
 		<li>In AnteScript, the application stands on the left of the implementation argument, for example: surface_(circle)</li>
-		<li>In AnteScript, the syntax is similar to the Functional Programming syntax</li>
+		<li>The AnteScript syntax is close to the Functional Programming syntax</li>
 		<li>In AnteScript, applications may be concatenated, for example to compute the surface of the base of a cylinder: surface_(base_)(cylinder)</li>
 		<li>In AnteScript, for syntax consistency, the left most application may also be surounded by parentheses, for example: (surface_)(base_)(cylinder)</li>
 	</ul>
@@ -173,7 +173,8 @@
 "use strict";
 
 //todo EXTENTION with an undefined declaration is equivalent to identity (this ensures consistency and independency of declaration)
-//todo allow DECLARATION with undefined implementation (definition with invariant applications only) 
+//todo allow DECLARATION with undefined implementation (definition with invariant applications only)
+//todo DELEGATION
 
 const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (function(){
 	function applicationType(){
@@ -203,6 +204,9 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		if (definition === TYPE){
 			return applicationType;
 		}
+		if (definition === undefined){
+			return [application];
+		}
 		switch (TYPE(definition)){
 			case applicationType: return APPLICATIONS(error, definition, application);
 			case definitionType: return definition(application);
@@ -213,6 +217,9 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		return function(definition){
 			if (definition === TYPE){
 				return applicationType;
+			}
+			if (definition === undefined){
+				return  [application, ...applications];
 			}
 			switch (TYPE(definition)){
 				case applicationType: return APPLICATIONS(error, definition, application, ...applications);
@@ -1257,23 +1264,7 @@ console.log("exceptions:");
 	}
 
 	try{
-		(shape_)();
-		console.error("unreachable script");
-	}
-	catch(exception){
-		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (shape_)"));
-	}
-
-	try{
 		(label_)(shape_)(1234);
-		console.error("unreachable script");
-	}
-	catch(exception){
-		console.log('"' + exception + '" === "applications applied to an invalid definition or invalid application: (label_)(shape_)": ' + (exception === "applications applied to an invalid definition or invalid application: (label_)(shape_)"));
-	}
-
-	try{
-		(label_)(shape_)();
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1687,7 +1678,7 @@ console.log("exceptions:");
 	}
 })();
 
-console.log("debugs:");
+console.log("inceptions:");
 (function(){
 	var shape_ = APPLICATION("shape_", error);
 	var label_ = APPLICATION("label_", error);
@@ -1741,6 +1732,18 @@ console.log("debugs:");
 
 	const debug5 = cube(1)()(shape_).mapping(solid_)();
 	console.log(debug5 + ' === undefined: ' + (debug5 === undefined));
+
+	const debug6 = (shape_)();
+	console.log('(shape_)() === [shape_]: ' + (Array.isArray(debug6) && debug6.length === 1 && debug6[0] === shape_));
+
+	const debug7 = (stretch_)(shape_)();
+	console.log('(stretch_)(shape_)() === [shape_,stretch_]: ' + (Array.isArray(debug7) && debug7.length === 2 && debug7[0] === shape_ && debug7[1] === stretch_));
+
+	const debug8 = (shape_)(stretch_)(shape_)();
+	console.log('(shape_)(stretch_)(shape_)() === [shape_,stretch_,shape_]: ' + (Array.isArray(debug8) && debug8.length === 3 && debug8[0] === shape_ && debug8[1] === stretch_ && debug8[2] === shape_));
+
+	const debug9 = (label_)(shape_)(stretch_)(shape_)();
+	console.log('(label_)(shape_)(stretch_)(shape_)() === [shape_,stretch_,shape_,label_]: ' + (Array.isArray(debug9) && debug9.length === 4 && debug9[0] === shape_ && debug9[1] === stretch_ && debug9[2] === shape_ && debug9[3] === label_));
 })();
 
 </script>
