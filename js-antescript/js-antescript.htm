@@ -172,7 +172,7 @@
 <script>
 "use strict";
 
-//todo allow DECLARATION with undefined implementation (definition with invariant applications only)
+//todo verify application order in error message "missing implementation"
 //todo DELEGATION
 
 const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (function(){
@@ -242,7 +242,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				return specifications;
 			}
 			if (TYPE(application) === applicationType){
-				const implementation = implementations(application, true);
+				const implementation = implementations === undefined? undefined: implementations(application, true);
 				if (implementation !== undefined){
 					if(!TYPE(implementation, implementationType)){
 						if (typeof(implementation) === "function"){
@@ -262,7 +262,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 						}
 						return error && error("unexpected applications", [...applications, application]);
 					}
-					return DEFINITIONS(error, [...applications, application], specification.mapping, undefined, values, definition?? DEFINITION); //todo support undefined implementation (and swap arguments)
+					return DEFINITIONS(error, [...applications, application], specification.mapping, undefined, values, definition?? DEFINITION);
 				}
 				return DEFINITIONS(error, [...applications, application], specification.mapping, implementation.mapping, values, definition?? DEFINITION);
 			}
@@ -280,10 +280,10 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				return [application, ...applications];
 			}
 			if (TYPE(implementation, implementationType)){
-				if (!TYPE(specification, specificationType)){
-					return [application, ...applications];
+				if (TYPE(specification, specificationType)){
+					return OVERSUPPLY(implementation.mapping, specification.mapping, application, ...applications);
 				}
-				return OVERSUPPLY(implementation.mapping, specification.mapping, application, ...applications);
+				return [application, ...applications];
 			}
 			if (specification !== undefined){
 				return [application, ...applications];
@@ -295,13 +295,16 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			if (undersupply !== undefined){
 				return undersupply;
 			}
-			const implementation = implementations(application);
+			const implementation = implementations === undefined? undefined: implementations(application);
 			const specification = specifications(application);
 			if (TYPE(specification, specificationType)){
-				if (!TYPE(implementation, implementationType)){
-					return [application, ...applications];
+				if (implementation === errorType){
+					return UNDERSUPPLY(undefined, specification.mapping, application, ...applications);
 				}
-				return UNDERSUPPLY(implementation.mapping, specification.mapping, application, ...applications);
+				if (TYPE(implementation, implementationType)){
+					return UNDERSUPPLY(implementation.mapping, specification.mapping, application, ...applications);
+				}
+				return [application, ...applications];
 			}
 			if (specification === undefined){
 				if (implementation === undefined){
@@ -470,23 +473,25 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			if (!TYPE(specification, specificationType)){
 				return error && error("invalid specification");
 			}
-			if (!TYPE(implementation, implementationType)){
-				return error && error("invalid implementation");
-			}
-			const oversupply = OVERSUPPLY(implementation.mapping, specification.mapping);
-			if (oversupply !== undefined){
-				return error && error("unexpected implementation", oversupply);
-			}
-			const undersupply = UNDERSUPPLY(implementation.mapping, specification.mapping);
-			if (undersupply !== undefined){
-				return error && error("missing implementation", undersupply);
+			if (implementation !== undefined){
+				if (!TYPE(implementation, implementationType)){
+					return error && error("invalid implementation");
+				}
+				const oversupply = OVERSUPPLY(implementation.mapping, specification.mapping);
+				if (oversupply !== undefined){
+					return error && error("unexpected implementation", oversupply);
+				}
+				const undersupply = UNDERSUPPLY(implementation.mapping, specification.mapping);
+				if (undersupply !== undefined){
+					return error && error("missing implementation", undersupply);
+				}
 			}
 			return function(...values){
 				switch(values[0]){
 					case TYPE: return declarationType;
 					case extensionType: return EXTENSION(specification, implementation, error);
 				}
-				return DEFINITIONS(error, [], specification.mapping, implementation.mapping, values);
+				return DEFINITIONS(error, [], specification.mapping, implementation === undefined? undefined: implementation.mapping, values);
 			}
 		},
 		EXTENSION: function(declaration){
@@ -1056,6 +1061,38 @@ console.log("extensions:");
 
 	const inceptionxxxx2 = specificationxxxx.mapping(shape_).mapping();
 	console.log("specificationxxxx.mapping(shape_).mapping() === [stretch2_,stretch4_]: " + (Array.isArray(inceptionxxxx2) && inceptionxxxx2.length === 2 && inceptionxxxx2[0] === stretch2_ && inceptionxxxx2[1] === stretch4_));
+
+	var tool_ = APPLICATION("tool_", error);
+	var tool1_ = APPLICATION("tool1_", error);
+	var tool2_ = APPLICATION("tool2_", error);
+	const toolxxxxx = DECLARATION(EXTENSION()(SPECIFICATION([
+		[tool_, SPECIFICATION([
+			[tool1_, definition => Math.PI],
+			[tool2_, definition => Math.pow(2, 1/2)],
+		])],
+	])), undefined, error);
+	const toolxxxxx1 = toolxxxxx();
+
+	const tool1xxxxx1 = (tool1_)(tool_)(toolxxxxx1);
+	console.log(tool1xxxxx1 + " === 3.141592653589793: " + (tool1xxxxx1 === 3.141592653589793));
+
+	const tool2xxxxx1 = (tool2_)(tool_)(toolxxxxx1);
+	console.log(tool2xxxxx1 + " === 1.4142135623730951: " + (tool2xxxxx1 === 1.4142135623730951));
+
+	const toolxxxxxx = DECLARATION(EXTENSION(cube)(SPECIFICATION([
+		[tool_, SPECIFICATION([
+			[tool1_, definition => Math.PI],
+			[tool2_, definition => Math.pow(2, 1/2)],
+		])],
+	])), EXTENSION(cube)(IMPLEMENTATION([
+	])), error);
+	const toolxxxxxx1 = toolxxxxxx();
+
+	const tool1xxxxxx1 = (tool1_)(tool_)(toolxxxxxx1);
+	console.log(tool1xxxxxx1 + " === 3.141592653589793: " + (tool1xxxxxx1 === 3.141592653589793));
+
+	const tool2xxxxxx1 = (tool2_)(tool_)(toolxxxxxx1);
+	console.log(tool2xxxxxx1 + " === 1.4142135623730951: " + (tool2xxxxxx1 === 1.4142135623730951));
 })();
 
 console.log("expression problem:");
@@ -1378,7 +1415,7 @@ console.log("exceptions:");
 		console.error("unreachable script");
 	}
 	catch(exception){
-		console.log('"' + exception + '" === "missing implementation: (solid_)": ' + (exception === "missing implementation: (solid_)"));
+		console.log('"' + exception + '" === "missing implementation: (solid_)(label_)": ' + (exception === "missing implementation: (solid_)(label_)"));
 	}
 
 	try{
@@ -1472,7 +1509,7 @@ console.log("exceptions:");
 		console.error("unreachable script");
 	}
 	catch(exception){
-		console.log('"' + exception + '" === "missing implementation: (solid_)": ' + (exception === "missing implementation: (solid_)"));
+		console.log('"' + exception + '" === "missing implementation: (solid_)(label_)": ' + (exception === "missing implementation: (solid_)(label_)"));
 	}
 
 	try{
