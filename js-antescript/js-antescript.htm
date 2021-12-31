@@ -107,7 +107,7 @@
 		<li>The DECLARATION keyword is used to specify declarations, for example in the below example: cube</li>
 		<li>The SPECIFICATION keyword is used to declare specifications, for example in the below example: shape</li>
 		<li>The IMPLEMENTATION keyword is used to declare implementations, for example in the below example: cube</li>
-		<li>The EXTENSION keyword is used to declare extensions as a special case of specifications and definitions (the expression problem is taken into account by the AnteScript language design in a simple and natural way)</li>
+		<li>The EXTENSION keyword is used to declare extensions as a special case of specifications and definitions (the Expression Problem is taken into account by the AnteScript language design in a simple and natural way)</li>
 		<li>Alternatively, extension may be specified using the optional delegation in the declaration (this mechanism is more versatile than the EXTENSION mechanism but does not ensure that the implementation conforms to the specification)</li>
 		<li>An application is typically referenced by a JavaScript variable of the same name (using "const" JavaScript keyword to warn about dulicates or "var" to allow independent specifications sharing the same applications)</li>
 		<li>Applications are memoized (calling APPLICATION several times with the same name argument always return the same JavaScript function)</li>
@@ -262,8 +262,8 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 						if (specification !== undefined && typeof(specification) === "function"){
 							return specification(definition?? DEFINITION);
 						}
-						if (delegation !== undefined){
-							const delegate = delegation(definition?? DEFINITION, [...applications, application].reduce((applications, application) => application(applications)));
+						if (delegation){
+							const delegate = (typeof(delegation) === "function"? delegation: DELEGATION)(definition?? DEFINITION, [...applications, application].reduce((applications, application) => application(applications)));
 							if (typeof(delegate) === "function"){
 								return delegate(...values);
 							}
@@ -416,6 +416,11 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			}
 			const specifications1 = SPECIFICATIONS(specifications0, specifications);
 			return specifications1;
+		};
+	}
+	function DELEGATION(definition, applications){
+		return function(delegation){
+			return applications(delegation);
 		};
 	}
 	return {
@@ -1313,14 +1318,14 @@ console.log("delegation:");
 		[shape_, IMPLEMENTATION([
 			[container_, definition => (delegation, side) => volume => cube(Math.pow(volume, 1/3))],
 		])],
-	]), error, (definition, applications) => (delegation, side) => applications(delegation));
+	]), error, true); // standard delegation
 	////////////////////////////////////////////////////////////////////////////////////////
 	// script g (V2):
 	const sphereV2 = DECLARATION(shapeV2, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[container_, definition => (delegation, radius) => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
 		])],
-	]), error, (definition, applications) => (delegation, side) => applications(delegation));
+	]), error, true); // standard delegation
 	////////////////////////////////////////////////////////////////////////////////////////
 	// script h (V2):
 	const cylinderV1 = DECLARATION(shapeV1, IMPLEMENTATION([
@@ -1335,7 +1340,7 @@ console.log("delegation:");
 		[shape_, IMPLEMENTATION([
 			[container_, definition => (delegation, radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
 		])],
-	]), error, (definition, applications) => (delegation, side) => applications(delegation));
+	]), error, (definition, applications) => (delegation, radius, height) => applications(delegation)); // explicte standard delegation
 	////////////////////////////////////////////////////////////////////////////////////////
 	// script j (V2):
 	const cube = (...values) => cubeV2(cubeV1(...values), ...values);
