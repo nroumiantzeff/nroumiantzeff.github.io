@@ -43,6 +43,7 @@
 			<li>A declaration with two (or more) definition values models a product Algebraic Data Type</li>
 			<li>A declaration with one definition value that can be defined from two (or mor) different declarations models a sum Algebraic Data Type</li>
 			<li>A declaration is the function part in the separation of data and functions in Functional Programming</li>
+			<li>A declaration may specify an optional delegation to handle applications that are missing in the implementation (the consistency check between the specification and implementation is looser when a delegation is specified)</li>
 		</ul>
 		<li>Implementation</li>
 		<ul>
@@ -107,6 +108,7 @@
 		<li>The SPECIFICATION keyword is used to declare specifications, for example in the below example: shape</li>
 		<li>The IMPLEMENTATION keyword is used to declare implementations, for example in the below example: cube</li>
 		<li>The EXTENSION keyword is used to declare extensions as a special case of specifications and definitions (the expression problem is taken into account by the AnteScript language design in a simple and natural way)</li>
+		<li>Alternatively, extension may be specified using the optional delegation in the declaration (this mechanism is more versatile than the EXTENSION mechanism but does not ensure that the implementation conforms to the specification)</li>
 		<li>An application is typically referenced by a JavaScript variable of the same name (using "const" JavaScript keyword to warn about dulicates or "var" to allow independent specifications sharing the same applications)</li>
 		<li>Applications are memoized (calling APPLICATION several times with the same name argument always return the same JavaScript function)</li>
 		<li>The current implementation of AnteScript has a large overhead compared to direct JavaScript function calls (linear with the level of applications but constant in the total number of applications)</li>
@@ -173,7 +175,7 @@
 "use strict";
 
 //todo verify application order in error message "missing implementation"
-//todo DELEGATION
+//todo allow undefined specification when delegation is specified
 
 const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (function(){
 	function applicationType(){
@@ -233,7 +235,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			return error && error("applications applied to an invalid definition or invalid application", [application, ...applications]);
 		};
 	}
-	function DEFINITIONS(error, applications, specifications, implementations, values, definition){
+	function DEFINITIONS(error, applications, specifications, implementations, values, delegation, definition){
 		return function DEFINITION(application){
 			if (application === TYPE){
 				return definitionType;
@@ -260,11 +262,17 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 						if (specification !== undefined && typeof(specification) === "function"){
 							return specification(definition?? DEFINITION);
 						}
+						if (delegation !== undefined){
+							const delegate = delegation(definition?? DEFINITION, [...applications, application].reduce((applications, application) => application(applications)));
+							if (typeof(delegate) === "function"){
+								return delegate(...values);
+							}
+						}
 						return error && error("unexpected applications", [...applications, application]);
 					}
-					return DEFINITIONS(error, [...applications, application], specification.mapping, undefined, values, definition?? DEFINITION);
+					return DEFINITIONS(error, [...applications, application], specification.mapping, undefined, values, delegation, definition?? DEFINITION);
 				}
-				return DEFINITIONS(error, [...applications, application], specification.mapping, implementation.mapping, values, definition?? DEFINITION);
+				return DEFINITIONS(error, [...applications, application], specification.mapping, implementation.mapping, values, delegation, definition?? DEFINITION);
 			}
 			return error && error("incorrect application", [...applications, application]);
 		};
@@ -469,7 +477,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				type: implementationType,
 			}; 
 		},
-		DECLARATION: function(specification, implementation, error){
+		DECLARATION: function(specification, implementation, error, delegation){
 			if (!TYPE(specification, specificationType)){
 				return error && error("invalid specification");
 			}
@@ -481,9 +489,11 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				if (oversupply !== undefined){
 					return error && error("unexpected implementation", oversupply);
 				}
-				const undersupply = UNDERSUPPLY(implementation.mapping, specification.mapping);
-				if (undersupply !== undefined){
-					return error && error("missing implementation", undersupply);
+				if (delegation === undefined){
+					const undersupply = UNDERSUPPLY(implementation.mapping, specification.mapping);
+					if (undersupply !== undefined){
+						return error && error("missing implementation", undersupply);
+					}
 				}
 			}
 			return function(...values){
@@ -491,7 +501,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 					case TYPE: return declarationType;
 					case extensionType: return EXTENSION(specification, implementation, error);
 				}
-				return DEFINITIONS(error, [], specification.mapping, implementation === undefined? undefined: implementation.mapping, values);
+				return DEFINITIONS(error, [], specification.mapping, implementation === undefined? undefined: implementation.mapping, values, delegation);
 			}
 		},
 		EXTENSION: function(declaration){
@@ -1235,6 +1245,158 @@ console.log("expression problem:");
 	console.log('"' + invariant10 + '" === 0.005894627521922052: ' + (invariant10 === 0.005894627521922052));
 })();
 
+console.log("delegation:");
+(function(){
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script a (V1):
+	function error(message, applications){
+		throw message + (applications? (": " + applications.reduce(function(accumulator, application){
+			return "(" + application.name + ")" + accumulator;
+		}, "")): "");
+	}
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script b (V1):
+	const shape_ = APPLICATION("shape_", error);
+	const label_ = APPLICATION("label_", error);
+	const surface_ = APPLICATION("surface_", error);
+	const volume_ = APPLICATION("volume_", error);
+	const stretch_ = APPLICATION("stretch_", error);
+	const invariant_ = APPLICATION("invariant_", error);
+	const shapeV1 = SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
+		])],
+	]);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script c (V1):
+	const cubeV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => side => `cube of side ${side}`],
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+			[stretch_, definition => side => k => cube(side * k)],
+		])],
+	]), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script d (V1):
+	const sphereV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => radius => `sphere of radius ${radius}`],
+			[surface_, implementation => radius => radius * radius * Math.PI * 4],
+			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+			[stretch_, definition => radius => k => sphere(radius * k)],
+		])],
+	]), error);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script e (V2):
+	const container_ = APPLICATION("container_", error);
+	const shapeV2 = EXTENSION(shapeV1)(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[container_],
+		])],
+	]), error);
+	/* //debug
+	const construction_ = APPLICATION("construction_", error);
+	const constructionV2 = DECLARATION([
+		[construction_, SPECIFICATION([
+			[shape_, implementation => declaration => ],
+		])],
+	]), undefined, error);
+	*/ //debug
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script f (V2):
+	const cubeV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => (delegation, side) => volume => cube(Math.pow(volume, 1/3))],
+		])],
+	]), error, (definition, applications) => (delegation, side) => applications(delegation));
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script g (V2):
+	const sphereV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => (delegation, radius) => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
+		])],
+	]), error, (definition, applications) => (delegation, side) => applications(delegation));
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script h (V2):
+	const cylinderV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+			[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+			[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+			[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+		])],
+	]), error);
+	const cylinderV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => (delegation, radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
+		])],
+	]), error, (definition, applications) => (delegation, side) => applications(delegation));
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script j (V2):
+	const cube = (...values) => cubeV2(cubeV1(...values), ...values);
+	const sphere = (...values) => sphereV2(sphereV1(...values), ...values);
+	const cylinder = (...values) => cylinderV2(cylinderV1(...values), ...values);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script j (V2):
+	const cube1 = cube(1);
+	const cube2 = (stretch_)(shape_)(cube1)(2);
+	const cube3 = (container_)(shape_)(cube2)(1);
+	const sphere1 = sphere(1);
+	const sphere2 = (stretch_)(shape_)(sphere1)(2);
+	const sphere3 = (container_)(shape_)(sphere2)(1);
+	const cylinder1 = cylinder(1, 1);
+	const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+	const cylinder3 = (container_)(shape_)(cylinder2)(1);
+	const cylinder4 = (stretch_)(shape_)(cylinder3)(2);
+	const label1 = (label_)(shape_)(cube1); // "cube of side 1"
+	const label2 = (label_)(shape_)(cube2); // "cube of side 2"
+	const label3 = (label_)(shape_)(cube3); // "cube of side 1"
+	const label4 = (label_)(shape_)(sphere1); // "sphere of radius 1"
+	const label5 = (label_)(shape_)(sphere2); // "sphere of radius 2"
+	const label6 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
+	const label7 = (label_)(shape_)(cylinder1); // "cylinder of radius 1 and height 1"
+	const label8 = (label_)(shape_)(cylinder2); // "cylinder of radius 2 and height 2"
+	const label9 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
+	const label10 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+	const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
+	const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
+	const invariant3 = (invariant_)(shape_)(cube3); // 0.004629629629629629
+	const invariant4 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+	const invariant5 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+	const invariant6 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
+	const invariant7 = (invariant_)(shape_)(cylinder1); // 0.0049735919716217296
+	const invariant8 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
+	const invariant9 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
+	const invariant10 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script k (V2):
+	console.log('"' + label1 + '" === "cube of side 1": ' + (label1 === "cube of side 1"));
+	console.log('"' + label2 + '" === "cube of side 2": ' + (label2 === "cube of side 2"));
+	console.log('"' + label3 + '" === "cube of side 1": ' + (label3 === "cube of side 1"));
+	console.log('"' + label4 + '" === "sphere of radius 1": ' + (label4 === "sphere of radius 1"));
+	console.log('"' + label5 + '" === "sphere of radius 2": ' + (label5 === "sphere of radius 2"));
+	console.log('"' + label6 + '" === "sphere of radius 0.6203504908994": ' + (label6 === "sphere of radius 0.6203504908994"));
+	console.log('"' + label7 + '" === "cylinder of radius 1 and height 1": ' + (label7 === "cylinder of radius 1 and height 1"));
+	console.log('"' + label8 + '" === "cylinder of radius 2 and height 2": ' + (label8 === "cylinder of radius 2 and height 2"));
+	console.log('"' + label9 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label9 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
+	console.log('"' + label10 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label10 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
+	console.log('"' + invariant1 + '" === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
+	console.log('"' + invariant2 + '" === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
+	console.log('"' + invariant3 + '" === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
+	console.log('"' + invariant4 + '" === 0.008841941282883074: ' + (invariant4 === 0.008841941282883074));
+	console.log('"' + invariant5 + '" === 0.008841941282883074: ' + (invariant5 === 0.008841941282883074));
+	console.log('"' + invariant6 + '" === 0.008841941282883072: ' + (invariant6 === 0.008841941282883072));
+	console.log('"' + invariant7 + '" === 0.0049735919716217296: ' + (invariant7 === 0.0049735919716217296));
+	console.log('"' + invariant8 + '" === 0.0049735919716217296: ' + (invariant8 === 0.0049735919716217296));
+	console.log('"' + invariant9 + '" === 0.005894627521922052: ' + (invariant9 === 0.005894627521922052));
+	console.log('"' + invariant10 + '" === 0.005894627521922052: ' + (invariant10 === 0.005894627521922052));
+})();
+
 console.log("exceptions:");
 (function(){
 	const shape_ = APPLICATION("shape_", error);
@@ -1770,32 +1932,32 @@ console.log("inceptions:");
 		])],
 	]), error);
 
-	const debug1 = cube(1)()().map(application => application.name);
-	console.log(JSON.stringify(debug1) + ' === ["shape_"]: ' + (JSON.stringify(debug1) === '["shape_"]'));
+	const inception1 = cube(1)()().map(application => application.name);
+	console.log(JSON.stringify(inception1) + ' === ["shape_"]: ' + (JSON.stringify(inception1) === '["shape_"]'));
 
-	const debug2 = cube(1)()(shape_).mapping().map(application => application.name);
-	console.log(JSON.stringify(debug2) + ' === ["label_","surface_","volume_","stretch_","invariant_","alignment_"]: ' + (JSON.stringify(debug2) === '["label_","surface_","volume_","stretch_","invariant_","alignment_"]'));
+	const inception2 = cube(1)()(shape_).mapping().map(application => application.name);
+	console.log(JSON.stringify(inception2) + ' === ["label_","surface_","volume_","stretch_","invariant_","alignment_"]: ' + (JSON.stringify(inception2) === '["label_","surface_","volume_","stretch_","invariant_","alignment_"]'));
 
-	const debug3 = cube(1)()(shape_).mapping(alignment_);
-	console.log(debug3 + ' === undefined: ' + (debug3 === undefined));
+	const inception3 = cube(1)()(shape_).mapping(alignment_);
+	console.log(inception3 + ' === undefined: ' + (inception3 === undefined));
 
-	const debug4 = cube(1)()(shape_).mapping(solid_);
-	console.log(typeof(debug4) + ' === function: ' + (typeof(debug4) === "function"));
+	const inception4 = cube(1)()(shape_).mapping(solid_);
+	console.log(typeof(inception4) + ' === function: ' + (typeof(inception4) === "function"));
 
-	const debug5 = cube(1)()(shape_).mapping(solid_)();
-	console.log(debug5 + ' === undefined: ' + (debug5 === undefined));
+	const inception5 = cube(1)()(shape_).mapping(solid_)();
+	console.log(inception5 + ' === undefined: ' + (inception5 === undefined));
 
-	const debug6 = (shape_)();
-	console.log('(shape_)() === [shape_]: ' + (Array.isArray(debug6) && debug6.length === 1 && debug6[0] === shape_));
+	const inception6 = (shape_)();
+	console.log('(shape_)() === [shape_]: ' + (Array.isArray(inception6) && inception6.length === 1 && inception6[0] === shape_));
 
-	const debug7 = (stretch_)(shape_)();
-	console.log('(stretch_)(shape_)() === [shape_,stretch_]: ' + (Array.isArray(debug7) && debug7.length === 2 && debug7[0] === shape_ && debug7[1] === stretch_));
+	const inception7 = (stretch_)(shape_)();
+	console.log('(stretch_)(shape_)() === [shape_,stretch_]: ' + (Array.isArray(inception7) && inception7.length === 2 && inception7[0] === shape_ && inception7[1] === stretch_));
 
-	const debug8 = (shape_)(stretch_)(shape_)();
-	console.log('(shape_)(stretch_)(shape_)() === [shape_,stretch_,shape_]: ' + (Array.isArray(debug8) && debug8.length === 3 && debug8[0] === shape_ && debug8[1] === stretch_ && debug8[2] === shape_));
+	const inception8 = (shape_)(stretch_)(shape_)();
+	console.log('(shape_)(stretch_)(shape_)() === [shape_,stretch_,shape_]: ' + (Array.isArray(inception8) && inception8.length === 3 && inception8[0] === shape_ && inception8[1] === stretch_ && inception8[2] === shape_));
 
-	const debug9 = (label_)(shape_)(stretch_)(shape_)();
-	console.log('(label_)(shape_)(stretch_)(shape_)() === [shape_,stretch_,shape_,label_]: ' + (Array.isArray(debug9) && debug9.length === 4 && debug9[0] === shape_ && debug9[1] === stretch_ && debug9[2] === shape_ && debug9[3] === label_));
+	const inception9 = (label_)(shape_)(stretch_)(shape_)();
+	console.log('(label_)(shape_)(stretch_)(shape_)() === [shape_,stretch_,shape_,label_]: ' + (Array.isArray(inception9) && inception9.length === 4 && inception9[0] === shape_ && inception9[1] === stretch_ && inception9[2] === shape_ && inception9[3] === label_));
 })();
 
 </script>
