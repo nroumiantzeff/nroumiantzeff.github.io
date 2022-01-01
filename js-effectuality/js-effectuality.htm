@@ -438,7 +438,7 @@ const square = effectuality(function implication(effect){
 <br/><br/>
 
 Effectuality core implementation: the <b>Effectuality</b> function returns the <b>effectuality</b> functional type constructor:
-<textarea id="effectuality" style="width:100%; height:45em"></textarea>
+<textarea id="effectuality" style="width:100%; height:50em"></textarea>
 </textarea>
 <br/><br/>
 
@@ -667,7 +667,7 @@ function compilation(declaration, ...additionalSideEffects){
 							// yi: (ti1, ti2, ...)
 							// value: [[ti1, ti2, ...], CountN, IndexNi]
 							const value = [yi.length > x.length? yi.slice(0, yi.length - x.length): [], effectualities.length, index, x];
-							values.push(value); // unpure //todo values[index] = value; // todo remover sort from effectualityConcurrenceAll
+							values.push(value); // unpure //todo values[index] = value; // todo remove sort from effectualityConcurrenceAll
 							return concurrenceEffect(values);
 						}
 						// occurenceCause: (s11, s12, ...) -> ()
@@ -725,6 +725,8 @@ function compilation(declaration, ...additionalSideEffects){
 		});
 	}
 	//todo expose entanglement
+	//todo group arguments in an array // entanglement: Effectuality (((t11, t12, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality ((([[t11, t12, ...], [t21, t22, ...], ...], s1, s2, ...) -> ()) -> ((s1, s2, ...) -> ()))
+	//todo rename "mix" (then remove old "mix" implementation) 
 	//todo expose combinators using an object rather than with multiple arguments
 	//todo implement "any" as an alternative to effectualityConcurrenceAny
 	//todo implement "either" as an alternative to effectualityConcurenceEither
@@ -1860,6 +1862,7 @@ function compilation(declaration, ...additionalSideEffects){
 		};
 	}
 	//todo expose lineage
+	//todo use argument stacks or "this" to track lineage information?
 
 	// internal
 	// MixValues: [MixValue]
@@ -1924,6 +1927,7 @@ function compilation(declaration, ...additionalSideEffects){
 		};
 	}
 	//todo expose mix
+	//todo simplification (implicit faninEffectuality, implicit width, explicit individual fanEffectualities, no global "mixes", see entanglement)
 	//todo implement 0 width mix
 	//todo optimization: no call to fanImplication nor fanoutImplication at runtime (encapsulate "id" in a function from argument array)
 
@@ -4504,6 +4508,80 @@ function compilation(declaration, ...additionalSideEffects){
 				cause(77);
 				cause(30);
 			})();
+
+
+			// partial mix test
+			(function(){
+				const fanout = effectuality(function implication(effect1, effect2, effect3, ...effects){
+					function cause(...x){
+						return [effect1, effect2, effect3].reduce(function(accumulator, effect){
+							return effect(...x);
+						}, undefined);
+					}
+					return [cause, ...effects];
+				});
+				const modulo2 = effectuality(function implication(effect){
+					return function cause(...x){
+						if (x[0] % 2 === 0){
+							return effect(2, ...x);
+						}
+						return effect(1, ...x);
+					};
+				});
+				const modulo3 = effectuality(function implication(effect){
+					return function cause(...x){
+						if (x[0] % 3 === 0){
+							return effect(3, ...x);
+						}
+						return effect(1, ...x);
+					};
+				});
+				const modulo5 = effectuality(function implication(effect){
+					return function cause(...x){
+						if (x[0] % 5 === 0){
+							return effect(5, ...x);
+						}
+						return effect(1, ...x);
+					};
+				});
+				const fanin = effectuality(function implication(effect){
+					return function cause(x0, ...x){
+						const y0 = x0.reduce(function(accumulator, item){
+							return accumulator * item[0];
+						}, 1);
+						return effect(y0, ...x);
+					}
+				});
+				const unit = effectuality(function implication(effect){ // composition (with unit) implicitely promotes to multi-effects
+					return effect;
+				});
+				const effectuality1 = (unit)(mix(3)(fanin)((modulo2)(superposition(1)(modulo3))(superposition(2)(modulo5)))(fanout));
+				const implication1 = decryption1(effectuality1);
+				const causes = implication1(function effect1(...x){
+					if (x[0] === 10 && x[1] === 100 || x[0] === 1 && x[1] === 77 || x[0] === 30 && x[1] === 30){
+						console.warn("partial mix 1 test: " + x);
+					}
+					else {
+						console.error("partial mix 1 test: error: expected 10,100 or 1,77 or 30,30: got " + x);
+					}
+				},
+				function effect2(...x){
+					if (x[0] === 100 || x[0] === 77 || x[0] === 30){
+						console.warn("partial mix 2 test: " + x);
+					}
+					else {
+						console.error("partial mix 2 test: error: expected 100 or 77 or 30: got " + x);
+					}
+				});
+				causes[0](100);
+				causes[1](100);
+				causes[0](77);
+				causes[1](77);
+				causes[0](30);
+				causes[1](30);
+			})();
+
+
 
 			// request test
 			(function(){
