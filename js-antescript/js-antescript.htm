@@ -9,13 +9,13 @@
 <body>
 <h2>AnteScript</h2>
 <ul>
-	<li style="cursor:pointer" onclick="expend(this)"><h3>Etymology<span>...</span></h3></li>
+	<li style="cursor:pointer" onhover="" onhover="" onclick="expend(this)"><h3>Etymology<span>...</span></h3></li>
 	<ul style="display:none">
 		<li>In JavaScript, the operator typically stands in between operands, for example: 52 + 20</li>
 		<li>In PostScript, the operator typically stands on the right of the operands, for example: 52 20 add</li>
 		<li>In AnteScript, the operator typically stands on the left of the operands, for example: add_ (52) (20)</li>
 	</ul>
-	<li style="cursor:pointer" onclick="expend(this)"><h3>Syntax<span>...</span></h3></li>
+	<li style="cursor:pointer" onhover="" onclick="expend(this)"><h3>Syntax<span>...</span></h3></li>
 	<ul style="display:none">
 		<li>In Object Oriented Programming, the method typically stands on the right of the object, for example: circle.surface()</li>
 		<li>In Functional Programming, the function stands on the left of the data argument, for example: surface(circle)</li>
@@ -24,9 +24,9 @@
 		<li>In AnteScript, applications may be concatenated, for example to compute the surface of the base of a cylinder: surface_(base_)(cylinder)</li>
 		<li>In AnteScript, for syntax consistency, the left most application may also be surounded by parentheses, for example: (surface_)(base_)(cylinder)</li>
 	</ul>
-	<li style="cursor:pointer" onclick="expend(this)"><h3>Concepts<span>...</span></h3></li>
+	<li style="cursor:pointer" onhover="" onclick="expend(this)"><h3>Concepts<span>...</span></h3></li>
 	<ul style="display:none">
-		<li style="cursor:pointer" onclick="expend(this)"><h4>Application<span>...</span></h4></li>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Application<span>...</span></h4></li>
 		<ul style="display:none">
 			<li>In AnteScript, the concept of application corresponds to the concept of function in Functional Programming</li>
 			<li>An application is just a name (unlike a function declaration or definition in Functional Programming)</li>
@@ -39,7 +39,7 @@
 			<li>Unlike popular programming languages, partial namespace path are first-class citizens, for example, in the System.Collections.IList namespace hierarchy: (list_)(collections_)</li>
 			<li>Application concatenation is associtive (but not commutative): ((list_)(collections_))(system_) === (list_)((collections_)(system_))</li>
 		</ul>
-		<li style="cursor:pointer" onclick="expend(this)"><h4>Declaration<span>...</span></h4></li>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Declaration<span>...</span></h4></li>
 		<ul style="display:none">
 			<li>In AnteScript, the concept of declaration corresponds to both concepts of class and class consturctor in Object Oriented Programming</li>
 			<li>A declaration specifies both the specification and the implementation</li>
@@ -51,7 +51,7 @@
 			<li>A declaration is the function part in the separation of data and functions in Functional Programming</li>
 			<li>A declaration may specify an optional delegation to handle applications that are missing in the implementation (the consistency check between the specification and implementation is looser when a delegation is specified)</li>
 		</ul>
-		<li style="cursor:pointer" onclick="expend(this)"><h4>Specification<span>...</span></h4></li>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Specification<span>...</span></h4></li>
 		<ul style="display:none">
 			<li>In AnteScript, the concept of specification corresponds to the concept of interface or abstract class in Object Oriented Programming</li>
 			<li>A specification lists the supported applications</li>
@@ -64,13 +64,13 @@
 			<li>A declaration not specifying an implementation for an application listed in the specification results in an error</li>
 			<li>A declaration specifying an implementation for an invariant application in the specification results in an error</li>
 		</ul>
-		<li style="cursor:pointer" onclick="expend(this)"><h4>Implementation<span>...</span></h4></li>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Implementation<span>...</span></h4></li>
 		<ul style="display:none">
 			<li>An implementation specifies the code to implement supported applications (like a class definition in Object Oriented Programming)</li>
 			<li>An implementation specifies the code to implement supported concatenations of applications (like a private class definition inside a class definition in Object Oriented Programming)</li>
 			<li>An implementation may be recursive (in case of concatenation of applications)</li>
 		</ul>
-		<li style="cursor:pointer" onclick="expend(this)"><h4>Definition<span>...</span></h4></li>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Definition<span>...</span></h4></li>
 		<ul style="display:none">
 			<li>In AnteScript, the concept of definition corresponds to the concept of class instance in Object Oriented Programming</li>
 			<li>A definition is defined by applying values to a declaration</li>
@@ -79,7 +79,7 @@
 			<li>A definition is the data part in the separation of data and functions in Functional Programming</li>
 			<li>A definition encapsulates the values like private data class members in Object Oriented Programming</li>
 		</ul>
-		<li style="cursor:pointer" onclick="expend(this)"><h4>Extension<span>...</span></h4></li>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Extension<span>...</span></h4></li>
 		<ul style="display:none">
 			<li>In AnteScript, the concept of extension solves the well known Expression Problem in both Functional Programming and Object Oriented Programming</li>
 			<li>An extension generates a new specification from a previous declaration by specifing the specifiction for the additional applications</li>
@@ -89,7 +89,7 @@
 			<li>In AnteScript, an extension application has the same nature as basic application without any additional limitation (unlike C# extention methods which cannot access private values and do not support polymorphism)</li>
 		</ul>
 	</ul>
-	<li style="cursor:pointer" onclick="expend(this)"><h3>Notes<span>...</span></h3></li>
+	<li style="cursor:pointer" onhover="" onclick="expend(this)"><h3>Notes<span>...</span></h3></li>
 	<ul style="display:none">
 		<li>AnteScript is dynamically typed</li>
 		<li>Although AnteScript is dynamically typed, a definition is checked for consistency with its specification before any implmementation is generated and used</li>
@@ -118,60 +118,276 @@
 		<li>AnteScript is currently implemented using pure functions only (with a significant use of JavaScript WeakMap objects)</li>
 		<li>AnteScript could be implemented as a compiled language (obviously, the first compiler would be implemented using the JavaScript version of AnteScript)</li>
 	</ul>
-	<li style="cursor:pointer" onclick="expend(this)"><h3>Sample<span>...</span></h3></li>
-	<ul style="display:none"><pre>
-	const label_ = APPLICATION("label_");
-	const surface_ = APPLICATION("surface_");
-	const volume_ = APPLICATION("volume_");
-	const stretch_ = APPLICATION("stretch_");
-	const invariant_ = APPLICATION("invariant_");
+	<li style="cursor:pointer" onhover="" onclick="expend(this)"><h3>Samples<span>...</span></h3></li>
+	<ul style="display:none">
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Simple sample<span>...</span></h4></li>
+		<ul style="display:none"><pre>
+const shape_ = APPLICATION("shape_");
+const label_ = APPLICATION("label_");
+const surface_ = APPLICATION("surface_");
+const volume_ = APPLICATION("volume_");
 
-	const shape = SPECIFICATION([
-		[shape_, SPECIFICATION([
-			[label_],
-			[surface_],
-			[volume_],
-			[stretch_],
-			[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
-		])],
-	]);
+const specification = SPECIFICATION([
+	[label_],
+	[shape_, SPECIFICATION([
+		[surface_],
+		[volume_],
+	])],
+]);
 
-	const cube = DECLARATION(shape, IMPLEMENTATION([
-		[shape_, IMPLEMENTATION([
-			[label_, implementation => side => `cube of side ${side}`],
-			[surface_, implementation => side => side * side * 6],
-			[volume_, implementation => side => side * side * side],
-			[stretch_, implementation => side => k => cube(side * k)],
-		])],
-	]));
+const cube = DECLARATION(specification, IMPLEMENTATION([
+	[label_, implementation => side => `cube of side ${side}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => side => side * side * 6],
+		[volume_, implementation => side => side * side * side],
+	])],
+]));
 
-	const sphere = DECLARATION(shape, IMPLEMENTATION([
-		[shape_, IMPLEMENTATION([
-			[label_, implementation => radius => `sphere of radius ${radius}`],
-			[surface_, implementation => radius => radius * radius * Math.PI * 4],
-			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
-			[stretch_, implementation => radius => k => sphere(radius * k)],
-		])],
-	]));
+const sphere = DECLARATION(specification, IMPLEMENTATION([
+	[label_, implementation => radius => `sphere of radius ${radius}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => radius => radius * radius * Math.PI * 4],
+		[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+	])],
+]));
 
-	const cube1 = cube(1);
-	const cube2 = (stretch_)(shape_)(cube1)(2);
-	const sphere1 = sphere(0.5);
-	const sphere2 = (stretch_)(shape_)(sphere1)(2);
+const cube1 = cube(1);
+const sphere1 = sphere(0.5);
 
-	const label1 = (label_)(cube1); // "cube of side 1"
-	const label2 = (label_)(cube2); // "cube of side 2"
-	const label3 = (label_)(sphere1); // "sphere of radius 0.5"
-	const label4 = (label_)(sphere2); // "sphere of radius 1"
+const label1 = (label_)(cube1); // "cube of side 1"
+const label2 = (label_)(sphere1); // "sphere of radius 0.5"
 
-	const invariant1 = (invariant_)(cube1); // 0.004629629629629629
-	const invariant2 = (invariant_)(cube2); // 0.004629629629629629
-	const invariant3 = (invariant_)(sphere1); // 0.008841941282883074
-	const invariant4 = (invariant_)(sphere2); // 0.008841941282883074
+const surface1 = (surface_)(shape_)(cube1); // 6
+const surface2 = (surface_)(shape_)(sphere1); // 3.141592653589793
 
-	// open browser console to see test results...
-	</pre></ul>
+const volume1 = (volume_)(shape_)(cube1); // 1
+const volume2 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+	
+// open browser console to see test results...
+		</pre></ul>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Extension sample<span>...</span></h4></li>
+		<ul style="display:none"><pre>
+const shape_ = APPLICATION("shape_");
+const label_ = APPLICATION("label_");
+const surface_ = APPLICATION("surface_");
+const volume_ = APPLICATION("volume_");
+
+const specificationV0 = SPECIFICATION([
+	[label_],
+	[shape_, SPECIFICATION([
+		[surface_],
+		[volume_],
+	])],
+]);
+
+const cubeV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+	[label_, implementation => side => `cube of side ${side}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => side => side * side * 6],
+		[volume_, implementation => side => side * side * side],
+	])],
+]));
+
+const sphereV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+	[label_, implementation => radius => `sphere of radius ${radius}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => radius => radius * radius * Math.PI * 4],
+		[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+	])],
+]));
+
+const invariant_ = APPLICATION("invariant_");
+const stretch_ = APPLICATION("stretch_");
+
+const specificationV1 = EXTENSION(specificationV0)(SPECIFICATION([
+	[shape_, SPECIFICATION([
+		[invariant_, implementation => Math.pow((volume_)(shape_)(implementation), 2) / Math.pow((surface_)(shape_)(implementation), 3)],
+		[stretch_],
+	])],
+]));
+
+const cubeV1 = DECLARATION(specificationV1, EXTENSION(cubeV0)(IMPLEMENTATION([
+	[shape_, IMPLEMENTATION([
+		[stretch_, implementation => side => k => cube(side * k)],
+	])],
+])));
+
+const sphereV1 = DECLARATION(specificationV1, EXTENSION(sphereV0)(IMPLEMENTATION([
+	[shape_, IMPLEMENTATION([
+		[stretch_, implementation => radius => k => sphere(radius * k)],
+	])],
+])));
+
+const cylinderV1 = DECLARATION(specificationV1, IMPLEMENTATION([
+	[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+		[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+		[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+	])],
+]));
+
+const cube = cubeV1;
+const sphere = sphereV1; 
+const cylinder = cylinderV1; 
+
+const cube1 = cube(1);
+const cube2 = (stretch_)(shape_)(cube1)(2);
+const sphere1 = sphere(0.5);
+const sphere2 = (stretch_)(shape_)(sphere1)(2);
+const cylinder1 = cylinder(0.5, 1);
+const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+
+const label1 = (label_)(cube1); // "cube of side 1"
+const label2 = (label_)(cube2); // "cube of side 2"
+const label3 = (label_)(sphere1); // "sphere of radius 0.5"
+const label4 = (label_)(sphere2); // "sphere of radius 1"
+const label5 = (label_)(cylinder1); // "cylinder of radius 0.5 and height 1"
+const label6 = (label_)(cylinder2); // "cylinder of radius 1 and height 2"
+
+const surface1 = (surface_)(shape_)(cube1); // 6
+const surface2 = (surface_)(shape_)(cube2); // 24
+const surface3 = (surface_)(shape_)(sphere1); // 3.141592653589793
+const surface4 = (surface_)(shape_)(sphere2); // 12.566370614359172
+const surface5 = (surface_)(shape_)(cylinder1); // 4.71238898038469
+const surface6 = (surface_)(shape_)(cylinder2); // 18.84955592153876
+
+const volume1 = (volume_)(shape_)(cube1); // 1
+const volume2 = (volume_)(shape_)(cube2); // 8
+const volume3 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+const volume4 = (volume_)(shape_)(sphere2); // 4.1887902047863905
+const volume5 = (volume_)(shape_)(cylinder1); // 0.7853981633974483
+const volume6 = (volume_)(shape_)(cylinder2); // 6.283185307179586
+
+const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
+const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
+const invariant3 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+const invariant4 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+const invariant5 = (invariant_)(shape_)(cylinder1); // 0.005894627521922049
+const invariant6 = (invariant_)(shape_)(cylinder2); // 0.005894627521922049
+	
+// open browser console to see test results...
+		</pre></ul>
+		<li style="cursor:pointer" onhover="" onclick="expend(this)"><h4>Polymorphism sample<span>...</span></h4></li>
+		<ul style="display:none"><pre>
+const shape_ = APPLICATION("shape_");
+const label_ = APPLICATION("label_");
+const surface_ = APPLICATION("surface_");
+const volume_ = APPLICATION("volume_");
+
+const specificationV0 = SPECIFICATION([
+	[label_],
+	[shape_, SPECIFICATION([
+		[surface_],
+		[volume_],
+	])],
+]);
+
+const cubeV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+	[label_, implementation => side => `cube of side ${side}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => side => side * side * 6],
+		[volume_, implementation => side => side * side * side],
+	])],
+]));
+
+const sphereV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+	[label_, implementation => radius => `sphere of radius ${radius}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => radius => radius * radius * Math.PI * 4],
+		[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+	])],
+]));
+
+const invariant_ = APPLICATION("invariant_");
+const stretch_ = APPLICATION("stretch_");
+
+const specificationV1 = EXTENSION(specificationV0)(SPECIFICATION([
+	[shape_, SPECIFICATION([
+		[invariant_, implementation => Math.pow((volume_)(shape_)(implementation), 2) / Math.pow((surface_)(shape_)(implementation), 3)],
+		[stretch_],
+	])],
+]));
+
+const cubeV1 = DECLARATION(specificationV1, EXTENSION(cubeV0)(IMPLEMENTATION([
+	[shape_, IMPLEMENTATION([
+		[stretch_, implementation => side => k => cube(side * k)],
+	])],
+])));
+
+const sphereV1 = DECLARATION(specificationV1, EXTENSION(sphereV0)(IMPLEMENTATION([
+	[shape_, IMPLEMENTATION([
+		[stretch_, implementation => radius => k => sphere(radius * k)],
+	])],
+])));
+
+const cylinderV1 = DECLARATION(specificationV1, IMPLEMENTATION([
+	[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+	[shape_, IMPLEMENTATION([
+		[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+		[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+		[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+	])],
+]));
+
+const cube = cubeV1;
+const sphere = sphereV1; 
+const cylinder = cylinderV1; 
+
+const cube1 = cube(1);
+const cube2 = (stretch_)(shape_)(cube1)(2);
+const sphere1 = sphere(0.5);
+const sphere2 = (stretch_)(shape_)(sphere1)(2);
+const cylinder1 = cylinder(0.5, 1);
+const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+
+const definitions = [ 
+	cube1,
+	cube2,
+	sphere1,
+	sphere2,
+	cylinder1,
+	cylinder2,
+];
+
+const labels = definitions.map(definition => (label_)(definition));
+// labels[0] === "cube of side 1"
+// labels[1] === "cube of side 2"
+// labels[2] === "sphere of radius 0.5"
+// labels[3] === "sphere of radius 1"
+// labels[4] === "cylinder of radius 0.5 and height 1"
+// labels[5] === "cylinder of radius 1 and height 2"
+
+const surfaces = definitions.map(definition => (surface_)(shape_)(definition));
+// surfaces[0] === 6
+// surfaces[1] === 24
+// surfaces[2] === 3.141592653589793
+// surfaces[3] === 12.566370614359172
+// surfaces[4] === 4.71238898038469
+// surfaces[5] === 18.84955592153876
+
+const volumes = definitions.map(definition => (volume_)(shape_)(definition));
+// volumes[0] === 1
+// volumes[1] === 8
+// volumes[2] === 0.5235987755982988
+// volumes[3] === 4.1887902047863905
+// volumes[4] === 0.7853981633974483
+// volumes[5] === 6.283185307179586
+
+const invariants = definitions.map(definition => (invariant_)(shape_)(definition));
+// invariants[0] === 0.004629629629629629
+// invariants[1] === 0.004629629629629629
+// invariants[2] === 0.008841941282883074
+// invariants[3] === 0.008841941282883074
+// invariants[4] === 0.005894627521922049
+// invariants[5] === 0.005894627521922049
+	
+// open browser console to see test results...
+		</pre></ul>
+	</ul>
 </ul>
+<br/>
+<br/>
 <script src="js-antescript.js"></script>
 <script>
 "use strict";
@@ -186,6 +402,268 @@ function error(message, applications){
 	}, "")): "");
 }
 
+// Simple sample:
+(function(){
+	const shape_ = APPLICATION("shape_");
+	const label_ = APPLICATION("label_");
+	const surface_ = APPLICATION("surface_");
+	const volume_ = APPLICATION("volume_");
+
+	const specification = SPECIFICATION([
+		[label_],
+		[shape_, SPECIFICATION([
+			[surface_],
+			[volume_],
+		])],
+	]);
+
+	const cube = DECLARATION(specification, IMPLEMENTATION([
+		[label_, implementation => side => `cube of side ${side}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+		])],
+	]));
+
+	const sphere = DECLARATION(specification, IMPLEMENTATION([
+		[label_, implementation => radius => `sphere of radius ${radius}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => radius => radius * radius * Math.PI * 4],
+			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+		])],
+	]));
+
+	const cube1 = cube(1);
+	const sphere1 = sphere(0.5);
+
+	const label1 = (label_)(cube1); // "cube of side 1"
+	const label2 = (label_)(sphere1); // "sphere of radius 0.5"
+
+	const surface1 = (surface_)(shape_)(cube1); // 6
+	const surface2 = (surface_)(shape_)(sphere1); // 3.141592653589793
+
+	const volume1 = (volume_)(shape_)(cube1); // 1
+	const volume2 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+})();
+
+// Extension sample:
+(function(){
+	const shape_ = APPLICATION("shape_");
+	const label_ = APPLICATION("label_");
+	const surface_ = APPLICATION("surface_");
+	const volume_ = APPLICATION("volume_");
+
+	const specificationV0 = SPECIFICATION([
+		[label_],
+		[shape_, SPECIFICATION([
+			[surface_],
+			[volume_],
+		])],
+	]);
+
+	const cubeV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+		[label_, implementation => side => `cube of side ${side}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+		])],
+	]));
+
+	const sphereV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+		[label_, implementation => radius => `sphere of radius ${radius}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => radius => radius * radius * Math.PI * 4],
+			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+		])],
+	]));
+
+	const invariant_ = APPLICATION("invariant_");
+	const stretch_ = APPLICATION("stretch_");
+
+	const specificationV1 = EXTENSION(specificationV0)(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[invariant_, implementation => Math.pow((volume_)(shape_)(implementation), 2) / Math.pow((surface_)(shape_)(implementation), 3)],
+			[stretch_],
+		])],
+	]));
+
+	const cubeV1 = DECLARATION(specificationV1, EXTENSION(cubeV0)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[stretch_, implementation => side => k => cube(side * k)],
+		])],
+	])));
+
+	const sphereV1 = DECLARATION(specificationV1, EXTENSION(sphereV0)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[stretch_, implementation => radius => k => sphere(radius * k)],
+		])],
+	])));
+
+	const cylinderV1 = DECLARATION(specificationV1, IMPLEMENTATION([
+		[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+			[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+			[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+		])],
+	]));
+
+	const cube = cubeV1;
+	const sphere = sphereV1; 
+	const cylinder = cylinderV1; 
+
+	const cube1 = cube(1);
+	const cube2 = (stretch_)(shape_)(cube1)(2);
+	const sphere1 = sphere(0.5);
+	const sphere2 = (stretch_)(shape_)(sphere1)(2);
+	const cylinder1 = cylinder(0.5, 1);
+	const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+
+	const label1 = (label_)(cube1); // "cube of side 1"
+	const label2 = (label_)(cube2); // "cube of side 2"
+	const label3 = (label_)(sphere1); // "sphere of radius 0.5"
+	const label4 = (label_)(sphere2); // "sphere of radius 1"
+	const label5 = (label_)(cylinder1); // "cylinder of radius 0.5 and height 1"
+	const label6 = (label_)(cylinder2); // "cylinder of radius 1 and height 2"
+
+	const surface1 = (surface_)(shape_)(cube1); // 6
+	const surface2 = (surface_)(shape_)(cube2); // 24
+	const surface3 = (surface_)(shape_)(sphere1); // 3.141592653589793
+	const surface4 = (surface_)(shape_)(sphere2); // 12.566370614359172
+	const surface5 = (surface_)(shape_)(cylinder1); // 4.71238898038469
+	const surface6 = (surface_)(shape_)(cylinder2); // 18.84955592153876
+
+	const volume1 = (volume_)(shape_)(cube1); // 1
+	const volume2 = (volume_)(shape_)(cube2); // 8
+	const volume3 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+	const volume4 = (volume_)(shape_)(sphere2); // 4.1887902047863905
+	const volume5 = (volume_)(shape_)(cylinder1); // 0.7853981633974483
+	const volume6 = (volume_)(shape_)(cylinder2); // 6.283185307179586
+
+	const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
+	const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
+	const invariant3 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+	const invariant4 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+	const invariant5 = (invariant_)(shape_)(cylinder1); // 0.005894627521922049
+	const invariant6 = (invariant_)(shape_)(cylinder2); // 0.005894627521922049
+})();
+
+// Polymorphism sample:
+(function(){
+	const shape_ = APPLICATION("shape_");
+	const label_ = APPLICATION("label_");
+	const surface_ = APPLICATION("surface_");
+	const volume_ = APPLICATION("volume_");
+
+	const specificationV0 = SPECIFICATION([
+		[label_],
+		[shape_, SPECIFICATION([
+			[surface_],
+			[volume_],
+		])],
+	]);
+
+	const cubeV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+		[label_, implementation => side => `cube of side ${side}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+		])],
+	]));
+
+	const sphereV0 = DECLARATION(specificationV0, IMPLEMENTATION([
+		[label_, implementation => radius => `sphere of radius ${radius}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => radius => radius * radius * Math.PI * 4],
+			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+		])],
+	]));
+
+	const invariant_ = APPLICATION("invariant_");
+	const stretch_ = APPLICATION("stretch_");
+
+	const specificationV1 = EXTENSION(specificationV0)(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[invariant_, implementation => Math.pow((volume_)(shape_)(implementation), 2) / Math.pow((surface_)(shape_)(implementation), 3)],
+			[stretch_],
+		])],
+	]));
+
+	const cubeV1 = DECLARATION(specificationV1, EXTENSION(cubeV0)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[stretch_, implementation => side => k => cube(side * k)],
+		])],
+	])));
+
+	const sphereV1 = DECLARATION(specificationV1, EXTENSION(sphereV0)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[stretch_, implementation => radius => k => sphere(radius * k)],
+		])],
+	])));
+
+	const cylinderV1 = DECLARATION(specificationV1, IMPLEMENTATION([
+		[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+		[shape_, IMPLEMENTATION([
+			[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+			[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+			[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+		])],
+	]));
+
+	const cube = cubeV1;
+	const sphere = sphereV1; 
+	const cylinder = cylinderV1; 
+
+	const cube1 = cube(1);
+	const cube2 = (stretch_)(shape_)(cube1)(2);
+	const sphere1 = sphere(0.5);
+	const sphere2 = (stretch_)(shape_)(sphere1)(2);
+	const cylinder1 = cylinder(0.5, 1);
+	const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+
+	const definitions = [ 
+		cube1,
+		cube2,
+		sphere1,
+		sphere2,
+		cylinder1,
+		cylinder2,
+	];
+
+	const labels = definitions.map(definition => (label_)(definition));
+	// labels[0] === "cube of side 1"
+	// labels[1] === "cube of side 2"
+	// labels[2] === "sphere of radius 0.5"
+	// labels[3] === "sphere of radius 1"
+	// labels[4] === "cylinder of radius 0.5 and height 1"
+	// labels[5] === "cylinder of radius 1 and height 2"
+
+	const surfaces = definitions.map(definition => (surface_)(shape_)(definition));
+	// surfaces[0] === 6
+	// surfaces[1] === 24
+	// surfaces[2] === 3.141592653589793
+	// surfaces[3] === 12.566370614359172
+	// surfaces[4] === 4.71238898038469
+	// surfaces[5] === 18.84955592153876
+
+	const volumes = definitions.map(definition => (volume_)(shape_)(definition));
+	// volumes[0] === 1
+	// volumes[1] === 8
+	// volumes[2] === 0.5235987755982988
+	// volumes[3] === 4.1887902047863905
+	// volumes[4] === 0.7853981633974483
+	// volumes[5] === 6.283185307179586
+
+	const invariants = definitions.map(definition => (invariant_)(shape_)(definition));
+	// invariants[0] === 0.004629629629629629
+	// invariants[1] === 0.004629629629629629
+	// invariants[2] === 0.008841941282883074
+	// invariants[3] === 0.008841941282883074
+	// invariants[4] === 0.005894627521922049
+	// invariants[5] === 0.005894627521922049
+})();
+
+// tests:
 (function(){
 	// level 1 applications
 	var label_ = APPLICATION("label_");
@@ -287,7 +765,7 @@ function error(message, applications){
 	console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(shape_)(sphere1) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(shape_(sphere1)));
 	console.log("alignment of " + label_(solid_)(object(shape_(cube1), 4)) + " And " + label_(solid_)(object(shape_(sphere1), 7)) + ": " + alignment_(solid_(object(shape_(cube1), 4)))(solid_(object(shape_(sphere1), 7))));
 
-	console.log("tests:");
+	console.log("checks:");
 
 	const object1 = object(shape_(cube(5)), 15);
 	const weight1 = weight_(solid_)(object1);
