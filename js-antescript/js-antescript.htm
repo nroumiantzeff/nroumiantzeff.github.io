@@ -1,16 +1,22 @@
 <html>
 <head><title>js-antescript</title></head>
+<script>function expend(element){
+	const expended = element.firstElementChild.lastElementChild.style.display === "none";
+	element.firstElementChild.lastElementChild.style.display = expended? "": "none";
+	element.nextElementSibling.style.display = expended? "none": "";
+}
+</script>
 <body>
 <h2>AnteScript</h2>
 <ul>
-	<li>Etymology</li>
-	<ul>
+	<li style="cursor:pointer" onclick="expend(this)"><h3>Etymology<span>...</span></h3></li>
+	<ul style="display:none">
 		<li>In JavaScript, the operator typically stands in between operands, for example: 52 + 20</li>
 		<li>In PostScript, the operator typically stands on the right of the operands, for example: 52 20 add</li>
 		<li>In AnteScript, the operator typically stands on the left of the operands, for example: add_ (52) (20)</li>
 	</ul>
-	<li>Syntax</li>
-	<ul>
+	<li style="cursor:pointer" onclick="expend(this)"><h3>Syntax<span>...</span></h3></li>
+	<ul style="display:none">
 		<li>In Object Oriented Programming, the method typically stands on the right of the object, for example: circle.surface()</li>
 		<li>In Functional Programming, the function stands on the left of the data argument, for example: surface(circle)</li>
 		<li>In AnteScript, the application stands on the left of the implementation argument, for example: surface_(circle)</li>
@@ -18,10 +24,10 @@
 		<li>In AnteScript, applications may be concatenated, for example to compute the surface of the base of a cylinder: surface_(base_)(cylinder)</li>
 		<li>In AnteScript, for syntax consistency, the left most application may also be surounded by parentheses, for example: (surface_)(base_)(cylinder)</li>
 	</ul>
-	<li>Concepts</li>
-	<ul>
-		<li>Application</li>
-		<ul>
+	<li style="cursor:pointer" onclick="expend(this)"><h3>Concepts<span>...</span></h3></li>
+	<ul style="display:none">
+		<li style="cursor:pointer" onclick="expend(this)"><h4>Application<span>...</span></h4></li>
+		<ul style="display:none">
 			<li>In AnteScript, the concept of application corresponds to the concept of function in Functional Programming</li>
 			<li>An application is just a name (unlike a function declaration or definition in Functional Programming)</li>
 			<li>An application is typically distinguished from other AnteScript concept by a naming convention (an underscore suffix): surface_</li>
@@ -33,8 +39,8 @@
 			<li>Unlike popular programming languages, partial namespace path are first-class citizens, for example, in the System.Collections.IList namespace hierarchy: (list_)(collections_)</li>
 			<li>Application concatenation is associtive (but not commutative): ((list_)(collections_))(system_) === (list_)((collections_)(system_))</li>
 		</ul>
-		<li>Declaration</li>
-		<ul>
+		<li style="cursor:pointer" onclick="expend(this)"><h4>Declaration<span>...</span></h4></li>
+		<ul style="display:none">
 			<li>In AnteScript, the concept of declaration corresponds to both concepts of class and class consturctor in Object Oriented Programming</li>
 			<li>A declaration specifies both the specification and the implementation</li>
 			<li>The specification and implementation of a declaration is checked for consistency</li>
@@ -45,32 +51,12 @@
 			<li>A declaration is the function part in the separation of data and functions in Functional Programming</li>
 			<li>A declaration may specify an optional delegation to handle applications that are missing in the implementation (the consistency check between the specification and implementation is looser when a delegation is specified)</li>
 		</ul>
-		<li>Implementation</li>
-		<ul>
-			<li>An implementation specifies the code to implement supported applications (like a class definition in Object Oriented Programming)</li>
-			<li>An implementation specifies the code to implement supported concatenations of applications (like a private class definition inside a class definition in Object Oriented Programming)</li>
-			<li>An implementation may be recursive (in case of concatenation of applications)</li>
-		</ul>
-		<li>Specification</li>
-		<ul>
-			<li>A specification lists the supported applications (like a class method declarations in Object Oriented Programming)</li>
-			<li>A specification lists the supported concatenations of applications</li>
-			<li>A specification may be recursive (in case of concatenation of applications)</li>
-		</ul>
-		<li>Definition</li>
-		<ul>
-			<li>In AnteScript, the concept of definition corresponds to the concept of class instance in Object Oriented Programming</li>
-			<li>A definition is defined by applying values to a declaration</li>
-			<li>A supported application (or a supported concatenation of applications) may be applied to a definition</li>
-			<li>Applying an unsupported application (or a unsupported concatenation of applications) to a definition results in an error</li>
-			<li>A definition is the data part in the separation of data and functions in Functional Programming</li>
-			<li>A definition encapsulates the values like private data class members in Object Oriented Programming</li>
-		</ul>
-		<li>Specification</li>
-		<ul>
+		<li style="cursor:pointer" onclick="expend(this)"><h4>Specification<span>...</span></h4></li>
+		<ul style="display:none">
 			<li>In AnteScript, the concept of specification corresponds to the concept of interface or abstract class in Object Oriented Programming</li>
 			<li>A specification lists the supported applications</li>
 			<li>A specification lists the supported concatenations of applications</li>
+			<li>A specification may be recursive (in case of concatenation of applications)</li>
 			<li>A specification may implement invariant applications and invariant concatenations of applications</li>
 			<li>An invariant does not depend on the definition values</li>
 			<li>A declaration specifies a specification</li>
@@ -78,8 +64,23 @@
 			<li>A declaration not specifying an implementation for an application listed in the specification results in an error</li>
 			<li>A declaration specifying an implementation for an invariant application in the specification results in an error</li>
 		</ul>
-		<li>Extension</li>
-		<ul>
+		<li style="cursor:pointer" onclick="expend(this)"><h4>Implementation<span>...</span></h4></li>
+		<ul style="display:none">
+			<li>An implementation specifies the code to implement supported applications (like a class definition in Object Oriented Programming)</li>
+			<li>An implementation specifies the code to implement supported concatenations of applications (like a private class definition inside a class definition in Object Oriented Programming)</li>
+			<li>An implementation may be recursive (in case of concatenation of applications)</li>
+		</ul>
+		<li style="cursor:pointer" onclick="expend(this)"><h4>Definition<span>...</span></h4></li>
+		<ul style="display:none">
+			<li>In AnteScript, the concept of definition corresponds to the concept of class instance in Object Oriented Programming</li>
+			<li>A definition is defined by applying values to a declaration</li>
+			<li>A supported application (or a supported concatenation of applications) may be applied to a definition</li>
+			<li>Applying an unsupported application (or a unsupported concatenation of applications) to a definition results in an error</li>
+			<li>A definition is the data part in the separation of data and functions in Functional Programming</li>
+			<li>A definition encapsulates the values like private data class members in Object Oriented Programming</li>
+		</ul>
+		<li style="cursor:pointer" onclick="expend(this)"><h4>Extension<span>...</span></h4></li>
+		<ul style="display:none">
 			<li>In AnteScript, the concept of extension solves the well known Expression Problem in both Functional Programming and Object Oriented Programming</li>
 			<li>An extension generates a new specification from a previous declaration by specifing the specifiction for the additional applications</li>
 			<li>An extension generates a new implementation from a previous declaration by specifing the implementation for the additional applications</li>
@@ -88,8 +89,8 @@
 			<li>In AnteScript, an extension application has the same nature as basic application without any additional limitation (unlike C# extention methods which cannot access private values and do not support polymorphism)</li>
 		</ul>
 	</ul>
-	<li>Notes</li>
-	<ul>
+	<li style="cursor:pointer" onclick="expend(this)"><h3>Notes<span>...</span></h3></li>
+	<ul style="display:none">
 		<li>AnteScript is dynamically typed</li>
 		<li>Although AnteScript is dynamically typed, a definition is checked for consistency with its specification before any implmementation is generated and used</li>
 		<li>AnteScript supports an Object Oriented Programming form of polymorphism (interface polymorphism) which transparently supports heterogeneous collections</li>
@@ -112,13 +113,13 @@
 		<li>An application is typically referenced by a JavaScript variable of the same name (using "const" JavaScript keyword to warn about dulicates or "var" to allow independent specifications sharing the same applications)</li>
 		<li>Applications are memoized (calling APPLICATION several times with the same name argument always return the same JavaScript function)</li>
 		<li>The current implementation of AnteScript has a large overhead compared to direct JavaScript function calls (linear with the level of applications but constant in the total number of applications)</li>
-		<li>AnteScript runtime errors are dealt with by providing an optional custom error function (ommited in the below sample)</li>
+		<li>AnteScript runtime errors are dealt with by providing an optional custom error function</li>
 		<li>AnteScript is currently a proof of concept (the overhead compared to direct JavaScript function calls may impact performance)</li>
 		<li>AnteScript is currently implemented using pure functions only (with a significant use of JavaScript WeakMap objects)</li>
 		<li>AnteScript could be implemented as a compiled language (obviously, the first compiler would be implemented using the JavaScript version of AnteScript)</li>
 	</ul>
-	<li>Sample</li>
-	<ul><pre>
+	<li style="cursor:pointer" onclick="expend(this)"><h3>Sample<span>...</span></h3></li>
+	<ul style="display:none"><pre>
 	const label_ = APPLICATION("label_");
 	const surface_ = APPLICATION("surface_");
 	const volume_ = APPLICATION("volume_");
@@ -155,13 +156,13 @@
 
 	const cube1 = cube(1);
 	const cube2 = (stretch_)(shape_)(cube1)(2);
-	const sphere1 = sphere(1);
+	const sphere1 = sphere(0.5);
 	const sphere2 = (stretch_)(shape_)(sphere1)(2);
 
 	const label1 = (label_)(cube1); // "cube of side 1"
 	const label2 = (label_)(cube2); // "cube of side 2"
-	const label3 = (label_)(sphere1); // "sphere of radius 1"
-	const label4 = (label_)(sphere2); // "sphere of radius 2"
+	const label3 = (label_)(sphere1); // "sphere of radius 0.5"
+	const label4 = (label_)(sphere2); // "sphere of radius 1"
 
 	const invariant1 = (invariant_)(cube1); // 0.004629629629629629
 	const invariant2 = (invariant_)(cube2); // 0.004629629629629629
@@ -174,10 +175,10 @@
 <script>
 "use strict";
 
-//todo verify application order in error message "missing implementation"
-//todo allow undefined specification when delegation is specified
+//todo separate GUID JS module from HTM documentattion and test page (c7bcbbba54324bf388d8c776e9b184f3)
+//todo add C# and Haskell comparaison documentation
 
-const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (function(){
+const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (function(error){
 	function applicationType(){
 	}
 	function definitionType(){
@@ -201,7 +202,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		}
 	}
 	let memoization = new(Map)();
-	function APPLICATION(application, definition, error){
+	function APPLICATION(application, definition){
 		if (definition === TYPE){
 			return applicationType;
 		}
@@ -209,12 +210,12 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			return [application];
 		}
 		switch (TYPE(definition)){
-			case applicationType: return APPLICATIONS(error, definition, application);
+			case applicationType: return APPLICATIONS(definition, application);
 			case definitionType: return definition(application);
 		}
 		return error && error("applications applied to an invalid definition or invalid application", [application]);
 	}
-	function APPLICATIONS(error, application, ...applications){
+	function APPLICATIONS(application, ...applications){
 		return function(definition){
 			if (definition === TYPE){
 				return applicationType;
@@ -223,7 +224,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				return  [application, ...applications];
 			}
 			switch (TYPE(definition)){
-				case applicationType: return APPLICATIONS(error, definition, application, ...applications);
+				case applicationType: return APPLICATIONS(definition, application, ...applications);
 				case definitionType: {
 					return [application, ...applications].reduce(function(definition, application){
 						if (typeof(definition) === "function"){	
@@ -235,7 +236,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			return error && error("applications applied to an invalid definition or invalid application", [application, ...applications]);
 		};
 	}
-	function DEFINITIONS(error, applications, specifications, implementations, values, delegation, definition){
+	function DEFINITIONS(applications, specifications, implementations, values, delegation, definition){
 		return function DEFINITION(application){
 			if (application === TYPE){
 				return definitionType;
@@ -256,7 +257,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 						return error && error("applications applied to an invalid function", [...applications, application]);
 					}
 				}
-				const specification = specifications(application, true);
+				const specification = specifications === undefined? undefined: specifications(application, true);
 				if (implementation === undefined){
 					if(!TYPE(specification, specificationType)){
 						if (specification !== undefined && typeof(specification) === "function"){
@@ -270,9 +271,8 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 						}
 						return error && error("unexpected applications", [...applications, application]);
 					}
-					return DEFINITIONS(error, [...applications, application], specification.mapping, undefined, values, delegation, definition?? DEFINITION);
 				}
-				return DEFINITIONS(error, [...applications, application], specification.mapping, implementation.mapping, values, delegation, definition?? DEFINITION);
+				return DEFINITIONS([...applications, application], specification === undefined? undefined: specification.mapping, implementation === undefined? undefined: implementation.mapping, values, delegation, definition?? DEFINITION);
 			}
 			return error && error("incorrect application", [...applications, application]);
 		};
@@ -386,7 +386,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		}, entries0);
 		return IMPLEMENTATION(entries1);
 	}
-	function EXTENSION(specification, implementation, error){
+	function EXTENSION(specification, implementation){
 		return function(extension){
 			if (TYPE(extension, specificationType)){
 				const duplication1 = DUPLICATION(specificationType, specification.mapping, extension.mapping);
@@ -406,7 +406,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		};
 	}
 	function EXTENSIONS(specifications0){
-		return function(specifications, error){
+		return function(specifications){
 			if (!TYPE(specifications, specificationType)){
 				return error && error("invalid extension specifications");
 			}
@@ -424,14 +424,14 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 		};
 	}
 	return {
-		APPLICATION: function(name, error){
+		APPLICATION: function(name){
 			const memoized = memoization.get(name);
 			if (memoized !== undefined){
 				return memoized;
 			}
 			const naming = {
 				[name]: function(definition){
-					return APPLICATION(application, definition, error);
+					return APPLICATION(application, definition);
 				},
 			};
 			const application = naming[name];
@@ -482,31 +482,33 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 				type: implementationType,
 			}; 
 		},
-		DECLARATION: function(specification, implementation, error, delegation){
-			if (!TYPE(specification, specificationType)){
-				return error && error("invalid specification");
-			}
-			if (implementation !== undefined){
-				if (!TYPE(implementation, implementationType)){
-					return error && error("invalid implementation");
+		DECLARATION: function(specification, implementation, delegation){
+			if (specification !== undefined || delegation === undefined){
+				if (!TYPE(specification, specificationType)){
+					return error && error("invalid specification");
 				}
-				const oversupply = OVERSUPPLY(implementation.mapping, specification.mapping);
-				if (oversupply !== undefined){
-					return error && error("unexpected implementation", oversupply);
-				}
-				if (delegation === undefined){
-					const undersupply = UNDERSUPPLY(implementation.mapping, specification.mapping);
-					if (undersupply !== undefined){
-						return error && error("missing implementation", undersupply);
+				if (implementation !== undefined){
+					if (!TYPE(implementation, implementationType)){
+						return error && error("invalid implementation");
+					}
+					const oversupply = OVERSUPPLY(implementation.mapping, specification.mapping);
+					if (oversupply !== undefined){
+						return error && error("unexpected implementation", oversupply);
+					}
+					if (delegation === undefined){
+						const undersupply = UNDERSUPPLY(implementation.mapping, specification.mapping);
+						if (undersupply !== undefined){
+							return error && error("missing implementation", undersupply);
+						}
 					}
 				}
 			}
 			return function(...values){
 				switch(values[0]){
 					case TYPE: return declarationType;
-					case extensionType: return EXTENSION(specification, implementation, error);
+					case extensionType: return EXTENSION(specification, implementation);
 				}
-				return DEFINITIONS(error, [], specification.mapping, implementation === undefined? undefined: implementation.mapping, values, delegation);
+				return DEFINITIONS([], specification === undefined? undefined: specification.mapping, implementation === undefined? undefined: implementation.mapping, values, delegation);
 			}
 		},
 		EXTENSION: function(declaration){
@@ -522,7 +524,7 @@ const { APPLICATION, DECLARATION, SPECIFICATION, IMPLEMENTATION, EXTENSION } = (
 			return error && error("invalid declaration");
 		},
 	};
-})();
+})(error);
 
 function error(message, applications){
 	throw message + (applications? (": " + applications.reduce(function(accumulator, application){
@@ -532,18 +534,18 @@ function error(message, applications){
 
 (function(){
 	// level 1 applications
-	var label_ = APPLICATION("label_", error);
-	var surface_ = APPLICATION("surface_", error);
-	var volume_ = APPLICATION("volume_", error);
-	var stretch_ = APPLICATION("stretch_", error);
-	var invariant_ = APPLICATION("invariant_", error);
-	var weight_ = APPLICATION("weight_", error);
-	var alignment_ = APPLICATION("alignment_", error);
-	var test_ = APPLICATION("test_", error);
+	var label_ = APPLICATION("label_");
+	var surface_ = APPLICATION("surface_");
+	var volume_ = APPLICATION("volume_");
+	var stretch_ = APPLICATION("stretch_");
+	var invariant_ = APPLICATION("invariant_");
+	var weight_ = APPLICATION("weight_");
+	var alignment_ = APPLICATION("alignment_");
+	var test_ = APPLICATION("test_");
 
 	// level 2 applications
-	var shape_ = APPLICATION("shape_", error);
-	var solid_ = APPLICATION("solid_", error);
+	var shape_ = APPLICATION("shape_");
+	var solid_ = APPLICATION("solid_");
 
 	const shape = SPECIFICATION([
 		[shape_, SPECIFICATION([
@@ -573,7 +575,7 @@ function error(message, applications){
 			[stretch_, definition => side => k => cube(side * k)],
 			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 		])],
-	]), error);
+	]));
 
 	const sphere = DECLARATION(shape, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
@@ -583,7 +585,7 @@ function error(message, applications){
 			[stretch_, definition => radius => k => sphere(radius * k)],
 			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
 		])],
-	]), error);
+	]));
 
 	const object = DECLARATION(solid, IMPLEMENTATION([
 		[solid_, IMPLEMENTATION([
@@ -592,11 +594,11 @@ function error(message, applications){
 			[alignment_, definition => (shape, density) => o => alignment_(shape)(o)],
 			[test_, definition => (shape, density) => weight_(solid_)(definition)],
 		])],
-	]), error);
+	]));
 
 	const cube1 = cube(1);
 	const cube2 = stretch_(shape_(cube1))(2);
-	const sphere1 = sphere(1);
+	const sphere1 = sphere(0.5);
 	const sphere2 = stretch_(shape_(sphere1))(2);
 
 	// heterogeneous collection
@@ -638,11 +640,11 @@ function error(message, applications){
 	const test1 = test_(solid_)(object1);
 	console.log(test1 + " === " + weight1 + ": " + (test1 === weight1));
 
-	var application0_ = APPLICATION("application0_", error);
-	var application1_ = APPLICATION("application1_", error);
-	var application2_ = APPLICATION("application2_", error);
-	var application3_ = APPLICATION("application3_", error);
-	var application4_ = APPLICATION("application4_", error);
+	var application0_ = APPLICATION("application0_");
+	var application1_ = APPLICATION("application1_");
+	var application2_ = APPLICATION("application2_");
+	var application3_ = APPLICATION("application3_");
+	var application4_ = APPLICATION("application4_");
 
 	const definitionTest = DECLARATION(SPECIFICATION([
 		[application4_, SPECIFICATION([
@@ -660,7 +662,7 @@ function error(message, applications){
 				])],
 			])],
 		])],
-	]), error);
+	]));
 
 	const test2 = application1_(application2_)(application3_)(application4_)(definitionTest(222));
 	console.log(test2 + " === 222: " + (test2 === 222));
@@ -686,11 +688,11 @@ function error(message, applications){
 
 console.log("compositions:");
 (function(){
-	var value_ = APPLICATION("value_", error);
-	var next_ = APPLICATION("next_", error);
-	var previous_ = APPLICATION("previous_", error);
-	var double_ = APPLICATION("double_", error);
-	var half_ = APPLICATION("half_", error);
+	var value_ = APPLICATION("value_");
+	var next_ = APPLICATION("next_");
+	var previous_ = APPLICATION("previous_");
+	var double_ = APPLICATION("double_");
+	var half_ = APPLICATION("half_");
 
 	const number = DECLARATION(SPECIFICATION([
 		[value_],
@@ -704,7 +706,7 @@ console.log("compositions:");
 		[previous_, definition => value => number(value - 1)],
 		[double_, definition => value => number(value * 2)],
 		[half_, definition => value => number(value / 2)],
-	]), error);
+	]));
 
 	const composition1 = double_(previous_)(half_)(next_)(number(13));
 	console.log(value_(composition1) + " === 12: " + (value_(composition1) === 12));
@@ -736,8 +738,8 @@ console.log("compositions:");
 
 console.log("chains:");
 (function(){
-	var first_ = APPLICATION("first_", error);
-	var second_ = APPLICATION("second_", error);
+	var first_ = APPLICATION("first_");
+	var second_ = APPLICATION("second_");
 
 	const tree = DECLARATION(SPECIFICATION([
 		[first_],
@@ -745,7 +747,7 @@ console.log("chains:");
 	]), IMPLEMENTATION([
 		[first_, definition => value => typeof(value[0]) === "object"? tree(value[0]): value[0]],
 		[second_, definition => value => typeof(value[1]) === "object"? tree(value[1]): value[1]],
-	]), error);
+	]));
 
 	const tree1 = tree([
 		[11, 21],
@@ -766,14 +768,14 @@ console.log("chains:");
 
 	console.log("combinations:");
 
-	var value_ = APPLICATION("value_", error);
-	var add_ = APPLICATION("add_", error);
-	var addString_ = APPLICATION("addString_", error);
-	var addInteger_ = APPLICATION("addInteger_", error);
-	var addDecimal_ = APPLICATION("addDecimal_", error);
-	var string_ = APPLICATION("string_", error);
-	var numerator_ = APPLICATION("numerator_", error);
-	var denominator_ = APPLICATION("denominator_", error);
+	var value_ = APPLICATION("value_");
+	var add_ = APPLICATION("add_");
+	var addString_ = APPLICATION("addString_");
+	var addInteger_ = APPLICATION("addInteger_");
+	var addDecimal_ = APPLICATION("addDecimal_");
+	var string_ = APPLICATION("string_");
+	var numerator_ = APPLICATION("numerator_");
+	var denominator_ = APPLICATION("denominator_");
 
 	const integer = DECLARATION(SPECIFICATION([
 		[value_],
@@ -788,7 +790,7 @@ console.log("chains:");
 		[add_, definition => value => addition => addInteger_(addition)(definition)],
 		[addInteger_, definition => value => addition => integer(value + value_(addition))],
 		[addDecimal_, definition => value => addition => decimal(value * denominator_(addition) + numerator_(addition), denominator_(addition))],
-	]), error);
+	]));
 
 	const decimal = DECLARATION(SPECIFICATION([
 		[numerator_],
@@ -805,7 +807,7 @@ console.log("chains:");
 		[add_, definition => (numerator, denominator) => addition => addDecimal_(addition)(definition)],
 		[addInteger_, definition => (numerator, denominator) => addition => decimal(numerator + value_(addition) * denominator, denominator)],
 		[addDecimal_, definition => (numerator, denominator) => addition => decimal(numerator * denominator_(addition) + numerator_(addition) * denominator, denominator * denominator_(addition))],
-	]), error);
+	]));
 
 	const string = DECLARATION(SPECIFICATION([
 		[string_],
@@ -818,7 +820,7 @@ console.log("chains:");
 		[add_, definition => value => addition => addString_(addition)(definition)],
 		[addInteger_, definition => value => addition => string(string_(addition) + value)],
 		[addDecimal_, definition => value => addition => string(string_(addition) + value)],
-	]), error);
+	]));
 
 	const combination1 = (string_)((add_)(integer(13))(integer(10)));
 	console.log(combination1 + " === 23: " + (combination1 === "23"));
@@ -847,14 +849,14 @@ console.log("chains:");
 
 console.log("recursions:");
 (function(){
-	var nil_ = APPLICATION("nil_", error);
-	var head_ = APPLICATION("head_", error);
-	var tail_ = APPLICATION("tail_", error);
-	var extent_ = APPLICATION("extent_", error);
-	var translation_ = APPLICATION("translation_", error);
-	var collection_ = APPLICATION("collection_", error);
-	var reduction_ = APPLICATION("reduction_", error);
-	var array_ = APPLICATION("array_", error);
+	var nil_ = APPLICATION("nil_");
+	var head_ = APPLICATION("head_");
+	var tail_ = APPLICATION("tail_");
+	var extent_ = APPLICATION("extent_");
+	var translation_ = APPLICATION("translation_");
+	var collection_ = APPLICATION("collection_");
+	var reduction_ = APPLICATION("reduction_");
+	var array_ = APPLICATION("array_");
 
 	const list0 = (function(){
 		const list = DECLARATION(SPECIFICATION([
@@ -874,7 +876,7 @@ console.log("recursions:");
 			[translation_, definition => (head, tail) => translation => definition === nil? nil: list(translation(head), translation_(tail)(translation))],
 			[collection_, definition => (head, tail) => collection => definition === nil? nil: collection(head)? list(head, collection_(tail)(collection)): collection_(tail)(collection)],
 			[reduction_, definition => (head, tail) => reduction => accumulation => definition === nil? accumulation: (reduction_(tail)(reduction))(reduction(head)(accumulation))],
-		]), error);
+		]));
 		const nil = list();
 		return nil;
 	})();
@@ -919,15 +921,15 @@ console.log("recursions:");
 
 console.log("extensions:");
 (function(){
-	var shape_ = APPLICATION("shape_", error);
-	var label_ = APPLICATION("label_", error);
-	var surface_ = APPLICATION("surface_", error);
-	var volume_ = APPLICATION("volume_", error);
-	var stretch_ = APPLICATION("stretch_", error);
-	var invariant_ = APPLICATION("invariant_", error);
-	var weight_ = APPLICATION("weight_", error);
-	var alignment_ = APPLICATION("alignment_", error);
-	var test_ = APPLICATION("test_", error);
+	var shape_ = APPLICATION("shape_");
+	var label_ = APPLICATION("label_");
+	var surface_ = APPLICATION("surface_");
+	var volume_ = APPLICATION("volume_");
+	var stretch_ = APPLICATION("stretch_");
+	var invariant_ = APPLICATION("invariant_");
+	var weight_ = APPLICATION("weight_");
+	var alignment_ = APPLICATION("alignment_");
+	var test_ = APPLICATION("test_");
 	const shape = SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[label_],
@@ -946,7 +948,7 @@ console.log("extensions:");
 			[stretch_, definition => side => k => cube(side * k)],
 			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 		])],
-	]), error);
+	]));
 	const sphere = DECLARATION(shape, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, definition => radius => `sphere of radius ${radius}`],
@@ -955,10 +957,10 @@ console.log("extensions:");
 			[stretch_, definition => radius => k => sphere(radius * k)],
 			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
 		])],
-	]), error);
+	]));
 
-	var stretch2_ = APPLICATION("stretch2_", error);
-	var stretch3_ = APPLICATION("stretch3_", error);
+	var stretch2_ = APPLICATION("stretch2_");
+	var stretch3_ = APPLICATION("stretch3_");
 	const specificationx = SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[stretch2_, definition => (stretch_)(shape_)(definition)(2)],
@@ -969,12 +971,12 @@ console.log("extensions:");
 		[shape_, IMPLEMENTATION([
 			[stretch3_, definition => side => cube(side * 3)],
 		])],
-	])), error);
+	])));
 	const spherex = DECLARATION(EXTENSION(sphere)(specificationx), EXTENSION(sphere)(IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[stretch3_, definition => radius => sphere(radius * 3)],
 		])],
-	])), error);
+	])));
 
 	const cubex1 = cubex(1); 
 	console.log((label_)(shape_)(cubex1) + " === cube of side 1: " + ((label_)(shape_)(cubex1) === "cube of side 1"));
@@ -994,8 +996,8 @@ console.log("extensions:");
 	const spherex3 = (stretch3_)(shape_)(spherex1);
 	console.log((label_)(shape_)(spherex3) + " === sphere of radius 3: " + ((label_)(shape_)(spherex3) === "sphere of radius 3"));
 
-	var stretch2_ = APPLICATION("stretch2_", error);
-	var stretch4_ = APPLICATION("stretch4_", error);
+	var stretch2_ = APPLICATION("stretch2_");
+	var stretch4_ = APPLICATION("stretch4_");
 	const specificationxx = EXTENSION(shape)(SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[stretch2_, definition => (stretch_)(shape_)(definition)(2)],
@@ -1010,7 +1012,7 @@ console.log("extensions:");
 			[stretch_, definition => side => k => cubexx(side * k)],
 			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 		])],
-	]), error);
+	]));
 	const spherexx = DECLARATION(specificationxx, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, definition => radius => `sphere of radius ${radius}`],
@@ -1019,7 +1021,7 @@ console.log("extensions:");
 			[stretch_, definition => radius => k => spherexx(radius * k)],
 			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
 		])],
-	]), error);
+	]));
 
 	const cubexx1 = cubexx(1); 
 	console.log((label_)(shape_)(cubexx1) + " === cube of side 1: " + ((label_)(shape_)(cubexx1) === "cube of side 1"));
@@ -1027,7 +1029,7 @@ console.log("extensions:");
 	const cubexx2 = (stretch2_)(shape_)(cubexx1);
 	console.log((label_)(shape_)(cubexx2) + " === cube of side 2: " + ((label_)(shape_)(cubexx2) === "cube of side 2"));
 
-	var stretch2_ = APPLICATION("stretch2_", error);
+	var stretch2_ = APPLICATION("stretch2_");
 
 	const cubexx3 = (stretch2_)(shape_)(cubexx1);
 	console.log((label_)(shape_)(cubexx3) + " === cube of side 2: " + ((label_)(shape_)(cubexx3) === "cube of side 2"));
@@ -1044,7 +1046,7 @@ console.log("extensions:");
 	const spherexx4 = (stretch4_)(shape_)(spherexx1);
 	console.log((label_)(shape_)(spherexx4) + " === sphere of radius 4: " + ((label_)(shape_)(spherexx4) === "sphere of radius 4"));
 
-	var solid_ = APPLICATION("solid_", error);
+	var solid_ = APPLICATION("solid_");
 	const cubexxx = DECLARATION(EXTENSION(cube)(SPECIFICATION([
 		[solid_, SPECIFICATION([
 			[weight_],
@@ -1053,7 +1055,7 @@ console.log("extensions:");
 		[solid_, IMPLEMENTATION([
 			[weight_, definition => side => density => density * (volume_)(shape_)(definition)],
 			])],
-	])), error);
+	])));
 
 	const cubexxx2 = cubexxx(2); 
 	console.log((label_)(shape_)(cubexxx2) + " === cube of side 2: " + ((label_)(shape_)(cubexxx2) === "cube of side 2"));
@@ -1077,15 +1079,15 @@ console.log("extensions:");
 	const inceptionxxxx2 = specificationxxxx.mapping(shape_).mapping();
 	console.log("specificationxxxx.mapping(shape_).mapping() === [stretch2_,stretch4_]: " + (Array.isArray(inceptionxxxx2) && inceptionxxxx2.length === 2 && inceptionxxxx2[0] === stretch2_ && inceptionxxxx2[1] === stretch4_));
 
-	var tool_ = APPLICATION("tool_", error);
-	var tool1_ = APPLICATION("tool1_", error);
-	var tool2_ = APPLICATION("tool2_", error);
+	var tool_ = APPLICATION("tool_");
+	var tool1_ = APPLICATION("tool1_");
+	var tool2_ = APPLICATION("tool2_");
 	const toolxxxxx = DECLARATION(EXTENSION()(SPECIFICATION([
 		[tool_, SPECIFICATION([
 			[tool1_, definition => Math.PI],
 			[tool2_, definition => Math.pow(2, 1/2)],
 		])],
-	])), undefined, error);
+	])), undefined);
 	const toolxxxxx1 = toolxxxxx();
 
 	const tool1xxxxx1 = (tool1_)(tool_)(toolxxxxx1);
@@ -1100,7 +1102,7 @@ console.log("extensions:");
 			[tool2_, definition => Math.pow(2, 1/2)],
 		])],
 	])), EXTENSION(cube)(IMPLEMENTATION([
-	])), error);
+	])));
 	const toolxxxxxx1 = toolxxxxxx();
 
 	const tool1xxxxxx1 = (tool1_)(tool_)(toolxxxxxx1);
@@ -1114,19 +1116,12 @@ console.log("expression problem:");
 (function(){
 	////////////////////////////////////////////////////////////////////////////////////////
 	// script a (V1):
-	function error(message, applications){
-		throw message + (applications? (": " + applications.reduce(function(accumulator, application){
-			return "(" + application.name + ")" + accumulator;
-		}, "")): "");
-	}
-	////////////////////////////////////////////////////////////////////////////////////////
-	// script b (V1):
-	const shape_ = APPLICATION("shape_", error);
-	const label_ = APPLICATION("label_", error);
-	const surface_ = APPLICATION("surface_", error);
-	const volume_ = APPLICATION("volume_", error);
-	const stretch_ = APPLICATION("stretch_", error);
-	const invariant_ = APPLICATION("invariant_", error);
+	const shape_ = APPLICATION("shape_");
+	const label_ = APPLICATION("label_");
+	const surface_ = APPLICATION("surface_");
+	const volume_ = APPLICATION("volume_");
+	const stretch_ = APPLICATION("stretch_");
+	const invariant_ = APPLICATION("invariant_");
 	const shapeV1 = SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[label_],
@@ -1137,7 +1132,7 @@ console.log("expression problem:");
 		])],
 	]);
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script c (V1):
+	// script b (V1):
 	const cubeV1 = DECLARATION(shapeV1, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => side => `cube of side ${side}`],
@@ -1145,9 +1140,9 @@ console.log("expression problem:");
 			[volume_, implementation => side => side * side * side],
 			[stretch_, definition => side => k => cube(side * k)],
 		])],
-	]), error);
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script d (V1):
+	// script c (V1):
 	const sphereV1 = DECLARATION(shapeV1, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => radius => `sphere of radius ${radius}`],
@@ -1155,31 +1150,31 @@ console.log("expression problem:");
 			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
 			[stretch_, definition => radius => k => sphere(radius * k)],
 		])],
-	]), error);
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script e (V2):
-	const container_ = APPLICATION("container_", error);
+	// script d (V2):
+	const container_ = APPLICATION("container_");
 	const shapeV2 = EXTENSION(shapeV1)(SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[container_],
 		])],
-	]), error);
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script f (V2):
+	// script e (V2):
 	const cubeV2 = DECLARATION(shapeV2, EXTENSION(cubeV1)(IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[container_, definition => side => volume => cube(Math.pow(volume, 1/3))],
 		])],
-	])), error);
+	])));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script g (V2):
+	// script f (V2):
 	const sphereV2 = DECLARATION(shapeV2, EXTENSION(sphereV1)(IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[container_, definition => radius => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
 		])],
-	])), error);
+	])));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script h (V2):
+	// script g (V2):
 	const cylinderV2 = DECLARATION(shapeV2, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
@@ -1188,85 +1183,192 @@ console.log("expression problem:");
 			[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
 			[container_, definition => (radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
 		])],
-	]), error);
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script j (V2):
-	const cube = cubeV2;
-	const sphere = sphereV2;
-	const cylinder = cylinderV2;
+	// script h (V3):
+	const wrapper_ = APPLICATION("wrapper_");
+	const shapeV3 = EXTENSION(shapeV2)(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[wrapper_],
+		])],
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script j (V2):
+	// script i (V3):
+	const cubeV3 = DECLARATION(shapeV3, EXTENSION(cubeV2)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, side) => surface => cube(Math.pow(surface / 6, 1/2))],
+		])],
+	])));
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script j (V3):
+	const sphereV3 = DECLARATION(shapeV3, EXTENSION(sphereV2)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, radius) => surface => sphere(Math.pow((1/4) * surface / Math.PI, 1/2))],
+		])],
+	])));
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script k (V3):
+	const cylinderV3 = DECLARATION(shapeV3, EXTENSION(cylinderV2)(IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, radius, height) => surface => cylinder(Math.pow((1/6) * surface / Math.PI, 1/2), 2 * Math.pow((1/6) * surface / Math.PI, 1/2))],
+		])],
+	])), true);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script l (V3):
+	const cube = cubeV3;
+	const sphere = sphereV3;
+	const cylinder = cylinderV3;
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script m (V3):
 	const cube1 = cube(1);
 	const cube2 = (stretch_)(shape_)(cube1)(2);
 	const cube3 = (container_)(shape_)(cube2)(1);
-	const sphere1 = sphere(1);
+	const cube4 = (stretch_)(shape_)(cube3)(2);
+	const cube5 = (wrapper_)(shape_)(cube4)(6);
+	const sphere1 = sphere(0.5);
 	const sphere2 = (stretch_)(shape_)(sphere1)(2);
 	const sphere3 = (container_)(shape_)(sphere2)(1);
-	const cylinder1 = cylinder(1, 1);
+	const sphere4 = (stretch_)(shape_)(sphere3)(2);
+	const sphere5 = (wrapper_)(shape_)(sphere4)(6);
+	const cylinder1 = cylinder(0.5, 1);
 	const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
 	const cylinder3 = (container_)(shape_)(cylinder2)(1);
 	const cylinder4 = (stretch_)(shape_)(cylinder3)(2);
+	const cylinder5 = (wrapper_)(shape_)(cylinder4)(6);
 	const label1 = (label_)(shape_)(cube1); // "cube of side 1"
 	const label2 = (label_)(shape_)(cube2); // "cube of side 2"
 	const label3 = (label_)(shape_)(cube3); // "cube of side 1"
-	const label4 = (label_)(shape_)(sphere1); // "sphere of radius 1"
-	const label5 = (label_)(shape_)(sphere2); // "sphere of radius 2"
-	const label6 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
-	const label7 = (label_)(shape_)(cylinder1); // "cylinder of radius 1 and height 1"
-	const label8 = (label_)(shape_)(cylinder2); // "cylinder of radius 2 and height 2"
-	const label9 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
-	const label10 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+	const label4 = (label_)(shape_)(cube4); // "cube of side 2"
+	const label5 = (label_)(shape_)(cube5); // "cube of side 1"
+	const label6 = (label_)(shape_)(sphere1); // "sphere of radius 0.5"
+	const label7 = (label_)(shape_)(sphere2); // "sphere of radius 1"
+	const label8 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
+	const label9 = (label_)(shape_)(sphere4); // "sphere of radius 1.2407009817988"
+	const label10 = (label_)(shape_)(sphere5); // "sphere of radius 0.690988298942671"
+	const label11 = (label_)(shape_)(cylinder1); // "cylinder of radius 0.5 and height 1"
+	const label12 = (label_)(shape_)(cylinder2); // "cylinder of radius 1 and height 2"
+	const label13 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
+	const label14 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+	const label15 = (label_)(shape_)(cylinder5); // "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"
+	const surface1 = (surface_)(shape_)(cube1); // 6
+	const surface2 = (surface_)(shape_)(cube2); // 24
+	const surface3 = (surface_)(shape_)(cube3); // 6
+	const surface4 = (surface_)(shape_)(cube4); // 24
+	const surface5 = (surface_)(shape_)(cube5); // 6
+	const surface6 = (surface_)(shape_)(sphere1); // 3.141592653589793
+	const surface7 = (surface_)(shape_)(sphere2); // 12.566370614359172
+	const surface8 = (surface_)(shape_)(sphere3); // 4.835975862049408
+	const surface9 = (surface_)(shape_)(sphere4); // 19.343903448197633
+	const surface10 = (surface_)(shape_)(sphere5); // 6.000000000000001
+	const surface11 = (surface_)(shape_)(cylinder1); // 4.71238898038469
+	const surface12 = (surface_)(shape_)(cylinder2); // 18.84955592153876
+	const surface13 = (surface_)(shape_)(cylinder3); // 5.535810445932086
+	const surface14 = (surface_)(shape_)(cylinder4); // 22.143241783728342
+	const surface15 = (surface_)(shape_)(cylinder5); // 5.999999999999999
+	const volume1 = (volume_)(shape_)(cube1); // 1
+	const volume2 = (volume_)(shape_)(cube2); // 8
+	const volume3 = (volume_)(shape_)(cube3); // 1
+	const volume4 = (volume_)(shape_)(cube4); // 8
+	const volume5 = (volume_)(shape_)(cube5); // 1
+	const volume6 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+	const volume7 = (volume_)(shape_)(sphere2); // 4.1887902047863905
+	const volume8 = (volume_)(shape_)(sphere3); // 0.9999999999999997
+	const volume9 = (volume_)(shape_)(sphere4); // 7.999999999999997
+	const volume10 = (volume_)(shape_)(sphere5); // 1.3819765978853422
+	const volume11 = (volume_)(shape_)(cylinder1); // 0.7853981633974483
+	const volume12 = (volume_)(shape_)(cylinder2); // 6.283185307179586
+	const volume13 = (volume_)(shape_)(cylinder3); // 1.0000000000000002
+	const volume14 = (volume_)(shape_)(cylinder4); // 8.000000000000002
+	const volume15 = (volume_)(shape_)(cylinder5); // 1.1283791670955123
 	const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
 	const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
 	const invariant3 = (invariant_)(shape_)(cube3); // 0.004629629629629629
-	const invariant4 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
-	const invariant5 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
-	const invariant6 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
-	const invariant7 = (invariant_)(shape_)(cylinder1); // 0.0049735919716217296
-	const invariant8 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
-	const invariant9 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
-	const invariant10 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+	const invariant4 = (invariant_)(shape_)(cube4); // 0.004629629629629629
+	const invariant5 = (invariant_)(shape_)(cube5); // 0.004629629629629629
+	const invariant6 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+	const invariant7 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+	const invariant8 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
+	const invariant9 = (invariant_)(shape_)(sphere4); // 0.008841941282883072
+	const invariant10 = (invariant_)(shape_)(sphere5); // 0.008841941282883074
+	const invariant11 = (invariant_)(shape_)(cylinder1); // 0.005894627521922049
+	const invariant12 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
+	const invariant13 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
+	const invariant14 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+	const invariant15 = (invariant_)(shape_)(cylinder5); // 0.005894627521922049
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script k (V2):
+	// script n (V3):
 	console.log('"' + label1 + '" === "cube of side 1": ' + (label1 === "cube of side 1"));
 	console.log('"' + label2 + '" === "cube of side 2": ' + (label2 === "cube of side 2"));
 	console.log('"' + label3 + '" === "cube of side 1": ' + (label3 === "cube of side 1"));
-	console.log('"' + label4 + '" === "sphere of radius 1": ' + (label4 === "sphere of radius 1"));
-	console.log('"' + label5 + '" === "sphere of radius 2": ' + (label5 === "sphere of radius 2"));
-	console.log('"' + label6 + '" === "sphere of radius 0.6203504908994": ' + (label6 === "sphere of radius 0.6203504908994"));
-	console.log('"' + label7 + '" === "cylinder of radius 1 and height 1": ' + (label7 === "cylinder of radius 1 and height 1"));
-	console.log('"' + label8 + '" === "cylinder of radius 2 and height 2": ' + (label8 === "cylinder of radius 2 and height 2"));
-	console.log('"' + label9 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label9 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
-	console.log('"' + label10 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label10 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
-	console.log('"' + invariant1 + '" === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
-	console.log('"' + invariant2 + '" === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
-	console.log('"' + invariant3 + '" === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
-	console.log('"' + invariant4 + '" === 0.008841941282883074: ' + (invariant4 === 0.008841941282883074));
-	console.log('"' + invariant5 + '" === 0.008841941282883074: ' + (invariant5 === 0.008841941282883074));
-	console.log('"' + invariant6 + '" === 0.008841941282883072: ' + (invariant6 === 0.008841941282883072));
-	console.log('"' + invariant7 + '" === 0.0049735919716217296: ' + (invariant7 === 0.0049735919716217296));
-	console.log('"' + invariant8 + '" === 0.0049735919716217296: ' + (invariant8 === 0.0049735919716217296));
-	console.log('"' + invariant9 + '" === 0.005894627521922052: ' + (invariant9 === 0.005894627521922052));
-	console.log('"' + invariant10 + '" === 0.005894627521922052: ' + (invariant10 === 0.005894627521922052));
+	console.log('"' + label4 + '" === "cube of side 2": ' + (label4 === "cube of side 2"));
+	console.log('"' + label5 + '" === "cube of side 1": ' + (label5 === "cube of side 1"));
+	console.log('"' + label6 + '" === "sphere of radius 0.5": ' + (label6 === "sphere of radius 0.5"));
+	console.log('"' + label7 + '" === "sphere of radius 1": ' + (label7 === "sphere of radius 1"));
+	console.log('"' + label8 + '" === "sphere of radius 0.6203504908994": ' + (label8 === "sphere of radius 0.6203504908994"));
+	console.log('"' + label9 + '" === "sphere of radius 1.2407009817988": ' + (label9 === "sphere of radius 1.2407009817988"));
+	console.log('"' + label10 + '" === "sphere of radius 0.690988298942671": ' + (label10 === "sphere of radius 0.690988298942671"));
+	console.log('"' + label11 + '" === "cylinder of radius 0.5 and height 1": ' + (label11 === "cylinder of radius 0.5 and height 1"));
+	console.log('"' + label12 + '" === "cylinder of radius 1 and height 2": ' + (label12 === "cylinder of radius 1 and height 2"));
+	console.log('"' + label13 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label13 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
+	console.log('"' + label14 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label14 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
+	console.log('"' + label15 + '" === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126": ' + (label15 === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"));
+	console.log(surface1 + ' === 6: ' + (surface1 === 6));
+	console.log(surface2 + ' === 24: ' + (surface2 === 24));
+	console.log(surface3 + ' === 6: ' + (surface3 === 6));
+	console.log(surface4 + ' === 24: ' + (surface4 === 24));
+	console.log(surface5 + ' === 6: ' + (surface5 === 6));
+	console.log(surface6 + ' === 3.141592653589793: ' + (surface6 === 3.141592653589793));
+	console.log(surface7 + ' === 12.566370614359172: ' + (surface7 === 12.566370614359172));
+	console.log(surface8 + ' === 4.835975862049408: ' + (surface8 === 4.835975862049408));
+	console.log(surface9 + ' === 19.343903448197633: ' + (surface9 === 19.343903448197633));
+	console.log(surface10 + ' === 6.000000000000001: ' + (surface10 === 6.000000000000001));
+	console.log(surface11 + ' === 4.71238898038469: ' + (surface11 === 4.71238898038469));
+	console.log(surface12 + ' === 18.84955592153876: ' + (surface12 === 18.84955592153876));
+	console.log(surface13 + ' === 5.535810445932086: ' + (surface13 === 5.535810445932086));
+	console.log(surface14 + ' === 22.143241783728342: ' + (surface14 === 22.143241783728342));
+	console.log(surface15 + ' === 5.999999999999999: ' + (surface15 === 5.999999999999999));
+	console.log(volume1 + ' === 1: ' + (volume1 === 1));
+	console.log(volume2 + ' === 8: ' + (volume2 === 8));
+	console.log(volume3 + ' === 1: ' + (volume3 === 1));
+	console.log(volume4 + ' === 8: ' + (volume4 === 8));
+	console.log(volume5 + ' === 1: ' + (volume5 === 1));
+	console.log(volume6 + ' === 0.5235987755982988: ' + (volume6 === 0.5235987755982988));
+	console.log(volume7 + ' === 4.1887902047863905: ' + (volume7 === 4.1887902047863905));
+	console.log(volume8 + ' === 0.9999999999999997: ' + (volume8 === 0.9999999999999997));
+	console.log(volume9 + ' === 7.999999999999997: ' + (volume9 === 7.999999999999997));
+	console.log(volume10 + ' === 1.3819765978853422: ' + (volume10 === 1.3819765978853422));
+	console.log(volume11 + ' === 0.7853981633974483: ' + (volume11 === 0.7853981633974483));
+	console.log(volume12 + ' === 6.283185307179586: ' + (volume12 === 6.283185307179586));
+	console.log(volume13 + ' === 1.0000000000000002: ' + (volume13 === 1.0000000000000002));
+	console.log(volume14 + ' === 8.000000000000002: ' + (volume14 === 8.000000000000002));
+	console.log(volume15 + ' === 1.1283791670955123: ' + (volume15 === 1.1283791670955123));
+	console.log(invariant1 + ' === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
+	console.log(invariant2 + ' === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
+	console.log(invariant3 + ' === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
+	console.log(invariant4 + ' === 0.004629629629629629: ' + (invariant4 === 0.004629629629629629));
+	console.log(invariant5 + ' === 0.004629629629629629: ' + (invariant5 === 0.004629629629629629));
+	console.log(invariant6 + ' === 0.008841941282883074: ' + (invariant6 === 0.008841941282883074));
+	console.log(invariant7 + ' === 0.008841941282883074: ' + (invariant7 === 0.008841941282883074));
+	console.log(invariant8 + ' === 0.008841941282883072: ' + (invariant8 === 0.008841941282883072));
+	console.log(invariant9 + ' === 0.008841941282883072: ' + (invariant9 === 0.008841941282883072));
+	console.log(invariant10 + ' === 0.008841941282883074: ' + (invariant10 === 0.008841941282883074));
+	console.log(invariant11 + ' === 0.005894627521922049: ' + (invariant11 === 0.005894627521922049));
+	console.log(invariant12 + ' === 0.005894627521922049: ' + (invariant12 === 0.005894627521922049));
+	console.log(invariant13 + ' === 0.005894627521922052: ' + (invariant13 === 0.005894627521922052));
+	console.log(invariant14 + ' === 0.005894627521922052: ' + (invariant14 === 0.005894627521922052));
+	console.log(invariant15 + ' === 0.005894627521922049: ' + (invariant15 === 0.005894627521922049));
 })();
 
-console.log("delegation:");
+console.log("delegations:");
 (function(){
 	////////////////////////////////////////////////////////////////////////////////////////
 	// script a (V1):
-	function error(message, applications){
-		throw message + (applications? (": " + applications.reduce(function(accumulator, application){
-			return "(" + application.name + ")" + accumulator;
-		}, "")): "");
-	}
-	////////////////////////////////////////////////////////////////////////////////////////
-	// script b (V1):
-	const shape_ = APPLICATION("shape_", error);
-	const label_ = APPLICATION("label_", error);
-	const surface_ = APPLICATION("surface_", error);
-	const volume_ = APPLICATION("volume_", error);
-	const stretch_ = APPLICATION("stretch_", error);
-	const invariant_ = APPLICATION("invariant_", error);
+	const shape_ = APPLICATION("shape_");
+	const label_ = APPLICATION("label_");
+	const surface_ = APPLICATION("surface_");
+	const volume_ = APPLICATION("volume_");
+	const stretch_ = APPLICATION("stretch_");
+	const invariant_ = APPLICATION("invariant_");
 	const shapeV1 = SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[label_],
@@ -1277,7 +1379,7 @@ console.log("delegation:");
 		])],
 	]);
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script c (V1):
+	// script b (V1):
 	const cubeV1 = DECLARATION(shapeV1, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => side => `cube of side ${side}`],
@@ -1285,9 +1387,9 @@ console.log("delegation:");
 			[volume_, implementation => side => side * side * side],
 			[stretch_, definition => side => k => cube(side * k)],
 		])],
-	]), error);
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script d (V1):
+	// script c (V1):
 	const sphereV1 = DECLARATION(shapeV1, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => radius => `sphere of radius ${radius}`],
@@ -1295,39 +1397,31 @@ console.log("delegation:");
 			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
 			[stretch_, definition => radius => k => sphere(radius * k)],
 		])],
-	]), error);
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script e (V2):
-	const container_ = APPLICATION("container_", error);
+	// script d (V2):
+	const container_ = APPLICATION("container_");
 	const shapeV2 = EXTENSION(shapeV1)(SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[container_],
 		])],
-	]), error);
-	/* //debug
-	const construction_ = APPLICATION("construction_", error);
-	const constructionV2 = DECLARATION([
-		[construction_, SPECIFICATION([
-			[shape_, implementation => declaration => ],
-		])],
-	]), undefined, error);
-	*/ //debug
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script f (V2):
+	// script e (V2):
 	const cubeV2 = DECLARATION(shapeV2, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[container_, definition => (delegation, side) => volume => cube(Math.pow(volume, 1/3))],
 		])],
-	]), error, true); // standard delegation
+	]), true); // standard delegation
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script g (V2):
+	// script f (V2):
 	const sphereV2 = DECLARATION(shapeV2, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[container_, definition => (delegation, radius) => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
 		])],
-	]), error, true); // standard delegation
+	]), true); // standard delegation
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script h (V2):
+	// script g (V2):
 	const cylinderV1 = DECLARATION(shapeV1, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
@@ -1335,85 +1429,440 @@ console.log("delegation:");
 			[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
 			[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
 		])],
-	]), error);
+	]));
 	const cylinderV2 = DECLARATION(shapeV2, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[container_, definition => (delegation, radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
 		])],
-	]), error, (definition, applications) => (delegation, radius, height) => applications(delegation)); // explicte standard delegation
+	]), (definition, applications) => (delegation, radius, height) => applications(delegation)); // explicte standard delegation
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script j (V2):
-	const cube = (...values) => cubeV2(cubeV1(...values), ...values);
-	const sphere = (...values) => sphereV2(sphereV1(...values), ...values);
-	const cylinder = (...values) => cylinderV2(cylinderV1(...values), ...values);
+	// script h (V3):
+	const wrapper_ = APPLICATION("wrapper_");
+	const shapeV3 = EXTENSION(shapeV2)(SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[wrapper_],
+		])],
+	]));
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script j (V2):
+	// script i (V3):
+	const cubeV3 = DECLARATION(shapeV3, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, side) => surface => cube(Math.pow(surface / 6, 1/2))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script j (V3):
+	const sphereV3 = DECLARATION(shapeV3, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, radius) => surface => sphere(Math.pow((1/4) * surface / Math.PI, 1/2))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script k (V3):
+	const cylinderV3 = DECLARATION(shapeV3, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, radius, height) => surface => cylinder(Math.pow((1/6) * surface / Math.PI, 1/2), 2 * Math.pow((1/6) * surface / Math.PI, 1/2))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script l (V3):
+	const cube = (...values) => cubeV3(cubeV2(cubeV1(...values), ...values), ...values);
+	const sphere = (...values) => sphereV3(sphereV2(sphereV1(...values), ...values), ...values);
+	const cylinder = (...values) => cylinderV3(cylinderV2(cylinderV1(...values), ...values), ...values);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script m (V3):
 	const cube1 = cube(1);
 	const cube2 = (stretch_)(shape_)(cube1)(2);
 	const cube3 = (container_)(shape_)(cube2)(1);
-	const sphere1 = sphere(1);
+	const cube4 = (stretch_)(shape_)(cube3)(2);
+	const cube5 = (wrapper_)(shape_)(cube4)(6);
+	const sphere1 = sphere(0.5);
 	const sphere2 = (stretch_)(shape_)(sphere1)(2);
 	const sphere3 = (container_)(shape_)(sphere2)(1);
-	const cylinder1 = cylinder(1, 1);
+	const sphere4 = (stretch_)(shape_)(sphere3)(2);
+	const sphere5 = (wrapper_)(shape_)(sphere4)(6);
+	const cylinder1 = cylinder(0.5, 1);
 	const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
 	const cylinder3 = (container_)(shape_)(cylinder2)(1);
 	const cylinder4 = (stretch_)(shape_)(cylinder3)(2);
+	const cylinder5 = (wrapper_)(shape_)(cylinder4)(6);
 	const label1 = (label_)(shape_)(cube1); // "cube of side 1"
 	const label2 = (label_)(shape_)(cube2); // "cube of side 2"
 	const label3 = (label_)(shape_)(cube3); // "cube of side 1"
-	const label4 = (label_)(shape_)(sphere1); // "sphere of radius 1"
-	const label5 = (label_)(shape_)(sphere2); // "sphere of radius 2"
-	const label6 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
-	const label7 = (label_)(shape_)(cylinder1); // "cylinder of radius 1 and height 1"
-	const label8 = (label_)(shape_)(cylinder2); // "cylinder of radius 2 and height 2"
-	const label9 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
-	const label10 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+	const label4 = (label_)(shape_)(cube4); // "cube of side 2"
+	const label5 = (label_)(shape_)(cube5); // "cube of side 1"
+	const label6 = (label_)(shape_)(sphere1); // "sphere of radius 0.5"
+	const label7 = (label_)(shape_)(sphere2); // "sphere of radius 1"
+	const label8 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
+	const label9 = (label_)(shape_)(sphere4); // "sphere of radius 1.2407009817988"
+	const label10 = (label_)(shape_)(sphere5); // "sphere of radius 0.690988298942671"
+	const label11 = (label_)(shape_)(cylinder1); // "cylinder of radius 0.5 and height 1"
+	const label12 = (label_)(shape_)(cylinder2); // "cylinder of radius 1 and height 2"
+	const label13 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
+	const label14 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+	const label15 = (label_)(shape_)(cylinder5); // "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"
+	const surface1 = (surface_)(shape_)(cube1); // 6
+	const surface2 = (surface_)(shape_)(cube2); // 24
+	const surface3 = (surface_)(shape_)(cube3); // 6
+	const surface4 = (surface_)(shape_)(cube4); // 24
+	const surface5 = (surface_)(shape_)(cube5); // 6
+	const surface6 = (surface_)(shape_)(sphere1); // 3.141592653589793
+	const surface7 = (surface_)(shape_)(sphere2); // 12.566370614359172
+	const surface8 = (surface_)(shape_)(sphere3); // 4.835975862049408
+	const surface9 = (surface_)(shape_)(sphere4); // 19.343903448197633
+	const surface10 = (surface_)(shape_)(sphere5); // 6.000000000000001
+	const surface11 = (surface_)(shape_)(cylinder1); // 4.71238898038469
+	const surface12 = (surface_)(shape_)(cylinder2); // 18.84955592153876
+	const surface13 = (surface_)(shape_)(cylinder3); // 5.535810445932086
+	const surface14 = (surface_)(shape_)(cylinder4); // 22.143241783728342
+	const surface15 = (surface_)(shape_)(cylinder5); // 5.999999999999999
+	const volume1 = (volume_)(shape_)(cube1); // 1
+	const volume2 = (volume_)(shape_)(cube2); // 8
+	const volume3 = (volume_)(shape_)(cube3); // 1
+	const volume4 = (volume_)(shape_)(cube4); // 8
+	const volume5 = (volume_)(shape_)(cube5); // 1
+	const volume6 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+	const volume7 = (volume_)(shape_)(sphere2); // 4.1887902047863905
+	const volume8 = (volume_)(shape_)(sphere3); // 0.9999999999999997
+	const volume9 = (volume_)(shape_)(sphere4); // 7.999999999999997
+	const volume10 = (volume_)(shape_)(sphere5); // 1.3819765978853422
+	const volume11 = (volume_)(shape_)(cylinder1); // 0.7853981633974483
+	const volume12 = (volume_)(shape_)(cylinder2); // 6.283185307179586
+	const volume13 = (volume_)(shape_)(cylinder3); // 1.0000000000000002
+	const volume14 = (volume_)(shape_)(cylinder4); // 8.000000000000002
+	const volume15 = (volume_)(shape_)(cylinder5); // 1.1283791670955123
 	const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
 	const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
 	const invariant3 = (invariant_)(shape_)(cube3); // 0.004629629629629629
-	const invariant4 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
-	const invariant5 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
-	const invariant6 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
-	const invariant7 = (invariant_)(shape_)(cylinder1); // 0.0049735919716217296
-	const invariant8 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
-	const invariant9 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
-	const invariant10 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+	const invariant4 = (invariant_)(shape_)(cube4); // 0.004629629629629629
+	const invariant5 = (invariant_)(shape_)(cube5); // 0.004629629629629629
+	const invariant6 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+	const invariant7 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+	const invariant8 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
+	const invariant9 = (invariant_)(shape_)(sphere4); // 0.008841941282883072
+	const invariant10 = (invariant_)(shape_)(sphere5); // 0.008841941282883074
+	const invariant11 = (invariant_)(shape_)(cylinder1); // 0.005894627521922049
+	const invariant12 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
+	const invariant13 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
+	const invariant14 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+	const invariant15 = (invariant_)(shape_)(cylinder5); // 0.005894627521922049
 	////////////////////////////////////////////////////////////////////////////////////////
-	// script k (V2):
+	// script n (V3):
 	console.log('"' + label1 + '" === "cube of side 1": ' + (label1 === "cube of side 1"));
 	console.log('"' + label2 + '" === "cube of side 2": ' + (label2 === "cube of side 2"));
 	console.log('"' + label3 + '" === "cube of side 1": ' + (label3 === "cube of side 1"));
-	console.log('"' + label4 + '" === "sphere of radius 1": ' + (label4 === "sphere of radius 1"));
-	console.log('"' + label5 + '" === "sphere of radius 2": ' + (label5 === "sphere of radius 2"));
-	console.log('"' + label6 + '" === "sphere of radius 0.6203504908994": ' + (label6 === "sphere of radius 0.6203504908994"));
-	console.log('"' + label7 + '" === "cylinder of radius 1 and height 1": ' + (label7 === "cylinder of radius 1 and height 1"));
-	console.log('"' + label8 + '" === "cylinder of radius 2 and height 2": ' + (label8 === "cylinder of radius 2 and height 2"));
-	console.log('"' + label9 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label9 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
-	console.log('"' + label10 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label10 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
-	console.log('"' + invariant1 + '" === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
-	console.log('"' + invariant2 + '" === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
-	console.log('"' + invariant3 + '" === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
-	console.log('"' + invariant4 + '" === 0.008841941282883074: ' + (invariant4 === 0.008841941282883074));
-	console.log('"' + invariant5 + '" === 0.008841941282883074: ' + (invariant5 === 0.008841941282883074));
-	console.log('"' + invariant6 + '" === 0.008841941282883072: ' + (invariant6 === 0.008841941282883072));
-	console.log('"' + invariant7 + '" === 0.0049735919716217296: ' + (invariant7 === 0.0049735919716217296));
-	console.log('"' + invariant8 + '" === 0.0049735919716217296: ' + (invariant8 === 0.0049735919716217296));
-	console.log('"' + invariant9 + '" === 0.005894627521922052: ' + (invariant9 === 0.005894627521922052));
-	console.log('"' + invariant10 + '" === 0.005894627521922052: ' + (invariant10 === 0.005894627521922052));
+	console.log('"' + label4 + '" === "cube of side 2": ' + (label4 === "cube of side 2"));
+	console.log('"' + label5 + '" === "cube of side 1": ' + (label5 === "cube of side 1"));
+	console.log('"' + label6 + '" === "sphere of radius 0.5": ' + (label6 === "sphere of radius 0.5"));
+	console.log('"' + label7 + '" === "sphere of radius 1": ' + (label7 === "sphere of radius 1"));
+	console.log('"' + label8 + '" === "sphere of radius 0.6203504908994": ' + (label8 === "sphere of radius 0.6203504908994"));
+	console.log('"' + label9 + '" === "sphere of radius 1.2407009817988": ' + (label9 === "sphere of radius 1.2407009817988"));
+	console.log('"' + label10 + '" === "sphere of radius 0.690988298942671": ' + (label10 === "sphere of radius 0.690988298942671"));
+	console.log('"' + label11 + '" === "cylinder of radius 0.5 and height 1": ' + (label11 === "cylinder of radius 0.5 and height 1"));
+	console.log('"' + label12 + '" === "cylinder of radius 1 and height 2": ' + (label12 === "cylinder of radius 1 and height 2"));
+	console.log('"' + label13 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label13 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
+	console.log('"' + label14 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label14 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
+	console.log('"' + label15 + '" === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126": ' + (label15 === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"));
+	console.log(surface1 + ' === 6: ' + (surface1 === 6));
+	console.log(surface2 + ' === 24: ' + (surface2 === 24));
+	console.log(surface3 + ' === 6: ' + (surface3 === 6));
+	console.log(surface4 + ' === 24: ' + (surface4 === 24));
+	console.log(surface5 + ' === 6: ' + (surface5 === 6));
+	console.log(surface6 + ' === 3.141592653589793: ' + (surface6 === 3.141592653589793));
+	console.log(surface7 + ' === 12.566370614359172: ' + (surface7 === 12.566370614359172));
+	console.log(surface8 + ' === 4.835975862049408: ' + (surface8 === 4.835975862049408));
+	console.log(surface9 + ' === 19.343903448197633: ' + (surface9 === 19.343903448197633));
+	console.log(surface10 + ' === 6.000000000000001: ' + (surface10 === 6.000000000000001));
+	console.log(surface11 + ' === 4.71238898038469: ' + (surface11 === 4.71238898038469));
+	console.log(surface12 + ' === 18.84955592153876: ' + (surface12 === 18.84955592153876));
+	console.log(surface13 + ' === 5.535810445932086: ' + (surface13 === 5.535810445932086));
+	console.log(surface14 + ' === 22.143241783728342: ' + (surface14 === 22.143241783728342));
+	console.log(surface15 + ' === 5.999999999999999: ' + (surface15 === 5.999999999999999));
+	console.log(volume1 + ' === 1: ' + (volume1 === 1));
+	console.log(volume2 + ' === 8: ' + (volume2 === 8));
+	console.log(volume3 + ' === 1: ' + (volume3 === 1));
+	console.log(volume4 + ' === 8: ' + (volume4 === 8));
+	console.log(volume5 + ' === 1: ' + (volume5 === 1));
+	console.log(volume6 + ' === 0.5235987755982988: ' + (volume6 === 0.5235987755982988));
+	console.log(volume7 + ' === 4.1887902047863905: ' + (volume7 === 4.1887902047863905));
+	console.log(volume8 + ' === 0.9999999999999997: ' + (volume8 === 0.9999999999999997));
+	console.log(volume9 + ' === 7.999999999999997: ' + (volume9 === 7.999999999999997));
+	console.log(volume10 + ' === 1.3819765978853422: ' + (volume10 === 1.3819765978853422));
+	console.log(volume11 + ' === 0.7853981633974483: ' + (volume11 === 0.7853981633974483));
+	console.log(volume12 + ' === 6.283185307179586: ' + (volume12 === 6.283185307179586));
+	console.log(volume13 + ' === 1.0000000000000002: ' + (volume13 === 1.0000000000000002));
+	console.log(volume14 + ' === 8.000000000000002: ' + (volume14 === 8.000000000000002));
+	console.log(volume15 + ' === 1.1283791670955123: ' + (volume15 === 1.1283791670955123));
+	console.log(invariant1 + ' === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
+	console.log(invariant2 + ' === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
+	console.log(invariant3 + ' === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
+	console.log(invariant4 + ' === 0.004629629629629629: ' + (invariant4 === 0.004629629629629629));
+	console.log(invariant5 + ' === 0.004629629629629629: ' + (invariant5 === 0.004629629629629629));
+	console.log(invariant6 + ' === 0.008841941282883074: ' + (invariant6 === 0.008841941282883074));
+	console.log(invariant7 + ' === 0.008841941282883074: ' + (invariant7 === 0.008841941282883074));
+	console.log(invariant8 + ' === 0.008841941282883072: ' + (invariant8 === 0.008841941282883072));
+	console.log(invariant9 + ' === 0.008841941282883072: ' + (invariant9 === 0.008841941282883072));
+	console.log(invariant10 + ' === 0.008841941282883074: ' + (invariant10 === 0.008841941282883074));
+	console.log(invariant11 + ' === 0.005894627521922049: ' + (invariant11 === 0.005894627521922049));
+	console.log(invariant12 + ' === 0.005894627521922049: ' + (invariant12 === 0.005894627521922049));
+	console.log(invariant13 + ' === 0.005894627521922052: ' + (invariant13 === 0.005894627521922052));
+	console.log(invariant14 + ' === 0.005894627521922052: ' + (invariant14 === 0.005894627521922052));
+	console.log(invariant15 + ' === 0.005894627521922049: ' + (invariant15 === 0.005894627521922049));
+})();
+(function(){
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script a (V1):
+	const shape_ = APPLICATION("shape_");
+	const label_ = APPLICATION("label_");
+	const surface_ = APPLICATION("surface_");
+	const volume_ = APPLICATION("volume_");
+	const stretch_ = APPLICATION("stretch_");
+	const invariant_ = APPLICATION("invariant_");
+	const shapeV1 = SPECIFICATION([
+		[shape_, SPECIFICATION([
+			[label_],
+			[surface_],
+			[volume_],
+			[stretch_],
+			[invariant_, implementation => ((volume_)(shape_)(implementation) * (volume_)(shape_)(implementation)) / ((surface_)(shape_)(implementation) * (surface_)(shape_)(implementation) * (surface_)(shape_)(implementation))],
+		])],
+	]);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script b (V1):
+	const cubeV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => side => `cube of side ${side}`],
+			[surface_, implementation => side => side * side * 6],
+			[volume_, implementation => side => side * side * side],
+			[stretch_, definition => side => k => cube(side * k)],
+		])],
+	]));
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script c (V1):
+	const sphereV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => radius => `sphere of radius ${radius}`],
+			[surface_, implementation => radius => radius * radius * Math.PI * 4],
+			[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
+			[stretch_, definition => radius => k => sphere(radius * k)],
+		])],
+	]));
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script d (V2):
+	const container_ = APPLICATION("container_");
+	const shapeV2 = undefined; // no specification check
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script e (V2):
+	const cubeV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => (delegation, side) => volume => cube(Math.pow(volume, 1/3))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script f (V2):
+	const sphereV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => (delegation, radius) => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script g (V2):
+	const cylinderV1 = DECLARATION(shapeV1, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
+			[surface_, implementation => (radius, height) => radius * radius * Math.PI * 2 + height * radius * Math.PI * 2],
+			[volume_, implementation => (radius, height) => height * radius * radius * Math.PI],
+			[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
+		])],
+	]));
+	const cylinderV2 = DECLARATION(shapeV2, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[container_, definition => (delegation, radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
+		])],
+	]), (definition, applications) => (delegation, radius, height) => applications(delegation)); // explicte standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script h (V3):
+	const wrapper_ = APPLICATION("wrapper_");
+	const shapeV3 = undefined; // no specification check
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script i (V3):
+	const cubeV3 = DECLARATION(shapeV3, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, side) => surface => cube(Math.pow(surface / 6, 1/2))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script j (V3):
+	const sphereV3 = DECLARATION(shapeV3, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, radius) => surface => sphere(Math.pow((1/4) * surface / Math.PI, 1/2))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script k (V3):
+	const cylinderV3 = DECLARATION(shapeV3, IMPLEMENTATION([
+		[shape_, IMPLEMENTATION([
+			[wrapper_, definition => (delegation, radius, height) => surface => cylinder(Math.pow((1/6) * surface / Math.PI, 1/2), 2 * Math.pow((1/6) * surface / Math.PI, 1/2))],
+		])],
+	]), true); // standard delegation
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script l (V3):
+	const cube = (...values) => cubeV3(cubeV2(cubeV1(...values), ...values), ...values);
+	const sphere = (...values) => sphereV3(sphereV2(sphereV1(...values), ...values), ...values);
+	const cylinder = (...values) => cylinderV3(cylinderV2(cylinderV1(...values), ...values), ...values);
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script m (V3):
+	const cube1 = cube(1);
+	const cube2 = (stretch_)(shape_)(cube1)(2);
+	const cube3 = (container_)(shape_)(cube2)(1);
+	const cube4 = (stretch_)(shape_)(cube3)(2);
+	const cube5 = (wrapper_)(shape_)(cube4)(6);
+	const sphere1 = sphere(0.5);
+	const sphere2 = (stretch_)(shape_)(sphere1)(2);
+	const sphere3 = (container_)(shape_)(sphere2)(1);
+	const sphere4 = (stretch_)(shape_)(sphere3)(2);
+	const sphere5 = (wrapper_)(shape_)(sphere4)(6);
+	const cylinder1 = cylinder(0.5, 1);
+	const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
+	const cylinder3 = (container_)(shape_)(cylinder2)(1);
+	const cylinder4 = (stretch_)(shape_)(cylinder3)(2);
+	const cylinder5 = (wrapper_)(shape_)(cylinder4)(6);
+	const label1 = (label_)(shape_)(cube1); // "cube of side 1"
+	const label2 = (label_)(shape_)(cube2); // "cube of side 2"
+	const label3 = (label_)(shape_)(cube3); // "cube of side 1"
+	const label4 = (label_)(shape_)(cube4); // "cube of side 2"
+	const label5 = (label_)(shape_)(cube5); // "cube of side 1"
+	const label6 = (label_)(shape_)(sphere1); // "sphere of radius 0.5"
+	const label7 = (label_)(shape_)(sphere2); // "sphere of radius 1"
+	const label8 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
+	const label9 = (label_)(shape_)(sphere4); // "sphere of radius 1.2407009817988"
+	const label10 = (label_)(shape_)(sphere5); // "sphere of radius 0.690988298942671"
+	const label11 = (label_)(shape_)(cylinder1); // "cylinder of radius 0.5 and height 1"
+	const label12 = (label_)(shape_)(cylinder2); // "cylinder of radius 1 and height 2"
+	const label13 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
+	const label14 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+	const label15 = (label_)(shape_)(cylinder5); // "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"
+	const surface1 = (surface_)(shape_)(cube1); // 6
+	const surface2 = (surface_)(shape_)(cube2); // 24
+	const surface3 = (surface_)(shape_)(cube3); // 6
+	const surface4 = (surface_)(shape_)(cube4); // 24
+	const surface5 = (surface_)(shape_)(cube5); // 6
+	const surface6 = (surface_)(shape_)(sphere1); // 3.141592653589793
+	const surface7 = (surface_)(shape_)(sphere2); // 12.566370614359172
+	const surface8 = (surface_)(shape_)(sphere3); // 4.835975862049408
+	const surface9 = (surface_)(shape_)(sphere4); // 19.343903448197633
+	const surface10 = (surface_)(shape_)(sphere5); // 6.000000000000001
+	const surface11 = (surface_)(shape_)(cylinder1); // 4.71238898038469
+	const surface12 = (surface_)(shape_)(cylinder2); // 18.84955592153876
+	const surface13 = (surface_)(shape_)(cylinder3); // 5.535810445932086
+	const surface14 = (surface_)(shape_)(cylinder4); // 22.143241783728342
+	const surface15 = (surface_)(shape_)(cylinder5); // 5.999999999999999
+	const volume1 = (volume_)(shape_)(cube1); // 1
+	const volume2 = (volume_)(shape_)(cube2); // 8
+	const volume3 = (volume_)(shape_)(cube3); // 1
+	const volume4 = (volume_)(shape_)(cube4); // 8
+	const volume5 = (volume_)(shape_)(cube5); // 1
+	const volume6 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+	const volume7 = (volume_)(shape_)(sphere2); // 4.1887902047863905
+	const volume8 = (volume_)(shape_)(sphere3); // 0.9999999999999997
+	const volume9 = (volume_)(shape_)(sphere4); // 7.999999999999997
+	const volume10 = (volume_)(shape_)(sphere5); // 1.3819765978853422
+	const volume11 = (volume_)(shape_)(cylinder1); // 0.7853981633974483
+	const volume12 = (volume_)(shape_)(cylinder2); // 6.283185307179586
+	const volume13 = (volume_)(shape_)(cylinder3); // 1.0000000000000002
+	const volume14 = (volume_)(shape_)(cylinder4); // 8.000000000000002
+	const volume15 = (volume_)(shape_)(cylinder5); // 1.1283791670955123
+	const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
+	const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
+	const invariant3 = (invariant_)(shape_)(cube3); // 0.004629629629629629
+	const invariant4 = (invariant_)(shape_)(cube4); // 0.004629629629629629
+	const invariant5 = (invariant_)(shape_)(cube5); // 0.004629629629629629
+	const invariant6 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+	const invariant7 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+	const invariant8 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
+	const invariant9 = (invariant_)(shape_)(sphere4); // 0.008841941282883072
+	const invariant10 = (invariant_)(shape_)(sphere5); // 0.008841941282883074
+	const invariant11 = (invariant_)(shape_)(cylinder1); // 0.005894627521922049
+	const invariant12 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
+	const invariant13 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
+	const invariant14 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+	const invariant15 = (invariant_)(shape_)(cylinder5); // 0.005894627521922049
+	////////////////////////////////////////////////////////////////////////////////////////
+	// script n (V3):
+	console.log('"' + label1 + '" === "cube of side 1": ' + (label1 === "cube of side 1"));
+	console.log('"' + label2 + '" === "cube of side 2": ' + (label2 === "cube of side 2"));
+	console.log('"' + label3 + '" === "cube of side 1": ' + (label3 === "cube of side 1"));
+	console.log('"' + label4 + '" === "cube of side 2": ' + (label4 === "cube of side 2"));
+	console.log('"' + label5 + '" === "cube of side 1": ' + (label5 === "cube of side 1"));
+	console.log('"' + label6 + '" === "sphere of radius 0.5": ' + (label6 === "sphere of radius 0.5"));
+	console.log('"' + label7 + '" === "sphere of radius 1": ' + (label7 === "sphere of radius 1"));
+	console.log('"' + label8 + '" === "sphere of radius 0.6203504908994": ' + (label8 === "sphere of radius 0.6203504908994"));
+	console.log('"' + label9 + '" === "sphere of radius 1.2407009817988": ' + (label9 === "sphere of radius 1.2407009817988"));
+	console.log('"' + label10 + '" === "sphere of radius 0.690988298942671": ' + (label10 === "sphere of radius 0.690988298942671"));
+	console.log('"' + label11 + '" === "cylinder of radius 0.5 and height 1": ' + (label11 === "cylinder of radius 0.5 and height 1"));
+	console.log('"' + label12 + '" === "cylinder of radius 1 and height 2": ' + (label12 === "cylinder of radius 1 and height 2"));
+	console.log('"' + label13 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label13 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
+	console.log('"' + label14 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label14 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
+	console.log('"' + label15 + '" === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126": ' + (label15 === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"));
+	console.log(surface1 + ' === 6: ' + (surface1 === 6));
+	console.log(surface2 + ' === 24: ' + (surface2 === 24));
+	console.log(surface3 + ' === 6: ' + (surface3 === 6));
+	console.log(surface4 + ' === 24: ' + (surface4 === 24));
+	console.log(surface5 + ' === 6: ' + (surface5 === 6));
+	console.log(surface6 + ' === 3.141592653589793: ' + (surface6 === 3.141592653589793));
+	console.log(surface7 + ' === 12.566370614359172: ' + (surface7 === 12.566370614359172));
+	console.log(surface8 + ' === 4.835975862049408: ' + (surface8 === 4.835975862049408));
+	console.log(surface9 + ' === 19.343903448197633: ' + (surface9 === 19.343903448197633));
+	console.log(surface10 + ' === 6.000000000000001: ' + (surface10 === 6.000000000000001));
+	console.log(surface11 + ' === 4.71238898038469: ' + (surface11 === 4.71238898038469));
+	console.log(surface12 + ' === 18.84955592153876: ' + (surface12 === 18.84955592153876));
+	console.log(surface13 + ' === 5.535810445932086: ' + (surface13 === 5.535810445932086));
+	console.log(surface14 + ' === 22.143241783728342: ' + (surface14 === 22.143241783728342));
+	console.log(surface15 + ' === 5.999999999999999: ' + (surface15 === 5.999999999999999));
+	console.log(volume1 + ' === 1: ' + (volume1 === 1));
+	console.log(volume2 + ' === 8: ' + (volume2 === 8));
+	console.log(volume3 + ' === 1: ' + (volume3 === 1));
+	console.log(volume4 + ' === 8: ' + (volume4 === 8));
+	console.log(volume5 + ' === 1: ' + (volume5 === 1));
+	console.log(volume6 + ' === 0.5235987755982988: ' + (volume6 === 0.5235987755982988));
+	console.log(volume7 + ' === 4.1887902047863905: ' + (volume7 === 4.1887902047863905));
+	console.log(volume8 + ' === 0.9999999999999997: ' + (volume8 === 0.9999999999999997));
+	console.log(volume9 + ' === 7.999999999999997: ' + (volume9 === 7.999999999999997));
+	console.log(volume10 + ' === 1.3819765978853422: ' + (volume10 === 1.3819765978853422));
+	console.log(volume11 + ' === 0.7853981633974483: ' + (volume11 === 0.7853981633974483));
+	console.log(volume12 + ' === 6.283185307179586: ' + (volume12 === 6.283185307179586));
+	console.log(volume13 + ' === 1.0000000000000002: ' + (volume13 === 1.0000000000000002));
+	console.log(volume14 + ' === 8.000000000000002: ' + (volume14 === 8.000000000000002));
+	console.log(volume15 + ' === 1.1283791670955123: ' + (volume15 === 1.1283791670955123));
+	console.log(invariant1 + ' === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
+	console.log(invariant2 + ' === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
+	console.log(invariant3 + ' === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
+	console.log(invariant4 + ' === 0.004629629629629629: ' + (invariant4 === 0.004629629629629629));
+	console.log(invariant5 + ' === 0.004629629629629629: ' + (invariant5 === 0.004629629629629629));
+	console.log(invariant6 + ' === 0.008841941282883074: ' + (invariant6 === 0.008841941282883074));
+	console.log(invariant7 + ' === 0.008841941282883074: ' + (invariant7 === 0.008841941282883074));
+	console.log(invariant8 + ' === 0.008841941282883072: ' + (invariant8 === 0.008841941282883072));
+	console.log(invariant9 + ' === 0.008841941282883072: ' + (invariant9 === 0.008841941282883072));
+	console.log(invariant10 + ' === 0.008841941282883074: ' + (invariant10 === 0.008841941282883074));
+	console.log(invariant11 + ' === 0.005894627521922049: ' + (invariant11 === 0.005894627521922049));
+	console.log(invariant12 + ' === 0.005894627521922049: ' + (invariant12 === 0.005894627521922049));
+	console.log(invariant13 + ' === 0.005894627521922052: ' + (invariant13 === 0.005894627521922052));
+	console.log(invariant14 + ' === 0.005894627521922052: ' + (invariant14 === 0.005894627521922052));
+	console.log(invariant15 + ' === 0.005894627521922049: ' + (invariant15 === 0.005894627521922049));
 })();
 
 console.log("exceptions:");
 (function(){
-	const shape_ = APPLICATION("shape_", error);
-	const label_ = APPLICATION("label_", error);
-	const surface_ = APPLICATION("surface_", error);
-	const volume_ = APPLICATION("volume_", error);
-	const stretch_ = APPLICATION("stretch_", error);
-	const invariant_ = APPLICATION("invariant_", error);
-	const alignment_ = APPLICATION("alignment_", error);
-	const solid_ = APPLICATION("solid_", error);
-	const weight_ = APPLICATION("weight_", error);
-	const test_ = APPLICATION("test_", error);
+	const shape_ = APPLICATION("shape_");
+	const label_ = APPLICATION("label_");
+	const surface_ = APPLICATION("surface_");
+	const volume_ = APPLICATION("volume_");
+	const stretch_ = APPLICATION("stretch_");
+	const invariant_ = APPLICATION("invariant_");
+	const alignment_ = APPLICATION("alignment_");
+	const solid_ = APPLICATION("solid_");
+	const weight_ = APPLICATION("weight_");
+	const test_ = APPLICATION("test_");
 	const cube = DECLARATION(SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[label_],
@@ -1431,7 +1880,7 @@ console.log("exceptions:");
 			[stretch_, definition => side => k => cube(side * k)],
 			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 		])],
-	]), error);
+	]));
 	const cube1 = cube(1);
 
 	try{
@@ -1520,7 +1969,7 @@ console.log("exceptions:");
 				[volume_, definition => side => side * side * side],
 				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 			])],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1549,7 +1998,7 @@ console.log("exceptions:");
 				[volume_, definition => side => side * side * side],
 				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 			]],
-		], error);
+		]);
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1578,7 +2027,7 @@ console.log("exceptions:");
 				[volume_, definition => side => side * side * side],
 				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 			])],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1609,7 +2058,7 @@ console.log("exceptions:");
 				[invariant_, definition => side => 1],
 				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 			])],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1641,7 +2090,7 @@ console.log("exceptions:");
 				[invariant_],
 				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 			])],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1672,7 +2121,7 @@ console.log("exceptions:");
 				[stretch_, definition => side => k => cube(side * k)],
 				[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 			])],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1688,7 +2137,7 @@ console.log("exceptions:");
 			[shape_, IMPLEMENTATION([
 				[label_, definition => side => `cube of side ${side}`],
 			])],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1703,7 +2152,7 @@ console.log("exceptions:");
 		]), IMPLEMENTATION([
 			[shape_, IMPLEMENTATION([
 			])],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1718,7 +2167,7 @@ console.log("exceptions:");
 			[shape_, IMPLEMENTATION([
 				[label_, definition => side => `cube of side ${side}`],
 			])],
-		])), error);
+		])));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1730,7 +2179,7 @@ console.log("exceptions:");
 			[shape_],
 		]), IMPLEMENTATION([
 			[shape_, definition => side => `cube of side ${side}`],
-		]), error);
+		]));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1744,7 +2193,7 @@ console.log("exceptions:");
 			])],
 		])), EXTENSION(cube)(IMPLEMENTATION([
 			[solid_],
-		])), error);
+		])));
 		console.error("unreachable script");
 	}
 	catch(exception){
@@ -1752,22 +2201,25 @@ console.log("exceptions:");
 	}
 
 	try{
+		const cubex = DECLARATION(undefined, EXTENSION(cube)(IMPLEMENTATION([
+			[solid_],
+		])));
+		console.error("unreachable script");
+	}
+	catch(exception){
+		console.log('"' + exception + '" === "invalid specification": ' + (exception === "invalid specification"));
+	}
+
+	try{
 		(function(){
 			////////////////////////////////////////////////////////////////////////////////////////
 			// script a (V1):
-			function error(message, applications){
-				throw message + (applications? (": " + applications.reduce(function(accumulator, application){
-					return "(" + application.name + ")" + accumulator;
-				}, "")): "");
-			}
-			////////////////////////////////////////////////////////////////////////////////////////
-			// script b (V1):
-			const shape_ = APPLICATION("shape_", error);
-			const label_ = APPLICATION("label_", error);
-			const surface_ = APPLICATION("surface_", error);
-			const volume_ = APPLICATION("volume_", error);
-			const stretch_ = APPLICATION("stretch_", error);
-			const invariant_ = APPLICATION("invariant_", error);
+			const shape_ = APPLICATION("shape_");
+			const label_ = APPLICATION("label_");
+			const surface_ = APPLICATION("surface_");
+			const volume_ = APPLICATION("volume_");
+			const stretch_ = APPLICATION("stretch_");
+			const invariant_ = APPLICATION("invariant_");
 			const shapeV1 = SPECIFICATION([
 				[shape_, SPECIFICATION([
 					[label_],
@@ -1778,7 +2230,7 @@ console.log("exceptions:");
 				])],
 			]);
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script c (V1):
+			// script b (V1):
 			const cubeV1 = DECLARATION(shapeV1, IMPLEMENTATION([
 				[shape_, IMPLEMENTATION([
 					[label_, implementation => side => `cube of side ${side}`],
@@ -1786,9 +2238,9 @@ console.log("exceptions:");
 					[volume_, implementation => side => side * side * side],
 					[stretch_, definition => side => k => cube(side * k)],
 				])],
-			]), error);
+			]));
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script d (V1):
+			// script c (V1):
 			const sphereV1 = DECLARATION(shapeV1, IMPLEMENTATION([
 				[shape_, IMPLEMENTATION([
 					[label_, implementation => radius => `sphere of radius ${radius}`],
@@ -1796,31 +2248,31 @@ console.log("exceptions:");
 					[volume_, implementation => radius => radius * radius * radius * Math.PI * 4/3],
 					[stretch_, definition => radius => k => sphere(radius * k)],
 				])],
-			]), error);
+			]));
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script e (V2):
-			const container_ = APPLICATION("container_", error);
+			// script d (V2):
+			const container_ = APPLICATION("container_");
 			const shapeV2 = EXTENSION(shapeV1)(SPECIFICATION([
 				[shape_, SPECIFICATION([
 					[container_],
 				])],
-			]), error);
+			]));
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script f (V2):
+			// script e (V2):
 			const cubeV2 = DECLARATION(shapeV2, EXTENSION(cubeV1)(IMPLEMENTATION([
 				[shape_, IMPLEMENTATION([
 					[container_, definition => side => volume => cube(Math.pow(volume, 1/3))],
 				])],
-			])), error);
+			])));
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script g (V2):
+			// script f (V2):
 			const sphereV2 = DECLARATION(shapeV2, EXTENSION(sphereV1)(IMPLEMENTATION([
 				[shape_, IMPLEMENTATION([
 					[container_, definition => radius => volume => sphere(Math.pow((3/4) * volume / Math.PI, 1/3))],
 				])],
-			])), error);
+			])));
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script h (V2):
+			// script g (V2):
 			const cylinderV2 = DECLARATION(shapeV2, IMPLEMENTATION([
 				[shape_, IMPLEMENTATION([
 					[label_, implementation => (radius, height) => `cylinder of radius ${radius} and height ${height}`],
@@ -1829,66 +2281,180 @@ console.log("exceptions:");
 					[stretch_, implementation => (radius, height) => k => cylinder(radius * k, height * k)],
 					[container_, definition => (radius, height) => volume => cylinder(Math.pow(4 * volume / Math.PI, 1/3) / 2, Math.pow(4 * volume / Math.PI, 1/3))],
 				])],
-			]), error);
+			]));
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script j (V2):
-			const cube = cubeV2;
-			// missing declaration // const sphere = sphereV2;
-			const cylinder = cylinderV2;
+			// script h (V3):
+			const wrapper_ = APPLICATION("wrapper_");
+			const shapeV3 = EXTENSION(shapeV2)(SPECIFICATION([
+				[shape_, SPECIFICATION([
+					[wrapper_],
+				])],
+			]));
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script j (V2):
+			// script i (V3):
+			const cubeV3 = DECLARATION(shapeV3, EXTENSION(cubeV2)(IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[wrapper_, definition => (delegation, side) => surface => cube(Math.pow(surface / 6, 1/2))],
+				])],
+			])));
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script j (V3):
+			const sphereV3 = DECLARATION(shapeV3, EXTENSION(sphereV2)(IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[wrapper_, definition => (delegation, radius) => surface => sphere(Math.pow((1/4) * surface / Math.PI, 1/2))],
+				])],
+			])));
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script k (V3):
+			const cylinderV3 = DECLARATION(shapeV3, EXTENSION(cylinderV2)(IMPLEMENTATION([
+				[shape_, IMPLEMENTATION([
+					[wrapper_, definition => (delegation, radius, height) => surface => cylinder(Math.pow((1/6) * surface / Math.PI, 1/2), 2 * Math.pow((1/6) * surface / Math.PI, 1/2))],
+				])],
+			])), true);
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script l (V3):
+			const cube = cubeV3;
+			// missing declaration // const sphere = sphereV3;
+			const cylinder = cylinderV3;
+			////////////////////////////////////////////////////////////////////////////////////////
+			// script m (V3):
 			const cube1 = cube(1);
 			const cube2 = (stretch_)(shape_)(cube1)(2);
 			const cube3 = (container_)(shape_)(cube2)(1);
-			const sphere1 = sphere(1);
+			const cube4 = (stretch_)(shape_)(cube3)(2);
+			const cube5 = (wrapper_)(shape_)(cube4)(6);
+			const sphere1 = sphere(0.5);
 			const sphere2 = (stretch_)(shape_)(sphere1)(2);
 			const sphere3 = (container_)(shape_)(sphere2)(1);
-			const cylinder1 = cylinder(1, 1);
+			const sphere4 = (stretch_)(shape_)(sphere3)(2);
+			const sphere5 = (wrapper_)(shape_)(sphere4)(6);
+			const cylinder1 = cylinder(0.5, 1);
 			const cylinder2 = (stretch_)(shape_)(cylinder1)(2);
 			const cylinder3 = (container_)(shape_)(cylinder2)(1);
 			const cylinder4 = (stretch_)(shape_)(cylinder3)(2);
+			const cylinder5 = (wrapper_)(shape_)(cylinder4)(6);
 			const label1 = (label_)(shape_)(cube1); // "cube of side 1"
 			const label2 = (label_)(shape_)(cube2); // "cube of side 2"
 			const label3 = (label_)(shape_)(cube3); // "cube of side 1"
-			const label4 = (label_)(shape_)(sphere1); // "sphere of radius 1"
-			const label5 = (label_)(shape_)(sphere2); // "sphere of radius 2"
-			const label6 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
-			const label7 = (label_)(shape_)(cylinder1); // "cylinder of radius 1 and height 1"
-			const label8 = (label_)(shape_)(cylinder2); // "cylinder of radius 2 and height 2"
-			const label9 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
-			const label10 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+			const label4 = (label_)(shape_)(cube4); // "cube of side 2"
+			const label5 = (label_)(shape_)(cube5); // "cube of side 1"
+			const label6 = (label_)(shape_)(sphere1); // "sphere of radius 0.5"
+			const label7 = (label_)(shape_)(sphere2); // "sphere of radius 1"
+			const label8 = (label_)(shape_)(sphere3); // "sphere of radius 0.6203504908994"
+			const label9 = (label_)(shape_)(sphere4); // "sphere of radius 1.2407009817988"
+			const label10 = (label_)(shape_)(sphere5); // "sphere of radius 0.690988298942671"
+			const label11 = (label_)(shape_)(cylinder1); // "cylinder of radius 0.5 and height 1"
+			const label12 = (label_)(shape_)(cylinder2); // "cylinder of radius 1 and height 2"
+			const label13 = (label_)(shape_)(cylinder3); // "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"
+			const label14 = (label_)(shape_)(cylinder4); // "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"
+			const label15 = (label_)(shape_)(cylinder5); // "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"
+			const surface1 = (surface_)(shape_)(cube1); // 6
+			const surface2 = (surface_)(shape_)(cube2); // 24
+			const surface3 = (surface_)(shape_)(cube3); // 6
+			const surface4 = (surface_)(shape_)(cube4); // 24
+			const surface5 = (surface_)(shape_)(cube5); // 6
+			const surface6 = (surface_)(shape_)(sphere1); // 3.141592653589793
+			const surface7 = (surface_)(shape_)(sphere2); // 12.566370614359172
+			const surface8 = (surface_)(shape_)(sphere3); // 4.835975862049408
+			const surface9 = (surface_)(shape_)(sphere4); // 19.343903448197633
+			const surface10 = (surface_)(shape_)(sphere5); // 6.000000000000001
+			const surface11 = (surface_)(shape_)(cylinder1); // 4.71238898038469
+			const surface12 = (surface_)(shape_)(cylinder2); // 18.84955592153876
+			const surface13 = (surface_)(shape_)(cylinder3); // 5.535810445932086
+			const surface14 = (surface_)(shape_)(cylinder4); // 22.143241783728342
+			const surface15 = (surface_)(shape_)(cylinder5); // 5.999999999999999
+			const volume1 = (volume_)(shape_)(cube1); // 1
+			const volume2 = (volume_)(shape_)(cube2); // 8
+			const volume3 = (volume_)(shape_)(cube3); // 1
+			const volume4 = (volume_)(shape_)(cube4); // 8
+			const volume5 = (volume_)(shape_)(cube5); // 1
+			const volume6 = (volume_)(shape_)(sphere1); // 0.5235987755982988
+			const volume7 = (volume_)(shape_)(sphere2); // 4.1887902047863905
+			const volume8 = (volume_)(shape_)(sphere3); // 0.9999999999999997
+			const volume9 = (volume_)(shape_)(sphere4); // 7.999999999999997
+			const volume10 = (volume_)(shape_)(sphere5); // 1.3819765978853422
+			const volume11 = (volume_)(shape_)(cylinder1); // 0.7853981633974483
+			const volume12 = (volume_)(shape_)(cylinder2); // 6.283185307179586
+			const volume13 = (volume_)(shape_)(cylinder3); // 1.0000000000000002
+			const volume14 = (volume_)(shape_)(cylinder4); // 8.000000000000002
+			const volume15 = (volume_)(shape_)(cylinder5); // 1.1283791670955123
 			const invariant1 = (invariant_)(shape_)(cube1); // 0.004629629629629629
 			const invariant2 = (invariant_)(shape_)(cube2); // 0.004629629629629629
 			const invariant3 = (invariant_)(shape_)(cube3); // 0.004629629629629629
-			const invariant4 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
-			const invariant5 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
-			const invariant6 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
-			const invariant7 = (invariant_)(shape_)(cylinder1); // 0.0049735919716217296
-			const invariant8 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
-			const invariant9 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
-			const invariant10 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+			const invariant4 = (invariant_)(shape_)(cube4); // 0.004629629629629629
+			const invariant5 = (invariant_)(shape_)(cube5); // 0.004629629629629629
+			const invariant6 = (invariant_)(shape_)(sphere1); // 0.008841941282883074
+			const invariant7 = (invariant_)(shape_)(sphere2); // 0.008841941282883074
+			const invariant8 = (invariant_)(shape_)(sphere3); // 0.008841941282883072
+			const invariant9 = (invariant_)(shape_)(sphere4); // 0.008841941282883072
+			const invariant10 = (invariant_)(shape_)(sphere5); // 0.008841941282883074
+			const invariant11 = (invariant_)(shape_)(cylinder1); // 0.005894627521922049
+			const invariant12 = (invariant_)(shape_)(cylinder2); // 0.0049735919716217296
+			const invariant13 = (invariant_)(shape_)(cylinder3); // 0.005894627521922052
+			const invariant14 = (invariant_)(shape_)(cylinder4); // 0.005894627521922052
+			const invariant15 = (invariant_)(shape_)(cylinder5); // 0.005894627521922049
 			////////////////////////////////////////////////////////////////////////////////////////
-			// script k (V2):
+			// script n (V3):
 			console.log('"' + label1 + '" === "cube of side 1": ' + (label1 === "cube of side 1"));
 			console.log('"' + label2 + '" === "cube of side 2": ' + (label2 === "cube of side 2"));
 			console.log('"' + label3 + '" === "cube of side 1": ' + (label3 === "cube of side 1"));
-			console.log('"' + label4 + '" === "sphere of radius 1": ' + (label4 === "sphere of radius 1"));
-			console.log('"' + label5 + '" === "sphere of radius 2": ' + (label5 === "sphere of radius 2"));
-			console.log('"' + label6 + '" === "sphere of radius 0.6203504908994": ' + (label6 === "sphere of radius 0.6203504908994"));
-			console.log('"' + label7 + '" === "cylinder of radius 1 and height 1": ' + (label7 === "cylinder of radius 1 and height 1"));
-			console.log('"' + label8 + '" === "cylinder of radius 2 and height 2": ' + (label8 === "cylinder of radius 2 and height 2"));
-			console.log('"' + label9 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label9 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
-			console.log('"' + label10 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label10 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
-			console.log('"' + invariant1 + '" === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
-			console.log('"' + invariant2 + '" === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
-			console.log('"' + invariant3 + '" === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
-			console.log('"' + invariant4 + '" === 0.008841941282883074: ' + (invariant4 === 0.008841941282883074));
-			console.log('"' + invariant5 + '" === 0.008841941282883074: ' + (invariant5 === 0.008841941282883074));
-			console.log('"' + invariant6 + '" === 0.008841941282883072: ' + (invariant6 === 0.008841941282883072));
-			console.log('"' + invariant7 + '" === 0.0049735919716217296: ' + (invariant7 === 0.0049735919716217296));
-			console.log('"' + invariant8 + '" === 0.0049735919716217296: ' + (invariant8 === 0.0049735919716217296));
-			console.log('"' + invariant9 + '" === 0.005894627521922052: ' + (invariant9 === 0.005894627521922052));
-			console.log('"' + invariant10 + '" === 0.005894627521922052: ' + (invariant10 === 0.005894627521922052));
+			console.log('"' + label4 + '" === "cube of side 2": ' + (label4 === "cube of side 2"));
+			console.log('"' + label5 + '" === "cube of side 1": ' + (label5 === "cube of side 1"));
+			console.log('"' + label6 + '" === "sphere of radius 0.5": ' + (label6 === "sphere of radius 0.5"));
+			console.log('"' + label7 + '" === "sphere of radius 1": ' + (label7 === "sphere of radius 1"));
+			console.log('"' + label8 + '" === "sphere of radius 0.6203504908994": ' + (label8 === "sphere of radius 0.6203504908994"));
+			console.log('"' + label9 + '" === "sphere of radius 1.2407009817988": ' + (label9 === "sphere of radius 1.2407009817988"));
+			console.log('"' + label10 + '" === "sphere of radius 0.690988298942671": ' + (label10 === "sphere of radius 0.690988298942671"));
+			console.log('"' + label11 + '" === "cylinder of radius 0.5 and height 1": ' + (label11 === "cylinder of radius 0.5 and height 1"));
+			console.log('"' + label12 + '" === "cylinder of radius 1 and height 2": ' + (label12 === "cylinder of radius 1 and height 2"));
+			console.log('"' + label13 + '" === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781": ' + (label13 === "cylinder of radius 0.5419260701392891 and height 1.0838521402785781"));
+			console.log('"' + label14 + '" === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562": ' + (label14 === "cylinder of radius 1.0838521402785781 and height 2.1677042805571562"));
+			console.log('"' + label15 + '" === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126": ' + (label15 === "cylinder of radius 0.5641895835477563 and height 1.1283791670955126"));
+			console.log(surface1 + ' === 6: ' + (surface1 === 6));
+			console.log(surface2 + ' === 24: ' + (surface2 === 24));
+			console.log(surface3 + ' === 6: ' + (surface3 === 6));
+			console.log(surface4 + ' === 24: ' + (surface4 === 24));
+			console.log(surface5 + ' === 6: ' + (surface5 === 6));
+			console.log(surface6 + ' === 3.141592653589793: ' + (surface6 === 3.141592653589793));
+			console.log(surface7 + ' === 12.566370614359172: ' + (surface7 === 12.566370614359172));
+			console.log(surface8 + ' === 4.835975862049408: ' + (surface8 === 4.835975862049408));
+			console.log(surface9 + ' === 19.343903448197633: ' + (surface9 === 19.343903448197633));
+			console.log(surface10 + ' === 6.000000000000001: ' + (surface10 === 6.000000000000001));
+			console.log(surface11 + ' === 4.71238898038469: ' + (surface11 === 4.71238898038469));
+			console.log(surface12 + ' === 18.84955592153876: ' + (surface12 === 18.84955592153876));
+			console.log(surface13 + ' === 5.535810445932086: ' + (surface13 === 5.535810445932086));
+			console.log(surface14 + ' === 22.143241783728342: ' + (surface14 === 22.143241783728342));
+			console.log(surface15 + ' === 5.999999999999999: ' + (surface15 === 5.999999999999999));
+			console.log(volume1 + ' === 1: ' + (volume1 === 1));
+			console.log(volume2 + ' === 8: ' + (volume2 === 8));
+			console.log(volume3 + ' === 1: ' + (volume3 === 1));
+			console.log(volume4 + ' === 8: ' + (volume4 === 8));
+			console.log(volume5 + ' === 1: ' + (volume5 === 1));
+			console.log(volume6 + ' === 0.5235987755982988: ' + (volume6 === 0.5235987755982988));
+			console.log(volume7 + ' === 4.1887902047863905: ' + (volume7 === 4.1887902047863905));
+			console.log(volume8 + ' === 0.9999999999999997: ' + (volume8 === 0.9999999999999997));
+			console.log(volume9 + ' === 7.999999999999997: ' + (volume9 === 7.999999999999997));
+			console.log(volume10 + ' === 1.3819765978853422: ' + (volume10 === 1.3819765978853422));
+			console.log(volume11 + ' === 0.7853981633974483: ' + (volume11 === 0.7853981633974483));
+			console.log(volume12 + ' === 6.283185307179586: ' + (volume12 === 6.283185307179586));
+			console.log(volume13 + ' === 1.0000000000000002: ' + (volume13 === 1.0000000000000002));
+			console.log(volume14 + ' === 8.000000000000002: ' + (volume14 === 8.000000000000002));
+			console.log(volume15 + ' === 1.1283791670955123: ' + (volume15 === 1.1283791670955123));
+			console.log(invariant1 + ' === 0.004629629629629629: ' + (invariant1 === 0.004629629629629629));
+			console.log(invariant2 + ' === 0.004629629629629629: ' + (invariant2 === 0.004629629629629629));
+			console.log(invariant3 + ' === 0.004629629629629629: ' + (invariant3 === 0.004629629629629629));
+			console.log(invariant4 + ' === 0.004629629629629629: ' + (invariant4 === 0.004629629629629629));
+			console.log(invariant5 + ' === 0.004629629629629629: ' + (invariant5 === 0.004629629629629629));
+			console.log(invariant6 + ' === 0.008841941282883074: ' + (invariant6 === 0.008841941282883074));
+			console.log(invariant7 + ' === 0.008841941282883074: ' + (invariant7 === 0.008841941282883074));
+			console.log(invariant8 + ' === 0.008841941282883072: ' + (invariant8 === 0.008841941282883072));
+			console.log(invariant9 + ' === 0.008841941282883072: ' + (invariant9 === 0.008841941282883072));
+			console.log(invariant10 + ' === 0.008841941282883074: ' + (invariant10 === 0.008841941282883074));
+			console.log(invariant11 + ' === 0.005894627521922049: ' + (invariant11 === 0.005894627521922049));
+			console.log(invariant12 + ' === 0.005894627521922049: ' + (invariant12 === 0.005894627521922049));
+			console.log(invariant13 + ' === 0.005894627521922052: ' + (invariant13 === 0.005894627521922052));
+			console.log(invariant14 + ' === 0.005894627521922052: ' + (invariant14 === 0.005894627521922052));
+			console.log(invariant15 + ' === 0.005894627521922049: ' + (invariant15 === 0.005894627521922049));
 		})();
 		console.error("unreachable script");
 	}
@@ -1899,15 +2465,15 @@ console.log("exceptions:");
 
 console.log("inceptions:");
 (function(){
-	var shape_ = APPLICATION("shape_", error);
-	var label_ = APPLICATION("label_", error);
-	var surface_ = APPLICATION("surface_", error);
-	var volume_ = APPLICATION("volume_", error);
-	var stretch_ = APPLICATION("stretch_", error);
-	var invariant_ = APPLICATION("invariant_", error);
-	var weight_ = APPLICATION("weight_", error);
-	var alignment_ = APPLICATION("alignment_", error);
-	var solid_ = APPLICATION("solid_", error);
+	var shape_ = APPLICATION("shape_");
+	var label_ = APPLICATION("label_");
+	var surface_ = APPLICATION("surface_");
+	var volume_ = APPLICATION("volume_");
+	var stretch_ = APPLICATION("stretch_");
+	var invariant_ = APPLICATION("invariant_");
+	var weight_ = APPLICATION("weight_");
+	var alignment_ = APPLICATION("alignment_");
+	var solid_ = APPLICATION("solid_");
 	const shape = SPECIFICATION([
 		[shape_, SPECIFICATION([
 			[label_],
@@ -1926,7 +2492,7 @@ console.log("inceptions:");
 			[stretch_, definition => side => k => cube(side * k)],
 			[alignment_, definition => side => o => typeof o === "number"? o + side: alignment_(o)(side)],
 		])],
-	]), error);
+	]));
 	const sphere = DECLARATION(shape, IMPLEMENTATION([
 		[shape_, IMPLEMENTATION([
 			[label_, definition => radius => `sphere of radius ${radius}`],
@@ -1935,7 +2501,7 @@ console.log("inceptions:");
 			[stretch_, definition => radius => k => sphere(radius * k)],
 			[alignment_, definition => radius => o => typeof o === "number"? o + 2 * radius: alignment_(o)(2 * radius)],
 		])],
-	]), error);
+	]));
 
 	const inception1 = cube(1)()().map(application => application.name);
 	console.log(JSON.stringify(inception1) + ' === ["shape_"]: ' + (JSON.stringify(inception1) === '["shape_"]'));
