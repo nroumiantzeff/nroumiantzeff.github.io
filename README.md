@@ -1,6 +1,6 @@
 # nroumiantzeff.github.io
 
-js-antescript: a JavaScript metal-language with intrinsic point-free composition and declarative specifiction and implementation of functions, interfaces and name-spaces
+js-antescript: a metal-language designed to solve the Expression Problem
 
 js-effectuality: a unique pure functional type to abstract any side-effect, beyond Monads and Hughes Arrow 
 
