@@ -4581,8 +4581,6 @@ function compilation(declaration, ...additionalSideEffects){
 				causes[1](30);
 			})();
 
-
-
 			// request test
 			(function(){
 				const requestShipTo = request(function(sql){
@@ -5597,9 +5595,6 @@ function compilation(declaration, ...additionalSideEffects){
 				});
 				cause(24);
 			})();
-
-
-
 		};
 	}
 
@@ -6126,6 +6121,56 @@ const effectualityException = (function(){
 		};
 	};
 })();
+
+// effectualityRepartition: Effectuality -> Flow -> Effectuality ((t1, t2, ...) -> (), (t1, t2, ...) -> ()) -> ((s1, s2, ...) -> (), (s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> (), (t1, t2, ...) -> ()) -> ((s1, s2, ...) -> (), (s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> (), (t1, t2, ...) -> ()) -> ((s1, s2, ...) -> (), (s1, s2, ...) -> ())
+const effectualityRepartition = (function(){
+	return function(effectuality, flow){
+		return function repartition(repartition1, repartition2){
+			return flow({
+				effects: ["effect1", "effect2"],
+				effectualities: [
+					{effects: ["effect1", "effect2"], causes: ["fallback"]},
+					{effects: ["effect1", "fallback"], causes: ["cause"]},
+				],
+				causes:["cause"],
+			}, repartition1, repartition2);
+		};
+	};
+})();
+/*
+  ^      
+  |----------------
+  |               |      
+[repartition1]  [repartition2]
+  ^        |      ^        |
+  |        |      |        |
+  |        --------        v           
+*/
+
+// effectualityDelegation: Effectuality -> Flow -> Effectuality ((t1, t2, ...) -> (), (t1, t2, ...) -> ()) -> ((s1, s2, ...) -> (), (s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> (), (t1, t2, ...) -> ()) -> ((s1, s2, ...) -> (), (s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> (), (t1, t2, ...) -> ()) -> ((s1, s2, ...) -> (), (s1, s2, ...) -> ())
+const effectualityDelegation = (function(){
+	return function(effectuality, flow){
+		return function delegation(delegation1, delegation2){
+			return flow({
+				effects: ["effect1", "effect2"],
+				effectualities: [
+					{effects: ["feedback2", "effect2"], causes: ["feedback1", "cause2"]},
+					{effects: ["effect1", "feedback1"], causes: ["cause1", "feedback2"]},
+				],
+				causes:["cause1", "cause2"],
+			}, delegation1, delegation2);
+		};
+	};
+})();
+/*
+  ^       --------       |
+  |       |      |       |
+  |       v      |       v
+[delegation1]  [delegation2]
+  ^       |      ^       |
+  |       |      |       |
+  |       --------       v          
+*/
 
 //todo optimized stack (array prototype chaining instead of spread arrays)?
 //todo optimize closures (static functions called with closure arguments)
@@ -7596,6 +7641,174 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 		return x;
 	});
 	return check(effectuality, log, "failure exception test", [60], [], (division)(assertion)(initialization(5))(division)(assertion)(initialization(0))(division)(assertion)(initialization(2))(duplication)(escalation));
+})();
+
+// run shortcut repartition test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const repartition = effectualityRepartition(effectuality, flow);
+	const repartition2 = effectuality(function implication(effect1, effect2){
+		return function cause(value, ...x){
+			if (typeof(value) === "number"){
+				return effect1(value * 2, value, ...x);
+			}
+			return effect2(value, ...x);
+		};
+	});
+	const repartition1 = effectuality(function implication(effect1, effect2){
+		return function cause1(value, ...x){
+			if (typeof(value) === "string"){
+				return effect1(value + value, value, ...x);
+			}
+			return effect2(value, ...x);
+		};
+	});
+	const start = effectuality(function implication(effect1, effect2){
+		return function cause1(...x){
+			return effect1(...x);
+		};
+	});
+	const end = effectuality(function implication(effect1, effect2){
+		return function cause1(...x){
+			return effect1(...x);
+		};
+	});
+	return check(effectuality, log, "shortcut repartition test", [60], [[120,60,[]]], (end)(repartition(repartition1, repartition2))(start));
+})();
+
+// run repartition test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const repartition = effectualityRepartition(effectuality, flow);
+	const repartition2 = effectuality(function implication(effect1, effect2){
+		return function cause(value, ...x){
+			if (typeof(value) === "number"){
+				return effect1(value * 2, value, ...x);
+			}
+			return effect2(value, ...x);
+		};
+	});
+	const repartition1 = effectuality(function implication(effect1, effect2){
+		return function cause1(value, ...x){
+			if (typeof(value) === "string"){
+				return effect1(value + value, value, ...x);
+			}
+			return effect2(value, ...x);
+		};
+	});
+	const start = effectuality(function implication(effect1, effect2){
+		return function cause1(...x){
+			return effect1(...x);
+		};
+	});
+	const end = effectuality(function implication(effect1, effect2){
+		return function cause1(...x){
+			return effect1(...x);
+		};
+	});
+	return check(effectuality, log, "repartition test", ["60"], [["6060","60",[]]], (end)(repartition(repartition1, repartition2))(start));
+})();
+
+// run shortcut delegation test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const delegation = effectualityDelegation(effectuality, flow);
+	const delegation2 = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(value, ...x){
+				if (typeof(value) === "number"){
+					return effect1(value * 2, value, ...x);
+				}
+				return effect2(value, ...x);
+			},
+			function cause2(...x){
+				effect1(...x);
+			},
+		];
+	});
+	const delegation1 = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(value, ...x){
+				if (typeof(value) === "string"){
+					return effect1(value + value, value, ...x);
+				}
+				return effect2(value, ...x);
+			},
+			function cause2(...x){
+				effect1(...x);
+			},
+		];
+	});
+	const start = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(...x){
+				return effect1(...x);
+			},
+			function cause2(...x){
+				console.error("shortcut delegation test: error: start second cause should not occur: " + x);
+			},
+		];
+	});
+	const end = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(...x){
+				return effect1(...x);
+			},
+			function cause2(...x){
+				console.error("shortcut delegation test: error: end second cause should not occur: " + x);
+			},
+		];
+	});
+	return check(effectuality, log, "shortcut delegation test", [60], [[120,60,[]]], (end)(delegation(delegation1, delegation2))(start));
+})();
+
+// run delegation test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const delegation = effectualityDelegation(effectuality, flow);
+	const delegation2 = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(value, ...x){
+				if (typeof(value) === "number"){
+					return effect1(value * 2, value, ...x);
+				}
+				return effect2(value, ...x);
+			},
+			function cause2(...x){
+				effect1(...x);
+			},
+		];
+	});
+	const delegation1 = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(value, ...x){
+				if (typeof(value) === "string"){
+					return effect1(value + value, value, ...x);
+				}
+				return effect2(value, ...x);
+			},
+			function cause2(...x){
+				effect1(...x);
+			},
+		];
+	});
+	const start = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(...x){
+				return effect1(...x);
+			},
+			function cause2(...x){
+				console.error("delegation test: error: start second cause should not occur: " + x);
+			},
+		];
+	});
+	const end = effectuality(function implication(effect1, effect2){
+		return [
+			function cause1(...x){
+				return effect1(...x);
+			},
+			function cause2(...x){
+				console.error("delegation test: error: end second cause should not occur: " + x);
+			},
+		];
+	});
+	return check(effectuality, log, "delegation test", ["60"], [["6060","60",[]]], (end)(delegation(delegation1, delegation2))(start));
 })();
 
 // run output constant-rate-signal input test
