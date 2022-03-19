@@ -35,7 +35,7 @@ Effectuality is an inversion: Effectuality composition is right to left, the cau
 Effectuality is a flow: Effectuality can model Flow Based Programming, see https://jpaulm.github.io/fbp/morrison_2005.htm
 Effectuality is a strategy: Effectuality is a top-down startegy, Effectuality is a goal oriented strategy
 Effectuality is a library: Effectuality is a nano, standalone, single-function JavaScript library with support for composition
-Effectuality is a framework: Effectuality comes with a sample mini-framework exposing web-application typical side-effects such as concurrence, recurrence, conjunction, injunction, disjunction, injunction, log, observation, stream, delay, signal, request, HTML components
+Effectuality is a framework: Effectuality comes with a sample mini-framework exposing web-application typical side-effects such as concurrence, recurrence, conjunction, injunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, request, HTML components
 Effectuality is a toolbox: combinators maybe implemented from the Effectuality core implementation some of which are provided as sample shuch as unit, any, all, either, lift, ...
 Effectuality is a web-page: a single standalone web-page includes the Effecttuality implementation and a mini-framwork, performs selft-tests, generates and runs sample web-applications
 Effectuality is a project: Effectuality is an open-source github project, https://nroumiantzeff.github.io/js-effectuality/js-effectuality.htm
@@ -103,7 +103,7 @@ Effectuality "hello world" application description
 --------------------------------------------------
 
 // application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
-function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component){
+function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component){
 	const declaration = (component(true)("hello-world")({
 		description: function(){
 			return { DIV: ["Hello World!"] };
@@ -141,6 +141,10 @@ Effectuality core combinators (provided by the framwork)
 
 // injunction: Effectuality (((t1, t2, ..., s1, s2, ..., u1, u2, ...) -> ()) -> ((s1, s2, ..., u1, u2, ...) -> ())) -> Effectuality (((s1, s2, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) -> Effectuality (((t1, t2, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
 // injunction: () -> Effectuality (((s1, s2, ..., u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ())) -> Effectuality (((u1, u2, ...) -> ()) -> ((u1, u2, ...) -> ()))
+
+// xor: Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ())), Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ())), ... -> Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ()))
+
+// and: Effectuality (((t1, s, ...) -> ()) -> ((s, ...) -> ())), Effectuality (((t2, s, ...) -> ()) -> ((s, ...) -> ())), ... -> Effectuality (((t1, t2, ..., s, ...) -> ()) -> ((s, ...) -> ()))
 
 ---------------------------------------------------------------
 Effectuality environment combinators (provided by the framwork)
@@ -845,6 +849,87 @@ function compilation(declaration, ...additionalSideEffects){
 				};
 			});
 		};
+	}
+
+	// xor: Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ())), Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ())), ... -> Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ()))
+	function xor(...xorEffectualities){
+		// xorEffectualities: Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ())), Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ())), ...
+		const xorImplications = xorEffectualities.map(function(item){
+			if (item === effectuality()){
+				return undefined;
+			}
+			return decryption1(item);
+		}).filter(function (application){
+			if (application === undefined){
+				return false;
+			}
+			return true;
+		});
+		if (xorImplications.length === 0){
+			return effectuality();
+		}
+		// return: Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ()))
+		return effectuality(function implication(effect){
+			// implication: ((t, s, ...) -> ()) -> ((s, ...) -> ())
+			// effect: (t, s, ...) -> ()
+			// cause: (s, ...) -> ()
+			return function cause(...x){
+				// x: s
+				var count = 0; // unpure
+				function xorEffect(...y){
+					if (++count === 1){ // unpure
+						return effect(...y);
+					}
+				}
+				return xorImplications.reduceRight(function(accumulator, xorImplication){
+					const xorCause = xorImplication(xorEffect);
+					return xorCause(...x);
+				}, undefined);
+			};
+		});
+	}
+
+	// and: Effectuality (((t1, s, ...) -> ()) -> ((s, ...) -> ())), Effectuality (((t2, s, ...) -> ()) -> ((s, ...) -> ())), ... -> Effectuality (((t1, t2, ..., s, ...) -> ()) -> ((s, ...) -> ()))
+	function and(...andEffectualities){
+		// andEffectualities: Effectuality (((t1, s, ...) -> ()) -> ((s, ...) -> ())), Effectuality (((t2, s, ...) -> ()) -> ((s, ...) -> ())), ...
+		const andImplications = andEffectualities.map(function(item){
+			if (item === effectuality()){
+				return undefined;
+			}
+			return decryption1(item);
+		}).filter(function (application){
+			if (application === undefined){
+				return false;
+			}
+			return true;
+		});
+		if (andImplications.length !== andEffectualities.length){
+			return effectuality();
+		}
+		if (andImplications.length === 0){
+			return effectualityUnit(effectuality);
+		}
+		// return: Effectuality (((t, s, ...) -> ()) -> ((s, ...) -> ()))
+		return effectuality(function implication(effect){
+			// implication: ((t1, t2, ..., s, ...) -> ()) -> ((s, ...) -> ())
+			// effect: (t1, t2, ..., s, ...) -> ()
+			// cause: (s, ...) -> ()
+			return function cause(...x){
+				// x: s
+				var count = 0; //unpure
+				var values = []; // unpure
+				return andImplications.reduceRight(function(accumulator, andImplication, index){
+					function andEffect(...y){
+						values[index] = y[0]; // unpure
+						if (++count === andImplications.length){ // unpure
+							return effect(...values, ...x);
+						}
+					}
+					const andCause = andImplication(andEffect);
+					return andCause(...x);
+				}, undefined);
+			};
+		});
 	}
 
 	// combinations: Effectuality (((t11, t12, ...) -> ()) -> ((s1, s2, ...) -> ())) -> Effectuality (((t21, t22, ...) -> ()) -> ((s1, s2, ...) -> ())) -> ... -> Effectuality ((((t11, t12, ...) -> ()) | ((t21, t22, ...) -> ()) | ...)  -> ((s1, s2, ...) -> ()))
@@ -5603,12 +5688,12 @@ function compilation(declaration, ...additionalSideEffects){
 
 	function preparation(additionalSideEffects){
 		return additionalSideEffects.map(function(item){
-			return item(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component);
+			return item(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component);
 		});
 	}
 
 	// declaration: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> ... -> Effectuality ((() -> ()) -> (() -> ()))
-	const effectuality1 = declaration(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, ...preparation(additionalSideEffects));
+	const effectuality1 = declaration(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, ...preparation(additionalSideEffects));
 	// effectuality1: Effectuality ((t -> ()) -> (s -> ()))
 	// interpretation: Efectuality ((t -> ()) -> (s -> ())) -> (s -> ())
 	function interpretation(interpretationEffectuality){
@@ -6402,25 +6487,25 @@ function check(effectuality, log, title, values, outcomes, effectuality1){
 }
 
 // run initialization test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const initialization = effectualityInitialization(effectuality)(7, 6);
 	return check(effectuality, log, "initialization test", [], [[7, 6, []]], (initialization));
 })();
 
 // run zero test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	return check(effectuality, log, "zero test", [], [], (zero));
 })();
 
 // run unit test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	return check(effectuality, log, "unit test", [3, 4, 5, 6], [[3, 4, 5, 6, []]], (unit));
 })();
 
 // run lift combinator test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
 		return x1 + x2;
@@ -6429,13 +6514,13 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run copy combinator test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const copy = effectualityCopy(effectuality);
 	return check(effectuality, log, "copy combinator test", [5, 6, 7, 8], [[6, 8, 5, 8, 5, 6, 7, 8, []]], (copy(1,3,0,3)));
 })();
 
 // run indexation combinator test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const indexation = effectualityIndexation(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const indexations = indexation(initialization(123), initialization(456), initialization(789));
@@ -6443,7 +6528,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction left identity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6459,7 +6544,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction right identity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6475,7 +6560,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction middle identity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6491,7 +6576,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition left identity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6504,7 +6589,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition middle identity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6517,7 +6602,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition right identity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6530,7 +6615,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition left annihilation test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6543,7 +6628,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition right annihilation test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6556,7 +6641,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition middle annihilation test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6569,7 +6654,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction left annihilation test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6585,7 +6670,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction right annihilation test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6601,7 +6686,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction zero test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6611,7 +6696,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction zero zero test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6621,7 +6706,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction undefined test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const zero = effectualityZero(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6631,7 +6716,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition associativity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
 		return x1 * 10;
@@ -6646,7 +6731,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition left associativity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
 		return x1 * 10;
@@ -6661,7 +6746,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition right associativity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
 		return x1 * 10;
@@ -6676,7 +6761,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction associativity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
@@ -6692,7 +6777,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction left associativity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
@@ -6708,7 +6793,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction right associativity test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
@@ -6724,7 +6809,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run conjunction of compositions test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
@@ -6743,7 +6828,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run composition of conjunctions test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const lift = effectualityLift(effectuality);
 	const times10 = lift(function(x1){
@@ -6762,7 +6847,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run addition all test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const all = effectualityConcurrenceAll(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6782,7 +6867,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run addition any test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -6802,7 +6887,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run addition disjunction test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
 		return x1 + x2;
@@ -6835,7 +6920,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run either first test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const even = lift(function(x){
@@ -6862,7 +6947,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run either second test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const even = lift(function(x){
@@ -6889,7 +6974,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run either third test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const even = lift(function(x){
@@ -6916,7 +7001,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run fallback-either first test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const odd = lift(function(x){
@@ -6938,7 +7023,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run fallback-either second test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const odd = lift(function(x){
@@ -6960,7 +7045,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run ternary-either first test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	function multiple(n, m){
@@ -6989,7 +7074,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run ternary-either second test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	function multiple(n, m){
@@ -7018,7 +7103,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run ternary-either third test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const either = effectualityConcurrenceEither(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	function multiple(n, m){
@@ -7047,7 +7132,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run ternary-addition all test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const all = effectualityConcurrenceAll(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2, x3){
@@ -7072,7 +7157,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run ternary-addition any test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function(x1, x2){
@@ -7097,7 +7182,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition all input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const all = effectualityConcurrenceAll(effectuality, concurrence);
 	const addition = lift(function(x1, x2, x3){
@@ -7122,7 +7207,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition any input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
 	const addition = lift(function(x1, x2){
@@ -7147,7 +7232,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition first variable-delay input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
@@ -7175,7 +7260,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition second variable-delay input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
@@ -7203,7 +7288,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition third variable-delay input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
@@ -7231,7 +7316,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition canceled-any fixed-delay input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
@@ -7263,7 +7348,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition canceled-any first variable-delay input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
@@ -7294,7 +7379,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition canceled-any second variable-delay input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
@@ -7325,7 +7410,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output ternary-addition canceled-any third variable-delay input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
@@ -7356,7 +7441,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run fit test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const multiplication = lift(function (x1, x2){
@@ -7373,14 +7458,14 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run array-fit test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const unit = effectualityUnit(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	return check(effectuality, log, "array-fit test", [5, 6, 7], [[[5,6],[5,7],6,7,5,6,7,[]]], (fit(0,1,2,3)([0,1],[0,2],1,2)(unit)));
 })();
 
 // run copy test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const copy = effectualityCopy(effectuality);
 	const lift = effectualityLift(effectuality);
 	const multiplication = lift(function (x1, x2){
@@ -7397,13 +7482,13 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run array-copy test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const copy = effectualityCopy(effectuality);
 	return check(effectuality, log, "array-copy test", [5, 6, 7], [[[5,6],[5,7],6,7,5,6,7,[]]], (copy([0,1],[0,2],1,2)));
 })();
 
 // run output injunction input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const initialization = effectualityInitialization(effectuality);
 	const copy = effectualityCopy(effectuality)(0);
 	const lift = effectualityLift(effectuality);
@@ -7426,7 +7511,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run injunction recurrence test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const initialization = effectualityInitialization(effectuality);
 	const lift = effectualityLift(effectuality);
 	const multiplication = lift(function (x1, x2){
@@ -7454,7 +7539,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output conjunction recurrence input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const unit = effectualityUnit(effectuality);
 	const twice1 = lift(function(x){
@@ -7481,8 +7566,218 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 	return check(effectuality, log, "output conjunction recurrence input test", [], [expected], (conjunction((recurrence1),(recurrence2))));
 })();
 
+// run xor first test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "xor first test", [15], [[5,15,[]]], (xor((half),(third))));
+})();
+
+// run xor second test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "xor second test", [14], [[7,14,[]]], (xor((half),(third))));
+})();
+
+// run xor both synchronous test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "xor both synchronous test", [66], [[22,66,[]]], (xor((half),(third))));
+})();
+
+// run xor both asynchronous second test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "xor both second test", [66], [[22,66,[]]], (xor((half)(delay(2000)),(third)(delay(1000)))));
+})();
+
+// run xor both asynchronous first test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "xor both first test", [66], [[33,66,[]]], (xor((half)(delay(1000)),(third)(delay(2000)))));
+})();
+
+// run and first test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "and first test", [14], [], (and((half),(third))));
+})();
+
+// run and second test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "and second test", [15], [], (and((half),(third))));
+})();
+
+// run and both synchronous test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "and both synchronous test", [66], [[33,22,66,[]]], (and((half),(third))));
+})();
+
+// run and both asynchronous second test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "and both synchronous second test", [66], [[33,22,66,[]]], (and((half)(delay(1000)),(third)(delay(2000)))));
+})();
+
+// run and both asynchronous first test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const lift = effectualityLift(effectuality);
+	const unit = effectualityUnit(effectuality);
+	const half = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 2 === 0){
+				return effect(x[0] / 2, ...x);
+			}
+		};
+	});
+	const third = effectuality(function implication(effect){
+		return function cause(...x){
+			if (x[0] % 3 === 0){
+				return effect(x[0] / 3, ...x);
+			}
+		};
+	});
+	return check(effectuality, log, "and both asynchronous first test", [66], [[33,22,66,[]]], (and((half)(delay(2000)),(third)(delay(1000)))));
+})();
+
 // run output composition recurrence input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const twice1 = lift(function(x){
 		return x * 2;
@@ -7509,7 +7804,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output composition initialization-reduction-recurrence input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const initialization = effectualityInitialization(effectuality);
 	const lift = effectualityLift(effectuality);
 	const twice1 = lift(function(x){
@@ -7537,7 +7832,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run write-write-read-read-store test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const store = effectualityStore(effectuality)(true);
 	const restore = effectualityStore(effectuality)(false);
 	const lift = effectualityLift(effectuality);
@@ -7553,7 +7848,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run write-write-read-read-write-write-read-read-store test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const store = effectualityStore(effectuality)(true);
 	const restore = effectualityStore(effectuality)(false);
 	const lift = effectualityLift(effectuality);
@@ -7569,7 +7864,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run write-write-read-read-write-write-read-read-variable-keys-store test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const store = effectualityStore(effectuality)(true);
 	const restore = effectualityStore(effectuality)(false);
 	const lift = effectualityLift(effectuality);
@@ -7591,7 +7886,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run tag test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const tag = effectualityTag(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const lift = effectualityLift(effectuality);
@@ -7603,7 +7898,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run success exception test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const exception = effectualityException(effectuality, log(2));
 	const escalation = exception(undefined, function(...x){
 		return "success exception test: exception: " + x;
@@ -7624,7 +7919,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run failure exception test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const exception = effectualityException(effectuality, log(1));
 	const escalation = exception(undefined, function(...x){
 		return "failure exception test: exception: " + x;
@@ -7644,7 +7939,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run shortcut repartition test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const repartition = effectualityRepartition(effectuality, flow);
 	const repartition2 = effectuality(function implication(effect1, effect2){
 		return function cause(value, ...x){
@@ -7676,7 +7971,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run repartition test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const repartition = effectualityRepartition(effectuality, flow);
 	const repartition2 = effectuality(function implication(effect1, effect2){
 		return function cause(value, ...x){
@@ -7708,7 +8003,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run shortcut delegation test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const delegation = effectualityDelegation(effectuality, flow);
 	const delegation2 = effectuality(function implication(effect1, effect2){
 		return [
@@ -7760,7 +8055,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run delegation test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const delegation = effectualityDelegation(effectuality, flow);
 	const delegation2 = effectuality(function implication(effect1, effect2){
 		return [
@@ -7812,7 +8107,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output constant-rate-signal input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const limitation = lift(function(time, id){
@@ -7828,7 +8123,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output variable-rate-signal input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const fit = effectualityInjunctionFit(effectuality, injunction);
 	const limitation = lift(function(time, id){
@@ -7846,7 +8141,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output push-pull-pull-push-stream input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const multiplication = effectualityLift(effectuality)(function(x1, x2){
@@ -7863,7 +8158,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output push-push-pull-pull-watermark-stream input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const multiplication = effectualityLift(effectuality)(function(x1, x2){
@@ -7896,7 +8191,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output pull-pull-ondemand-stream input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const multiplication = effectualityLift(effectuality)(function(x1, x2){
@@ -7912,7 +8207,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output push-pull-asynchronous-stream input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const initialization = effectualityInitialization(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function cause(x, y){
@@ -7962,7 +8257,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output pull-push-asynchronous-stream input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const initialization = effectualityInitialization(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function cause(x, y){
@@ -8012,7 +8307,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output asynchronous-ondemand-stream input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const initialization = effectualityInitialization(effectuality);
 	const lift = effectualityLift(effectuality);
 	const addition = lift(function cause(x, y){
@@ -8057,7 +8352,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output constant-id-observation input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const multiplication = lift(function cause(x, y){
 		return x * y;
@@ -8078,7 +8373,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output variable-id-observation input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const selection = lift(function cause(x, id1, y){
@@ -8103,7 +8398,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output constant-id-cancellable-observation input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const unit = effectualityUnit(effectuality);
@@ -8131,7 +8426,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output variable-id-cancellable-observation input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const initialization = effectualityInitialization(effectuality);
 	const unit = effectualityUnit(effectuality);
@@ -8159,7 +8454,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run output request canceled-any input test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const lift = effectualityLift(effectuality);
 	const any = effectualityConcurrenceAny(effectuality, concurrence);
 	const registration = request()(true);
@@ -8240,7 +8535,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run first path flow test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const graph = {
 		effects: ["half0"],
 		effectualities: [
@@ -8287,7 +8582,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run second path flow test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const graph = {
 		effects: ["half0"],
 		effectualities: [
@@ -8335,7 +8630,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 })();
 
 // run circular flow test
-runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component, input, output){
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
 	const graph = {
 		effects: ["flow"],
 		effectualities: [
@@ -8426,7 +8721,7 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 const applications = {
 	"web-application#1":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
-		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component){
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component){
 			// Hello World!
 			const declaration = (component(true)("hello-world")({
 				description: function(){
@@ -8438,7 +8733,7 @@ const applications = {
 		},
 	"web-application#2":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
-		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component){
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component){
 			// Asynchronous side-effect
 			const declaration = (component(true)("asynchronous-square")({
 				description: function(type, properties){
@@ -8472,7 +8767,7 @@ const applications = {
 		},
 	"web-application#3":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
-		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component){
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component){
 			// 3 levels of component dependencies
 			const calculator = (component(true)("calculator")({
 				description: function(type, properties){
@@ -8537,7 +8832,7 @@ const applications = {
 		},
 	"web-application#4":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
-		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component){
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component){
 			// Inter-dependencies
 			const user = (component(true)("user")({
 				description: function(type, properties){
@@ -8590,7 +8885,7 @@ const applications = {
 		},
 	"web-application#5":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
-		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component){
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component){
 			// Todo list
 			const todo = (component(true)("todo")({
 				description: function(type, properties){
@@ -8671,7 +8966,7 @@ const applications = {
 		},
 	"web-application#6":
 		// application: Effectuality -> Concurrence -> Recurrence -> Conjunction -> Disjunction -> Injunction -> Log -> Observation -> Stream -> Delay -> Signal -> Flow -> Request -> Component -> Effectuality ((() -> ()) -> (() -> ()))
-		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, log, observation, stream, delay, signal, flow, request, component){
+		function application(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component){
 			// Counter
 			const declaration = (component(true)("counter")({
 				description: function(type, properties){
