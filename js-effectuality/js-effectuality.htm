@@ -6257,6 +6257,54 @@ const effectualityDelegation = (function(){
   |       --------       v          
 */
 
+// effectualityParallelization: Effectuality -> Flow -> Effectuality ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())
+const effectualityParallelization = (function(){
+	return function(effectuality, flow){
+		return function parallelization(parallelization1, parallelization2){
+			return flow({
+				effects: ["effect"],
+				effectualities: [
+					{effects: ["effect"], causes: ["cause"]},
+					{effects: ["effect"], causes: ["cause"]},
+				],
+				causes:["cause"],
+			}, parallelization1, parallelization2);
+		};
+	};
+})();
+/*
+  ^      
+  |--------------------
+  |                   |      
+[parallelization1]  [parallelization2]
+  ^                   ^
+  |                   |
+  |--------------------
+*/
+
+// effectualitySerialization: Effectuality -> Flow -> Effectuality ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ()) -> Effectuality ((t1, t2, ...) -> ()) -> ((s1, s2, ...) -> ())
+const effectualitySerialization = (function(){
+	return function(effectuality, flow){
+		return function serialization(serialization1, serialization2){
+			return flow({
+				effects: ["effect"],
+				effectualities: [
+					{effects: ["effect"], causes: ["feed"]},
+					{effects: ["feed"], causes: ["cause"]},
+				],
+				causes:["cause"],
+			}, serialization1, serialization2);
+		};
+	};
+})();
+/*
+[serialization1]  [serialization1]
+  ^          |      ^          |
+  |          |      |          |
+  |          --------          v          
+*/
+
+
 //todo optimized stack (array prototype chaining instead of spread arrays)?
 //todo optimize closures (static functions called with closure arguments)
 //todo name effect values and cause values (second and third arguments of Effectuality) and check names in composition, concurrence, recurrence, injunction, concurrence, recurrence, conjunction, disjunction (semantic type system at declaration stage)
@@ -8104,6 +8152,38 @@ runTest(function tests(effectuality, concurrence, recurrence, conjunction, disju
 		];
 	});
 	return check(effectuality, log, "delegation test", ["60"], [["6060","60",[]]], (end)(delegation(delegation1, delegation2))(start));
+})();
+
+// run parallelization test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const parallelization = effectualityParallelization(effectuality, flow);
+	const parallelization2 = effectuality(function implication(effect){
+		return function cause(value, ...x){
+			return effect(value * 2, value, ...x);
+		};
+	});
+	const parallelization1 = effectuality(function implication(effect){
+		return function cause(value, ...x){
+			return effect(value + 1, value, ...x);
+		};
+	});
+	return check(effectuality, log, "parallelization test", [60], [[61,60,[]],[120,60,[]]], (parallelization((parallelization1),(parallelization2))));
+})();
+
+// run serialization test
+runTest(function tests(effectuality, concurrence, recurrence, conjunction, disjunction, injunction, xor, and, log, observation, stream, delay, signal, flow, request, component, input, output){
+	const serialization = effectualitySerialization(effectuality, flow);
+	const serialization2 = effectuality(function implication(effect){
+		return function cause(value, ...x){
+			return effect(value * 2, value, ...x);
+		};
+	});
+	const serialization1 = effectuality(function implication(effect){
+		return function cause(value, ...x){
+			return effect(value + 1, value, ...x);
+		};
+	});
+	return check(effectuality, log, "serialization test", [60], [[121,120,60,[]]], (serialization((serialization1),(serialization2))));
 })();
 
 // run output constant-rate-signal input test
